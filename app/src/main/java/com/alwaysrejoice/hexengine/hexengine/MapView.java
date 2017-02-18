@@ -10,6 +10,8 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.util.Log;
+import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -18,15 +20,30 @@ import java.io.InputStream;
 import java.util.Random;
 
 public class MapView extends SurfaceView implements Runnable {
-    float touchX = 100;
-    float touchY = 100;
     Bitmap grass;
     Bitmap tree;
     Bitmap background;
+    int VIEW_SIZE_X = 1000;
+    int VIEW_SIZE_Y = 1000;
 
+    int BACKGROUND_SIZE_X = 2500;
+    int BACKGROUND_SIZE_Y = 2500;
+    int TILE_SIZE_X = 60;
+    int TILE_SIZE_Y = 60;
+
+    // Current location of view in the background
     int viewX = 100;
     int viewY = 200;
 
+    // Current location touched on the screen
+    float touchX = 100;
+    float touchY = 100;
+
+    // Scaling
+    private ScaleGestureDetector mapScaleDetector;
+    private float mapScaleFactor = 1.f;
+
+    // Core screen drawing
     Thread renderThread = null;
     SurfaceHolder holder;
     volatile boolean running = false;
@@ -34,6 +51,9 @@ public class MapView extends SurfaceView implements Runnable {
     public MapView(Context context) {
         super(context);
         holder = getHolder();
+        mapScaleDetector = new ScaleGestureDetector(context, new MapScaleListener());
+
+
         InputStream inputStream = null;
 
         try {
@@ -48,26 +68,24 @@ public class MapView extends SurfaceView implements Runnable {
             tree = BitmapFactory.decodeStream(inputStream, null, options);
             Log.d("BitmapText", "tree.png format: " + tree.getConfig());
 
-            int maxX = 1500;
-            int maxY = 1500;
-            int tileWidth = 60;
-            int tileHeight = 60;
             Random rand = new Random();
 
-            // Make a map
-            background = Bitmap.createBitmap(maxX, maxY, Bitmap.Config.ARGB_8888);
+            // Make a background map
+            background = Bitmap.createBitmap(BACKGROUND_SIZE_X, BACKGROUND_SIZE_Y, Bitmap.Config.ARGB_8888);
             Canvas bgCanvas = new Canvas(background);
             bgCanvas.drawRGB(100, 200, 200);
-            for (int x=0; x<=maxX; x+=tileWidth) {
-                for (int y=0; y<=maxY; y+= tileHeight) {
+            for (int x=0; x<=BACKGROUND_SIZE_X; x+=TILE_SIZE_X) {
+                for (int y=0; y<=BACKGROUND_SIZE_X; y+= TILE_SIZE_Y) {
                     bgCanvas.drawBitmap(grass, x, y, null);
-                    Paint paint = new Paint();
-                    String colorHex = "#"+Integer.toHexString(20+rand.nextInt(200))+
-                            Integer.toHexString(20+rand.nextInt(200))+
-                            Integer.toHexString(20+rand.nextInt(200));
-                    Log.d("MapView", "Color:'"+colorHex+"'");
-                    paint.setColor(Color.parseColor(colorHex));
-                    bgCanvas.drawCircle(x, y, 10, paint);
+                    if (rand.nextInt(10) > 8) {
+                        Paint paint = new Paint();
+                        String colorHex = "#" + Integer.toHexString(20 + rand.nextInt(200)) +
+                                Integer.toHexString(20 + rand.nextInt(200)) +
+                                Integer.toHexString(20 + rand.nextInt(200));
+                        Log.d("MapView", "Color:'" + colorHex + "'");
+                        paint.setColor(Color.parseColor(colorHex));
+                        bgCanvas.drawCircle(x, y, 10, paint);
+                    }
                 }
             }
 
@@ -91,19 +109,18 @@ public class MapView extends SurfaceView implements Runnable {
         Log.d("MapView", "running");
         while (running) {
             if (!holder.getSurface().isValid()) {
+                Log.d("surface", "Surface is not valid");
                 continue;
             }
             Canvas canvas = holder.lockCanvas();
             canvas.drawRGB(0, 0, 255);
 
-            int viewSizeX = 1000;
-            int viewSizeY = 2000;
+            Rect subsetView = new Rect(viewX, viewY, viewX+VIEW_SIZE_X, viewY+VIEW_SIZE_Y);
+            Rect scaleView = new Rect(0, 0, VIEW_SIZE_X, VIEW_SIZE_Y);
 
-            RectF scaleView = new RectF(0, 0,viewSizeX, viewSizeY);
-            Rect panView = new Rect(viewX, viewY, viewX+viewSizeX, viewY+viewSizeY);
+            canvas.drawBitmap(background, subsetView, scaleView, null);
 
-            canvas.drawBitmap(background, panView, scaleView, null);
-
+            canvas.drawBitmap(tree, VIEW_SIZE_X/2, VIEW_SIZE_Y/2, null); // center point
             canvas.drawBitmap(tree, touchX - tree.getWidth() / 2, touchY - tree.getHeight() / 2, null);
             holder.unlockCanvasAndPost(canvas);
         }
@@ -122,11 +139,51 @@ public class MapView extends SurfaceView implements Runnable {
         }
     }
 
-    public void touch(float x, float y) {
+    public void touchUp(float x, float y) {
         this.touchX = x;
         this.touchY = y;
-        this.viewX = Math.round(x);
-        this.viewY = Math.round(y);
+
+        int newX = viewX + (Math.round(x) - (VIEW_SIZE_X / 2));
+        int newY = viewY + (Math.round(y) - (VIEW_SIZE_Y /2));
+
+        // Bounds checking
+        if (newX < 0) newX = 0;
+        if (newY < 0) newY = 0;
+        if (newX > BACKGROUND_SIZE_X - VIEW_SIZE_X) {
+            newX = BACKGROUND_SIZE_X - VIEW_SIZE_X;
+        }
+        if (newY > BACKGROUND_SIZE_Y - VIEW_SIZE_Y) {
+            newY = BACKGROUND_SIZE_Y - VIEW_SIZE_Y;
+        }
+
+        this.viewX = newX;
+        this.viewY = newY;
+        Log.d("touch", "at "+viewX+","+viewY);
+    }
+
+    public void pan(float x, float y) {
+        Log.d("gesture", "pan "+x+","+y);
+    }
+
+
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        mapScaleDetector.onTouchEvent(event);
+        Log.d("Touch", "onTouchEvent");
+        return false;
+    }
+
+    private class MapScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
+        @Override
+        public boolean onScale(ScaleGestureDetector detector) {
+            mapScaleFactor *= detector.getScaleFactor();
+            // Don't let the object get too small or too large.
+            mapScaleFactor = Math.max(0.1f, Math.min(mapScaleFactor, 5.0f));
+            invalidate();
+            Log.d("Scale", "Scaling to "+mapScaleFactor);
+            return true;
+        }
     }
 }
 
