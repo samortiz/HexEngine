@@ -1,3 +1,25 @@
 Hex Board Game Engine
 
 For creating hex-based board games
+
+SETUP
+ I removed all the AndroidStudio files from the repo. 
+I found that moving my code from one computer to another with different installs of AndroidStudio caused
+it to fail to open the project.  It was kind of annyoing, so I will just track the custom code and none 
+of the generated files. That means in order to get this projec to work you need to do the following :
+
+ - Install AndroidStudio
+ - Create a new project called HexEngine
+ - In your filesystem renamed the HexEngine to OrigHexEngine
+ - clone the git repo into a new folder named HexEngine
+   mkdir HexEngine
+   cd HexEngine
+   git clone https://github.com/samortiz/HexEngine.git
+   
+ - Copy all the AndroidStudio generated files into the new repo
+  cp -r project/OrigHexEngine/. project/HexEngine
+ 
+ - Then you can verify it works and delete the OrigHexEngine
+
+
+
