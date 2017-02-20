@@ -1,4 +1,4 @@
-package com.alwaysrejoice.hexengine.hexengine;
+package com.alwaysrejoice.hexengine;
 
 import android.content.Context;
 import android.content.res.AssetManager;
@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Random;
 
-public class MapView extends SurfaceView implements Runnable {
+public class MapView extends SurfaceView implements Runnable, SurfaceHolder.Callback {
   // Core screen drawing
   Thread renderThread = null;
   SurfaceHolder holder;
@@ -56,6 +56,7 @@ public class MapView extends SurfaceView implements Runnable {
   public MapView(Context context) {
     super(context);
     holder = getHolder();
+    holder.addCallback(this);
     mapScaleDetector = new ScaleGestureDetector(context, new MapScaleListener());
 
 
@@ -87,7 +88,7 @@ public class MapView extends SurfaceView implements Runnable {
             String colorHex = "#" + Integer.toHexString(20 + rand.nextInt(200)) +
                 Integer.toHexString(20 + rand.nextInt(200)) +
                 Integer.toHexString(20 + rand.nextInt(200));
-            Log.d("MapView", "Color:'" + colorHex + "'");
+            //Log.d("MapView", "Color:'" + colorHex + "'");
             paint.setColor(Color.parseColor(colorHex));
             bgCanvas.drawCircle(x, y, 10, paint);
           }
@@ -117,6 +118,7 @@ public class MapView extends SurfaceView implements Runnable {
     Log.d("MapView", "running");
     while (running) {
       if (!holder.getSurface().isValid()) {
+        if (holder.isCreating()) Log.d("surface", "Creating...");
         Log.d("surface", "Surface is not valid");
         continue;
       }
@@ -146,6 +148,7 @@ public class MapView extends SurfaceView implements Runnable {
         renderThread.join();
         return;
       } catch (InterruptedException e) {
+        Log.d("pause", "interrupted while trying to join");
         // retry
       }
     }
@@ -191,5 +194,22 @@ public class MapView extends SurfaceView implements Runnable {
       return true;
     }
   }
+
+
+  @Override
+  public void surfaceCreated(SurfaceHolder holder) {
+    Log.d("SurfaceHolder.CallBack", "Created");
+  }
+
+  @Override
+  public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+    Log.d("SurfaceHolder.CallBack", "changed");
+  }
+
+  @Override
+  public void surfaceDestroyed(SurfaceHolder holder) {
+    Log.d("SurfaceHolder.CallBack", "destroyed");
+  }
+
 }
 

@@ -1,4 +1,4 @@
-package com.alwaysrejoice.hexengine.hexengine;
+package com.alwaysrejoice.hexengine;
 
 import android.app.Activity;
 import android.os.Bundle;
