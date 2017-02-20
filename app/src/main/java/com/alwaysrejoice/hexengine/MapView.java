@@ -33,8 +33,7 @@ public class MapView extends SurfaceView implements Runnable, SurfaceHolder.Call
   int VIEW_SIZE_Y = 1000;
   int BACKGROUND_SIZE_X = 2500; // size of background map
   int BACKGROUND_SIZE_Y = 2500;
-  int TILE_SIZE_X = 60; // size of one tile on the map
-  int TILE_SIZE_Y = 60;
+  int TILE_SIZE = 60; // size of one tile on the map
   // Current location of view in the background
   int mapX = 100;
   int mapY = 200;
@@ -46,7 +45,7 @@ public class MapView extends SurfaceView implements Runnable, SurfaceHolder.Call
   private int gestureDiffY = 0;
 
   // Scaling
-  private float MIN_SCALE = 0.20f;
+  private float MIN_SCALE = 0.10f;
   private float MAX_SCALE = 3.0f;
   private ScaleGestureDetector mapScaleDetector;
   private float mapScaleFactor = 1.0f;
@@ -80,9 +79,17 @@ public class MapView extends SurfaceView implements Runnable, SurfaceHolder.Call
       background = Bitmap.createBitmap(BACKGROUND_SIZE_X, BACKGROUND_SIZE_Y, Bitmap.Config.ARGB_8888);
       Canvas bgCanvas = new Canvas(background);
       bgCanvas.drawRGB(100, 200, 200);
-      for (int x = 0; x <= BACKGROUND_SIZE_X; x += TILE_SIZE_X) {
-        for (int y = 0; y <= BACKGROUND_SIZE_X; y += TILE_SIZE_Y) {
-          bgCanvas.drawBitmap(grass, x, y, null);
+      boolean odd = true;
+      for (int y = 0; y <= BACKGROUND_SIZE_X; y += (TILE_SIZE /2)) {
+        odd = !odd; // toggle for each row
+        for (int x = odd? 0 : Math.round(TILE_SIZE *0.75f); x <= BACKGROUND_SIZE_X; x += Math.round(TILE_SIZE * 1.5f)) {
+
+          if (rand.nextInt(10) < 8) {
+            bgCanvas.drawBitmap(grass, x, y, null);
+          } else {
+            bgCanvas.drawBitmap(tree, x, y, null);
+          }
+
           if (rand.nextInt(10) > 8) {
             Paint paint = new Paint();
             String colorHex = "#" + Integer.toHexString(20 + rand.nextInt(200)) +
@@ -122,6 +129,7 @@ public class MapView extends SurfaceView implements Runnable, SurfaceHolder.Call
         Log.d("surface", "Surface is not valid");
         continue;
       }
+      Log.d("run", "drawing");
       Canvas canvas = holder.lockCanvas();
       canvas.drawRGB(0, 0, 255);
 
@@ -173,7 +181,7 @@ public class MapView extends SurfaceView implements Runnable, SurfaceHolder.Call
       gestureDiffX = Math.round(gestureStartX - newX);
       gestureDiffY = Math.round(gestureStartY - newY);
 
-    // Releasing the last finger
+    // Last finger up
     } else if (action == MotionEvent.ACTION_UP) {
       mapX = mapX + Math.round((gestureStartX - newX) * mapScaleFactor);
       mapY = mapY + Math.round((gestureStartY - newY) * mapScaleFactor);
