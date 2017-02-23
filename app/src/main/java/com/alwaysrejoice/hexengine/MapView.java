@@ -5,8 +5,6 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.Rect;
 import android.support.v4.view.MotionEventCompat;
 import android.util.Log;
@@ -36,21 +34,22 @@ public class MapView extends SurfaceView implements Runnable, SurfaceHolder.Call
   int TILE_SIZE = 60; // size of one tile on the map
   // Current location of view in the background
   int mapX = 100;
-  int mapY = 200;
+  int mapY = 100;
 
   // Panning
   private float gestureStartX = 0f; // Screen location gesture started
   private float gestureStartY = 0f;
-  private int gestureDiffX = 0; // distance from gestureStartX to current location
-  private int gestureDiffY = 0;
+  private int gestureStartPointerId = -1; // unique identifier for the finger
+  private float gestureDiffX = 0; // distance from gestureStartX to current location
+  private float gestureDiffY = 0;
 
-  // Scaling
+  // Zooming (scaling)
   private float MIN_SCALE = 0.10f;
   private float MAX_SCALE = 3.0f;
   private ScaleGestureDetector mapScaleDetector;
   private float mapScaleFactor = 1.0f;
-  private float secondFingerX;
-  private float secondFingerY;
+  private float scaleDiffX = 0;
+  private float scaleDiffY = 0;
 
   public MapView(Context context) {
     super(context);
@@ -80,24 +79,13 @@ public class MapView extends SurfaceView implements Runnable, SurfaceHolder.Call
       Canvas bgCanvas = new Canvas(background);
       bgCanvas.drawRGB(100, 200, 200);
       boolean odd = true;
-      for (int y = 0; y <= BACKGROUND_SIZE_X; y += (TILE_SIZE /2)) {
+      for (int y = 0; y <= BACKGROUND_SIZE_X-TILE_SIZE; y += (TILE_SIZE /2)) {
         odd = !odd; // toggle for each row
-        for (int x = odd? 0 : Math.round(TILE_SIZE *0.75f); x <= BACKGROUND_SIZE_X; x += Math.round(TILE_SIZE * 1.5f)) {
-
+        for (int x = odd? 0 : Math.round(TILE_SIZE *0.75f); x <= BACKGROUND_SIZE_X-TILE_SIZE; x += Math.round(TILE_SIZE * 1.5f)) {
           if (rand.nextInt(10) < 8) {
             bgCanvas.drawBitmap(grass, x, y, null);
           } else {
             bgCanvas.drawBitmap(tree, x, y, null);
-          }
-
-          if (rand.nextInt(10) > 8) {
-            Paint paint = new Paint();
-            String colorHex = "#" + Integer.toHexString(20 + rand.nextInt(200)) +
-                Integer.toHexString(20 + rand.nextInt(200)) +
-                Integer.toHexString(20 + rand.nextInt(200));
-            //Log.d("MapView", "Color:'" + colorHex + "'");
-            paint.setColor(Color.parseColor(colorHex));
-            bgCanvas.drawCircle(x, y, 10, paint);
           }
         }
       }
@@ -109,6 +97,7 @@ public class MapView extends SurfaceView implements Runnable, SurfaceHolder.Call
         try {
           inputStream.close();
         } catch (IOException e) {
+          Log.d("ERROR", "Error closing stream");
         }
       }
     }
@@ -125,25 +114,25 @@ public class MapView extends SurfaceView implements Runnable, SurfaceHolder.Call
     Log.d("MapView", "running");
     while (running) {
       if (!holder.getSurface().isValid()) {
-        if (holder.isCreating()) Log.d("surface", "Creating...");
         Log.d("surface", "Surface is not valid");
         continue;
       }
-      Log.d("run", "drawing");
+      // Why do I need this sleep?  It seems to hang without it
+      try {
+        Thread.sleep(10);
+      } catch (InterruptedException e) {
+        Log.d("Thread", "woken");
+      }
       Canvas canvas = holder.lockCanvas();
       canvas.drawRGB(0, 0, 255);
-
       int viewSize = Math.round(VIEW_SIZE_X * mapScaleFactor);
-      int left = mapX + Math.round(gestureDiffX * mapScaleFactor);
-      int top  = mapY + Math.round(gestureDiffY * mapScaleFactor);
-      int right = mapX + viewSize + Math.round(gestureDiffX * mapScaleFactor);
-      int bottom = mapY + viewSize + Math.round(gestureDiffY * mapScaleFactor);
+      int left = mapX + Math.round(gestureDiffX * mapScaleFactor + scaleDiffX);
+      int top  = mapY + Math.round(gestureDiffY * mapScaleFactor + scaleDiffY);
+      int right = mapX + viewSize + Math.round(gestureDiffX * mapScaleFactor + scaleDiffX);
+      int bottom = mapY + viewSize + Math.round(gestureDiffY * mapScaleFactor + scaleDiffY);
       Rect subsetView = new Rect(left, top, right, bottom);
       Rect scaleView = new Rect(0, 0, VIEW_SIZE_X, VIEW_SIZE_Y);
-
       canvas.drawBitmap(background, subsetView, scaleView, null);
-
-      canvas.drawBitmap(tree, VIEW_SIZE_X / 2, VIEW_SIZE_Y / 2, null); // center point
       holder.unlockCanvasAndPost(canvas);
     }
   }
@@ -168,37 +157,96 @@ public class MapView extends SurfaceView implements Runnable, SurfaceHolder.Call
     mapScaleDetector.onTouchEvent(event);
     int action = MotionEventCompat.getActionMasked(event);
     int index = MotionEventCompat.getActionIndex(event);
+    int pointerId = event.getPointerId(index);
     float newX = event.getX(index);
     float newY = event.getY(index);
 
-    // First finger down (start gesture)
-    if (action == MotionEvent.ACTION_DOWN) {
+    // First time, get the intitial finger (can happen at other times beside ACTION_DOWN)
+    if (gestureStartPointerId == -1) {
+      Log.d("touch", "start pointer "+pointerId);
+      gestureStartPointerId = pointerId;
       gestureStartX = newX;
       gestureStartY = newY;
+    }
+    // First finger down (start gesture)
+    if (action == MotionEvent.ACTION_DOWN) {
+      Log.d("event", "ACTION_DOWN pointerId="+pointerId);
+      // Don't need to do anything all the startup has been taken care of already
 
     // Moving / dragging a finger
     } else if (action == MotionEvent.ACTION_MOVE) {
-      gestureDiffX = Math.round(gestureStartX - newX);
-      gestureDiffY = Math.round(gestureStartY - newY);
+      if (event.getPointerCount() == 1) {
+        float diffX = gestureStartX - newX;
+        float diffY = gestureStartY - newY;
+        // Bounds checking on the pan
+        int viewSize = Math.round(VIEW_SIZE_X * mapScaleFactor);
+        int left = mapX + Math.round(diffX * mapScaleFactor + scaleDiffX);
+        if (left < 0) {
+          diffX = (-mapX -scaleDiffX) / mapScaleFactor;
+        }
+        int top  = mapY + Math.round(diffY * mapScaleFactor + scaleDiffY);
+        if (top < 0) {
+          diffY = (-mapY - scaleDiffY) / mapScaleFactor;
+        }
+        int right = mapX + viewSize + Math.round(gestureDiffX * mapScaleFactor + scaleDiffX);
+        if ((right >= BACKGROUND_SIZE_X) && (diffX > 0)) {
+          diffX = (BACKGROUND_SIZE_X - mapX - viewSize - scaleDiffX) / mapScaleFactor;
+        }
+        int bottom = mapY + viewSize + Math.round(gestureDiffY * mapScaleFactor + scaleDiffY);
+        if ((bottom >=  BACKGROUND_SIZE_Y) && (diffY > 0)) {
+          diffY = (BACKGROUND_SIZE_Y - mapY - viewSize - scaleDiffY) / mapScaleFactor;
+        }
+        //Log.d("pan", "right="+right+" gestureDiffX="+gestureDiffX+" diffX="+diffX);
+        gestureDiffX = diffX;
+        gestureDiffY = diffY;
+      }
 
-    // Last finger up
+    } else if (action == MotionEvent.ACTION_POINTER_DOWN) {
+      Log.d("event", "ACTION_POINTER_DOWN pointerId="+pointerId);
+
+    } else if (action == MotionEvent.ACTION_POINTER_UP) {
+      Log.d("event", "ACTION_POINTER_UP pointerId="+pointerId);
+      // A finger went up, probably ending a two figure gesture (zooming)
+      endGesture(event);
+
+    // Last finger went up
     } else if (action == MotionEvent.ACTION_UP) {
-      mapX = mapX + Math.round((gestureStartX - newX) * mapScaleFactor);
-      mapY = mapY + Math.round((gestureStartY - newY) * mapScaleFactor);
-      gestureDiffX = 0; // clear the diff, the mapX has moved now
-      gestureDiffY = 0;
+      Log.d("event", "ACTION_UP pointerId="+pointerId);
+      endGesture(event);
     }
+
     return false;
+  }
+
+  private void endGesture(MotionEvent event) {
+    // Apply the pan and zoom diffs
+    mapX =  mapX + Math.round(gestureDiffX * mapScaleFactor + scaleDiffX);
+    mapY =  mapY + Math.round(gestureDiffY * mapScaleFactor + scaleDiffY);
+    gestureDiffX = 0; // clear the panning diff
+    gestureDiffY = 0;
+    scaleDiffX = 0; // clear the zooming diff
+    scaleDiffY = 0;
+    gestureStartPointerId = -1;
   }
 
   private class MapScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
     @Override
     public boolean onScale(ScaleGestureDetector detector) {
-      mapScaleFactor = mapScaleFactor * (1f - (detector.getScaleFactor() - 1f));
-      mapScaleFactor = Math.max(MIN_SCALE, Math.min(mapScaleFactor, MAX_SCALE));
+
+      float newScaleFactor = mapScaleFactor * (1f - (detector.getScaleFactor() - 1f));
+      newScaleFactor = Math.max(MIN_SCALE, Math.min(newScaleFactor, MAX_SCALE));
+
+      // Pan while zooming to maintain the relative position on the screen of the center of the gesture
+      float relativeX = detector.getFocusX() / VIEW_SIZE_X; //  percent of view port
+      float relativeY = detector.getFocusY() / VIEW_SIZE_Y;
+      float diffX = ((VIEW_SIZE_X * mapScaleFactor) * relativeX) - ((VIEW_SIZE_X * newScaleFactor) * relativeX);
+      float diffY = ((VIEW_SIZE_Y * mapScaleFactor) * relativeY) - ((VIEW_SIZE_Y * newScaleFactor) * relativeY);
+      scaleDiffX += diffX;
+      scaleDiffY += diffY;
+      //Log.d("Scale", "Scaling old="+mapScaleFactor+ " new="+newScaleFactor);
+      mapScaleFactor = newScaleFactor;
 
       invalidate();
-      Log.d("Scale", "Scaling to " + mapScaleFactor + " scaleFactor=" + detector.getScaleFactor());
       return true;
     }
   }
