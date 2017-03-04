@@ -10,23 +10,17 @@ import android.support.v4.view.MotionEventCompat;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
+import android.view.View;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Random;
 
-public class MapView extends SurfaceView implements Runnable, SurfaceHolder.Callback {
-  // Core screen drawing
-  Thread renderThread = null;
-  SurfaceHolder holder;
-  volatile boolean running = false;
-
+public class MapView extends View {
   // Background drawing variables
-  Bitmap grass;
-  Bitmap tree;
   Bitmap background;
+  HashMap<String, Bitmap> backgroundTiles = new HashMap<>();
   int VIEW_SIZE_X = 1000; // size of viewport on the screen
   int VIEW_SIZE_Y = 1000;
   int BACKGROUND_SIZE_X = 2500; // size of background map
@@ -36,6 +30,10 @@ public class MapView extends SurfaceView implements Runnable, SurfaceHolder.Call
   int mapX = 100;
   int mapY = 100;
 
+  // Drawing
+  Rect panZoomWindow = new Rect(0, 0, 10, 10);
+  Rect uiWindow = new Rect(0, 0, VIEW_SIZE_X, VIEW_SIZE_Y);
+
   // Panning
   private float gestureStartX = 0f; // Screen location gesture started
   private float gestureStartY = 0f;
@@ -44,8 +42,8 @@ public class MapView extends SurfaceView implements Runnable, SurfaceHolder.Call
   private float gestureDiffY = 0;
 
   // Zooming (scaling)
-  private float MIN_SCALE = 0.10f;
-  private float MAX_SCALE = 3.0f;
+  private static float MIN_SCALE = 0.10f;
+  private static float MAX_SCALE = 3.0f;
   private ScaleGestureDetector mapScaleDetector;
   private float mapScaleFactor = 1.0f;
   private float scaleDiffX = 0;
@@ -53,26 +51,19 @@ public class MapView extends SurfaceView implements Runnable, SurfaceHolder.Call
 
   public MapView(Context context) {
     super(context);
-    holder = getHolder();
-    holder.addCallback(this);
     mapScaleDetector = new ScaleGestureDetector(context, new MapScaleListener());
-
-
+    Random rand = new Random();
     InputStream inputStream = null;
 
     try {
+      String[] tileNames = {"grass.png", "grass2.png", "tree.png", "tree2.png"};
       AssetManager assetManager = context.getAssets();
-      inputStream = assetManager.open("grass.png");
-      grass = BitmapFactory.decodeStream(inputStream);
-      inputStream.close();
-      Log.d("BitmapText", "grass.png format: " + grass.getConfig());
-
-      inputStream = assetManager.open("tree.png");
-      BitmapFactory.Options options = new BitmapFactory.Options();
-      tree = BitmapFactory.decodeStream(inputStream, null, options);
-      Log.d("BitmapText", "tree.png format: " + tree.getConfig());
-
-      Random rand = new Random();
+      for (String tileName : tileNames) {
+        inputStream = assetManager.open(tileName);
+        Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+        inputStream.close();
+        backgroundTiles.put(tileName, bitmap);
+      }
 
       // Make a background map
       background = Bitmap.createBitmap(BACKGROUND_SIZE_X, BACKGROUND_SIZE_Y, Bitmap.Config.ARGB_8888);
@@ -82,12 +73,16 @@ public class MapView extends SurfaceView implements Runnable, SurfaceHolder.Call
       for (int y = 0; y <= BACKGROUND_SIZE_X-TILE_SIZE; y += (TILE_SIZE /2)) {
         odd = !odd; // toggle for each row
         for (int x = odd? 0 : Math.round(TILE_SIZE *0.75f); x <= BACKGROUND_SIZE_X-TILE_SIZE; x += Math.round(TILE_SIZE * 1.5f)) {
-          if (rand.nextInt(10) < 8) {
-            bgCanvas.drawBitmap(grass, x, y, null);
+          // Choose a random image
+          String tileName = tileNames[rand.nextInt(tileNames.length)];
+          Bitmap bitmap = backgroundTiles.get(tileName);
+          if (bitmap != null) {
+            Log.d("init", "drawing tileName="+tileName);
+            bgCanvas.drawBitmap(bitmap, x, y, null);
           } else {
-            bgCanvas.drawBitmap(tree, x, y, null);
+            Log.d("init", "Error loading tileName="+tileName);
           }
-        }
+        } // for
       }
 
     } catch (IOException e) {
@@ -103,52 +98,17 @@ public class MapView extends SurfaceView implements Runnable, SurfaceHolder.Call
     }
   }
 
-  public void resume() {
-    Log.d("MapView", "resume");
-    running = true;
-    renderThread = new Thread(this);
-    renderThread.start();
-  }
-
-  public void run() {
-    Log.d("MapView", "running");
-    while (running) {
-      if (!holder.getSurface().isValid()) {
-        Log.d("surface", "Surface is not valid");
-        continue;
-      }
-      // Why do I need this sleep?  It seems to hang without it
-      try {
-        Thread.sleep(10);
-      } catch (InterruptedException e) {
-        Log.d("Thread", "woken");
-      }
-      Canvas canvas = holder.lockCanvas();
-      canvas.drawRGB(0, 0, 255);
-      int viewSize = Math.round(VIEW_SIZE_X * mapScaleFactor);
-      int left = mapX + Math.round(gestureDiffX * mapScaleFactor + scaleDiffX);
-      int top  = mapY + Math.round(gestureDiffY * mapScaleFactor + scaleDiffY);
-      int right = mapX + viewSize + Math.round(gestureDiffX * mapScaleFactor + scaleDiffX);
-      int bottom = mapY + viewSize + Math.round(gestureDiffY * mapScaleFactor + scaleDiffY);
-      Rect subsetView = new Rect(left, top, right, bottom);
-      Rect scaleView = new Rect(0, 0, VIEW_SIZE_X, VIEW_SIZE_Y);
-      canvas.drawBitmap(background, subsetView, scaleView, null);
-      holder.unlockCanvasAndPost(canvas);
-    }
-  }
-
-  public void pause() {
-    Log.d("MapView", "pause");
-    running = false;
-    while (true) {
-      try {
-        renderThread.join();
-        return;
-      } catch (InterruptedException e) {
-        Log.d("pause", "interrupted while trying to join");
-        // retry
-      }
-    }
+  @Override
+  protected void onDraw(Canvas canvas) {
+    super.onDraw(canvas);
+    canvas.drawRGB(0, 0, 255);
+    int viewSize = Math.round(VIEW_SIZE_X * mapScaleFactor);
+    int left = mapX + Math.round(gestureDiffX * mapScaleFactor + scaleDiffX);
+    int top  = mapY + Math.round(gestureDiffY * mapScaleFactor + scaleDiffY);
+    int right = mapX + viewSize + Math.round(gestureDiffX * mapScaleFactor + scaleDiffX);
+    int bottom = mapY + viewSize + Math.round(gestureDiffY * mapScaleFactor + scaleDiffY);
+    panZoomWindow.set(left, top, right, bottom);
+    canvas.drawBitmap(background, panZoomWindow, uiWindow, null);
   }
 
 
@@ -207,18 +167,19 @@ public class MapView extends SurfaceView implements Runnable, SurfaceHolder.Call
     } else if (action == MotionEvent.ACTION_POINTER_UP) {
       Log.d("event", "ACTION_POINTER_UP pointerId="+pointerId);
       // A finger went up, probably ending a two figure gesture (zooming)
-      endGesture(event);
+      endGesture();
 
     // Last finger went up
     } else if (action == MotionEvent.ACTION_UP) {
       Log.d("event", "ACTION_UP pointerId="+pointerId);
-      endGesture(event);
+      endGesture();
     }
 
+    this.postInvalidate();
     return false;
   }
 
-  private void endGesture(MotionEvent event) {
+  private void endGesture() {
     // Apply the pan and zoom diffs
     mapX =  mapX + Math.round(gestureDiffX * mapScaleFactor + scaleDiffX);
     mapY =  mapY + Math.round(gestureDiffY * mapScaleFactor + scaleDiffY);
@@ -232,10 +193,8 @@ public class MapView extends SurfaceView implements Runnable, SurfaceHolder.Call
   private class MapScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
     @Override
     public boolean onScale(ScaleGestureDetector detector) {
-
       float newScaleFactor = mapScaleFactor * (1f - (detector.getScaleFactor() - 1f));
       newScaleFactor = Math.max(MIN_SCALE, Math.min(newScaleFactor, MAX_SCALE));
-
       // Pan while zooming to maintain the relative position on the screen of the center of the gesture
       float relativeX = detector.getFocusX() / VIEW_SIZE_X; //  percent of view port
       float relativeY = detector.getFocusY() / VIEW_SIZE_Y;
@@ -245,26 +204,8 @@ public class MapView extends SurfaceView implements Runnable, SurfaceHolder.Call
       scaleDiffY += diffY;
       //Log.d("Scale", "Scaling old="+mapScaleFactor+ " new="+newScaleFactor);
       mapScaleFactor = newScaleFactor;
-
-      invalidate();
       return true;
     }
-  }
-
-
-  @Override
-  public void surfaceCreated(SurfaceHolder holder) {
-    Log.d("SurfaceHolder.CallBack", "Created");
-  }
-
-  @Override
-  public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-    Log.d("SurfaceHolder.CallBack", "changed");
-  }
-
-  @Override
-  public void surfaceDestroyed(SurfaceHolder holder) {
-    Log.d("SurfaceHolder.CallBack", "destroyed");
   }
 
 }

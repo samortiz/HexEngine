@@ -15,16 +15,6 @@ public class MainActivity extends Activity implements View.OnTouchListener {
     setContentView(renderView);
   }
 
-  protected void onResume() {
-    super.onResume();
-    renderView.resume();
-  }
-
-  protected void onPause() {
-    super.onPause();
-    renderView.pause();
-  }
-
   // OnTouchListener methods
   public boolean onTouch(View v, MotionEvent event) {
     renderView.onTouchEvent(event);
