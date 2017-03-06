@@ -1,0 +1,22 @@
+{
+ "width":40,
+ "height":30,
+ "backgroundColor": {"red":0, "green":0, "blue":80},
+ "tileTypes":[
+  {"name":"grass", "fileName":"grass.png"},
+  {"name":"grass2", "fileName":"grass2.png"},
+  {"name":"tree", "fileName":"tree.png"},
+  {"name":"tree2", "fileName":"tree2.png"}
+ ],
+ "tiles":[ 
+  {"col":0,  "row":-1, "name":"grass"},
+  {"col":0,  "row":0,  "name":"tree"},
+  {"col":0,  "row":1,  "name":"grass2"},
+  {"col":1,  "row":-1, "name":"grass"},
+  {"col":1,  "row":0,  "name":"grass2"},
+  {"col":1,  "row":1,  "name":"grass"},
+  {"col":-1, "row":-1, "name":"grass2"},
+  {"col":-1, "row":0,  "name":"grass"},
+  {"col":-1, "row":1,  "name":"grass2"}
+ ]
+}

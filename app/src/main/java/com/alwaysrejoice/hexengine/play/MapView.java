@@ -1,4 +1,4 @@
-package com.alwaysrejoice.hexengine;
+package com.alwaysrejoice.hexengine.play;
 
 import android.content.Context;
 import android.content.res.AssetManager;
@@ -12,6 +12,13 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 
+import com.alwaysrejoice.hexengine.dto.Background;
+import com.alwaysrejoice.hexengine.dto.BackgroundTile;
+import com.alwaysrejoice.hexengine.dto.TileType;
+import com.google.gson.Gson;
+
+import org.apache.commons.io.IOUtils;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -19,12 +26,12 @@ import java.util.Random;
 
 public class MapView extends View {
   // Background drawing variables
-  Bitmap background;
-  HashMap<String, Bitmap> backgroundTiles = new HashMap<>();
+  Bitmap backgroundImg;
+  HashMap<String, Bitmap> tileTypes = new HashMap<>();
   int VIEW_SIZE_X = 1000; // size of viewport on the screen
   int VIEW_SIZE_Y = 1000;
-  int BACKGROUND_SIZE_X = 2500; // size of background map
-  int BACKGROUND_SIZE_Y = 2500;
+  int backgroundSizeX = 2500; // size of background map
+  int backgroundSizeY = 2500;
   int TILE_SIZE = 60; // size of one tile on the map
   // Current location of view in the background
   int mapX = 100;
@@ -52,38 +59,50 @@ public class MapView extends View {
   public MapView(Context context) {
     super(context);
     mapScaleDetector = new ScaleGestureDetector(context, new MapScaleListener());
-    Random rand = new Random();
+    Log.d("init", "Starting");
     InputStream inputStream = null;
+    Random rand = new Random();
+    Gson gson = new Gson();
 
     try {
-      String[] tileNames = {"grass.png", "grass2.png", "tree.png", "tree2.png"};
       AssetManager assetManager = context.getAssets();
-      for (String tileName : tileNames) {
-        inputStream = assetManager.open(tileName);
+
+      // Load the main background file
+      inputStream = assetManager.open("background.json");
+      String JsonBackground = IOUtils.toString(inputStream, "UTF-8");
+      inputStream.close();
+      Background bg = gson.fromJson(JsonBackground, Background.class);
+      Log.d("init", "loaded width="+bg.getWidth()+" height="+bg.getHeight());
+
+      // Load all the tileType images
+      for (TileType type: bg.getTileTypes()) {
+        inputStream = assetManager.open(type.getFileName());
         Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
         inputStream.close();
-        backgroundTiles.put(tileName, bitmap);
+        tileTypes.put(type.getName(), bitmap);
       }
 
       // Make a background map
-      background = Bitmap.createBitmap(BACKGROUND_SIZE_X, BACKGROUND_SIZE_Y, Bitmap.Config.ARGB_8888);
-      Canvas bgCanvas = new Canvas(background);
-      bgCanvas.drawRGB(100, 200, 200);
-      boolean odd = true;
-      for (int y = 0; y <= BACKGROUND_SIZE_X-TILE_SIZE; y += (TILE_SIZE /2)) {
-        odd = !odd; // toggle for each row
-        for (int x = odd? 0 : Math.round(TILE_SIZE *0.75f); x <= BACKGROUND_SIZE_X-TILE_SIZE; x += Math.round(TILE_SIZE * 1.5f)) {
-          // Choose a random image
-          String tileName = tileNames[rand.nextInt(tileNames.length)];
-          Bitmap bitmap = backgroundTiles.get(tileName);
-          if (bitmap != null) {
-            Log.d("init", "drawing tileName="+tileName);
-            bgCanvas.drawBitmap(bitmap, x, y, null);
-          } else {
-            Log.d("init", "Error loading tileName="+tileName);
-          }
-        } // for
+      backgroundSizeX = (bg.getWidth() * TILE_SIZE * 3) / 4;
+      backgroundSizeY = bg.getHeight() * TILE_SIZE;
+      int bgCenterX = backgroundSizeX / 2;
+      int bgCenterY = backgroundSizeY / 2;
+      Log.d("init", "Generating background bitmap width="+backgroundSizeX+" height="+backgroundSizeY);
+      backgroundImg = Bitmap.createBitmap(backgroundSizeX,backgroundSizeY, Bitmap.Config.ARGB_8888);
+      Canvas bgCanvas = new Canvas(backgroundImg);
+      bgCanvas.drawRGB(bg.getBackgroundColor().getRed(), bg.getBackgroundColor().getGreen(), bg.getBackgroundColor().getBlue());
+      // Draw all the tiles
+      for (BackgroundTile tile : bg.getTiles()) {
+        int x = bgCenterX + Math.round(tile.getCol() * 0.75f * TILE_SIZE);
+        int y = bgCenterY + Math.round(((-tile.getCol() - (2 * tile.getRow())) / 2.0f) * TILE_SIZE * -1);
+        Bitmap bitmap = tileTypes.get(tile.getName());
+        if (bitmap == null) {
+          Log.d("error", "Error! Unknown tile : "+tile.getName());
+        } else {
+          bgCanvas.drawBitmap(bitmap, x, y, null);
+        }
       }
+
 
     } catch (IOException e) {
       e.printStackTrace();
@@ -108,7 +127,7 @@ public class MapView extends View {
     int right = mapX + viewSize + Math.round(gestureDiffX * mapScaleFactor + scaleDiffX);
     int bottom = mapY + viewSize + Math.round(gestureDiffY * mapScaleFactor + scaleDiffY);
     panZoomWindow.set(left, top, right, bottom);
-    canvas.drawBitmap(background, panZoomWindow, uiWindow, null);
+    canvas.drawBitmap(backgroundImg, panZoomWindow, uiWindow, null);
   }
 
 
@@ -149,12 +168,12 @@ public class MapView extends View {
           diffY = (-mapY - scaleDiffY) / mapScaleFactor;
         }
         int right = mapX + viewSize + Math.round(gestureDiffX * mapScaleFactor + scaleDiffX);
-        if ((right >= BACKGROUND_SIZE_X) && (diffX > 0)) {
-          diffX = (BACKGROUND_SIZE_X - mapX - viewSize - scaleDiffX) / mapScaleFactor;
+        if ((right >= backgroundSizeX) && (diffX > 0)) {
+          diffX = (backgroundSizeX - mapX - viewSize - scaleDiffX) / mapScaleFactor;
         }
         int bottom = mapY + viewSize + Math.round(gestureDiffY * mapScaleFactor + scaleDiffY);
-        if ((bottom >=  BACKGROUND_SIZE_Y) && (diffY > 0)) {
-          diffY = (BACKGROUND_SIZE_Y - mapY - viewSize - scaleDiffY) / mapScaleFactor;
+        if ((bottom >=  backgroundSizeY) && (diffY > 0)) {
+          diffY = (backgroundSizeY - mapY - viewSize - scaleDiffY) / mapScaleFactor;
         }
         //Log.d("pan", "right="+right+" gestureDiffX="+gestureDiffX+" diffX="+diffX);
         gestureDiffX = diffX;
