@@ -25,7 +25,9 @@ import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Random;
 
 public class EditView extends View {
@@ -40,6 +42,15 @@ public class EditView extends View {
   // Current location of view in the background
   int mapX = 100;
   int mapY = 100;
+
+  // Toolbar
+  int toolbarWidth;
+  int toolbarHeight;
+  int toolbarX;
+  int toolbarY;
+  Bitmap toolbarImg;
+  Rect toolbarWindow;
+  List<ToolbarButton> toolbarButtons;
 
   // Drawing
   Rect panZoomWindow = new Rect(0, 0, 10, 10);
@@ -126,6 +137,43 @@ public class EditView extends View {
       mapX = (backgroundSizeX / 2) - Math.round(viewSizeX * mapScaleFactor / 2);
       mapY = (backgroundSizeY / 2) - Math.round(viewSizeY * mapScaleFactor / 2);
 
+      // Setup the toolbar
+      if (displayMetrics.heightPixels > displayMetrics.widthPixels) {
+        // Portrait
+        toolbarHeight = displayMetrics.heightPixels - viewSizeY;
+        toolbarWidth = displayMetrics.widthPixels;
+        toolbarX = 0;
+        toolbarY = viewSizeY + 1;
+      } else {
+        // Landscape
+        toolbarHeight = displayMetrics.heightPixels;
+        toolbarWidth = displayMetrics.widthPixels - displayMetrics.heightPixels;
+        toolbarX = toolbarWidth;
+        toolbarY = 0;
+      }
+      toolbarImg = Bitmap.createBitmap(toolbarWidth,toolbarHeight, Bitmap.Config.ARGB_8888);
+      Canvas toolbarCanvas = new Canvas(toolbarImg);
+      toolbarCanvas.drawRGB(200, 200, 150);
+      toolbarWindow = new Rect(toolbarX, toolbarY, toolbarX + toolbarWidth, toolbarY + toolbarHeight);
+      // Toolbar buttons
+      toolbarButtons = new ArrayList<>();
+      int buttonX = 0;
+      int buttonY = 0;
+      int buttonSize = toolbarWidth / 5; // 5 buttons across the screen
+      for (String tileName: tileTypes.keySet()) {
+        Bitmap img = tileTypes.get(tileName);
+        toolbarButtons.add(new ToolbarButton(img, new Rect(buttonX, buttonY, buttonX+buttonSize, buttonY+buttonSize)));
+        buttonX += buttonSize;
+        if (buttonX > toolbarWidth+buttonSize) {
+          buttonX = 0;
+          buttonY += buttonSize +1;
+        }
+      }
+
+      for (ToolbarButton button : toolbarButtons) {
+        toolbarCanvas.drawBitmap(button.getImg(), null, button.getPosition(), null);
+      }
+
     } catch (IOException e) {
       e.printStackTrace();
     } finally {
@@ -150,6 +198,7 @@ public class EditView extends View {
     int bottom = mapY + viewSize + Math.round(gestureDiffY * mapScaleFactor + scaleDiffY);
     panZoomWindow.set(left, top, right, bottom);
     canvas.drawBitmap(backgroundImg, panZoomWindow, uiWindow, null);
+    canvas.drawBitmap(toolbarImg, null, toolbarWindow, null);
   }
 
 
