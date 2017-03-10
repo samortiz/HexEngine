@@ -5,6 +5,14 @@ public class BackgroundTile {
   private int row;
   private String name;
 
+  public BackgroundTile() {}
+
+  public BackgroundTile(int col, int row, String name) {
+    this.col = col;
+    this.row = row;
+    this.name = name;
+  }
+
   public int getCol() {
     return col;
   }

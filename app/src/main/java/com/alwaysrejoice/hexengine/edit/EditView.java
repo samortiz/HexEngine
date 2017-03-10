@@ -31,13 +31,20 @@ import java.util.List;
 import java.util.Random;
 
 public class EditView extends View {
+  // Edit Mode
+  public enum Mode { MOVE, ERASE, DRAW};
+
   // Background drawing variables
+  Background bg; // Data loaded from the user
   Bitmap backgroundImg;
+  Canvas bgCanvas;
   HashMap<String, Bitmap> tileTypes = new HashMap<>();
   int viewSizeX = 200; // size of viewport on the screen
   int viewSizeY = 700;
   int backgroundSizeX = 500; // size of background map
   int backgroundSizeY = 500;
+  int bgCenterX;
+  int bgCenterY;
   int TILE_SIZE = 60; // size of one tile on the map
   // Current location of view in the background
   int mapX = 100;
@@ -48,9 +55,15 @@ public class EditView extends View {
   int toolbarHeight;
   int toolbarX;
   int toolbarY;
+  Canvas toolbarCanvas;
   Bitmap toolbarImg;
   Rect toolbarWindow;
   List<ToolbarButton> toolbarButtons;
+  int TOOLBAR_BUTTONS_PER_ROW = 5;
+  Bitmap toolbarSelectedImg;
+  int toolbarButtonSelectedIndex = 0;
+  Mode mode = Mode.MOVE; // because toolbarButtonSelectedInex == 0
+  String toolbarButtonSelectedName = "";
 
   // Drawing
   Rect panZoomWindow = new Rect(0, 0, 10, 10);
@@ -88,9 +101,12 @@ public class EditView extends View {
       inputStream = assetManager.open("background.json");
       String JsonBackground = IOUtils.toString(inputStream, "UTF-8");
       inputStream.close();
-      Background bg = gson.fromJson(JsonBackground, Background.class);
+      bg = gson.fromJson(JsonBackground, Background.class);
       Log.d("init", "loaded width="+bg.getWidth()+" height="+bg.getHeight());
-
+      // System editor images
+      toolbarSelectedImg = loadBitmap(inputStream, assetManager, "selected.png");
+      Bitmap handImg = loadBitmap(inputStream, assetManager, "hand.png");
+      Bitmap eraserImg = loadBitmap(inputStream, assetManager, "eraser.png");
       // Load all the tileType images
       for (TileType type: bg.getTileTypes()) {
         inputStream = assetManager.open(type.getFileName());
@@ -102,30 +118,13 @@ public class EditView extends View {
       // Make a background map
       backgroundSizeX = (bg.getWidth() * TILE_SIZE * 3) / 4;
       backgroundSizeY = bg.getHeight() * TILE_SIZE;
-      int bgCenterX = backgroundSizeX / 2;
-      int bgCenterY = backgroundSizeY / 2;
+      bgCenterX = backgroundSizeX / 2;
+      bgCenterY = backgroundSizeY / 2;
       Log.d("init", "Generating background bitmap width="+backgroundSizeX+" height="+backgroundSizeY);
       backgroundImg = Bitmap.createBitmap(backgroundSizeX,backgroundSizeY, Bitmap.Config.ARGB_8888);
-      Canvas bgCanvas = new Canvas(backgroundImg);
-      bgCanvas.drawRGB(bg.getBackgroundColor().getRed(), bg.getBackgroundColor().getGreen(), bg.getBackgroundColor().getBlue());
-      // Draw border
-      Paint paint = new Paint();
-      paint.setStrokeWidth(5);
-      paint.setColor(Color.GREEN);
-      paint.setStyle(Paint.Style.STROKE);
-      bgCanvas.drawRect(0, 0, backgroundSizeX, backgroundSizeY, paint);
+      bgCanvas = new Canvas(backgroundImg);
 
-      // Draw all the tiles
-      for (BackgroundTile tile : bg.getTiles()) {
-        int x = bgCenterX + Math.round(tile.getCol() * 0.75f * TILE_SIZE);
-        int y = bgCenterY + Math.round(((-tile.getCol() - (2 * tile.getRow())) / 2.0f) * TILE_SIZE * -1);
-        Bitmap bitmap = tileTypes.get(tile.getName());
-        if (bitmap == null) {
-          Log.d("error", "Error! Unknown tile : "+tile.getName());
-        } else {
-          bgCanvas.drawBitmap(bitmap, x, y, null);
-        }
-      }
+      drawBackground();
 
       // Setup the ViewPort
       // Full size of the screen (square)
@@ -152,26 +151,26 @@ public class EditView extends View {
         toolbarY = 0;
       }
       toolbarImg = Bitmap.createBitmap(toolbarWidth,toolbarHeight, Bitmap.Config.ARGB_8888);
-      Canvas toolbarCanvas = new Canvas(toolbarImg);
-      toolbarCanvas.drawRGB(200, 200, 150);
+      toolbarCanvas = new Canvas(toolbarImg);
       toolbarWindow = new Rect(toolbarX, toolbarY, toolbarX + toolbarWidth, toolbarY + toolbarHeight);
       // Toolbar buttons
       toolbarButtons = new ArrayList<>();
       int buttonX = 0;
       int buttonY = 0;
-      int buttonSize = toolbarWidth / 5; // 5 buttons across the screen
-      for (String tileName: tileTypes.keySet()) {
-        Bitmap img = tileTypes.get(tileName);
-        toolbarButtons.add(new ToolbarButton(img, new Rect(buttonX, buttonY, buttonX+buttonSize, buttonY+buttonSize)));
+      int buttonSize = toolbarWidth / TOOLBAR_BUTTONS_PER_ROW;
+      // Setup the system buttons
+      toolbarButtons.add(new ToolbarButton("move", handImg, new Rect(buttonX, buttonY, buttonX+buttonSize, buttonY+buttonSize)));
+      buttonX += buttonSize;
+      toolbarButtons.add(new ToolbarButton("eraser", eraserImg, new Rect(buttonX, buttonY, buttonX+buttonSize, buttonY+buttonSize)));
+      buttonX += buttonSize;
+      for (TileType tileType : bg.getTileTypes()) {
+        Bitmap img = tileTypes.get(tileType.getName());
+        toolbarButtons.add(new ToolbarButton(tileType.getName(), img, new Rect(buttonX, buttonY, buttonX+buttonSize, buttonY+buttonSize)));
         buttonX += buttonSize;
-        if (buttonX > toolbarWidth+buttonSize) {
+        if (buttonX >= toolbarWidth) {
           buttonX = 0;
           buttonY += buttonSize +1;
         }
-      }
-
-      for (ToolbarButton button : toolbarButtons) {
-        toolbarCanvas.drawBitmap(button.getImg(), null, button.getPosition(), null);
       }
 
     } catch (IOException e) {
@@ -187,10 +186,53 @@ public class EditView extends View {
     }
   }
 
+  /**
+   * Draws the background onto the bgImg through bgCanvas from the bg data set
+   */
+  private void drawBackground() {
+    bgCanvas.drawRGB(bg.getBackgroundColor().getRed(), bg.getBackgroundColor().getGreen(), bg.getBackgroundColor().getBlue());
+    // Draw border
+    Paint paint = new Paint();
+    paint.setStrokeWidth(5);
+    paint.setColor(Color.GREEN);
+    paint.setStyle(Paint.Style.STROKE);
+    bgCanvas.drawRect(0, 0, backgroundSizeX, backgroundSizeY, paint);
+
+    // Draw all the tiles
+    for (BackgroundTile tile : bg.getTiles()) {
+      int x = bgCenterX + Math.round(tile.getCol() * 0.75f * TILE_SIZE);
+      int y = bgCenterY + Math.round(((-tile.getCol() - (2 * tile.getRow())) / 2.0f) * TILE_SIZE * -1);
+      Bitmap bitmap = tileTypes.get(tile.getName());
+      if (bitmap == null) {
+        Log.d("error", "Error! Unknown tile : "+tile.getName());
+      } else {
+        bgCanvas.drawBitmap(bitmap, x, y, null);
+      }
+    }
+  }
+
+  private Bitmap loadBitmap(InputStream inputStream, AssetManager assetManager, String filename) throws IOException {
+    inputStream = assetManager.open(filename);
+    Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+    inputStream.close();
+    return bitmap;
+  }
+
+  /**
+   * Main draw method
+   */
   @Override
   protected void onDraw(Canvas canvas) {
     super.onDraw(canvas);
-    canvas.drawRGB(0, 0, 255);
+    canvas.drawRGB(0, 0, 0);
+    drawMap(canvas);
+    drawToolbar(canvas);
+  }
+
+  /**
+   * Draws the map on the canvas
+   */
+  private void drawMap(Canvas canvas) {
     int viewSize = Math.round(viewSizeX * mapScaleFactor);
     int left = mapX + Math.round(gestureDiffX * mapScaleFactor + scaleDiffX);
     int top  = mapY + Math.round(gestureDiffY * mapScaleFactor + scaleDiffY);
@@ -198,13 +240,45 @@ public class EditView extends View {
     int bottom = mapY + viewSize + Math.round(gestureDiffY * mapScaleFactor + scaleDiffY);
     panZoomWindow.set(left, top, right, bottom);
     canvas.drawBitmap(backgroundImg, panZoomWindow, uiWindow, null);
+  }
+
+  /**
+   * Draws the toolbar on the canvas
+   */
+  private void drawToolbar(Canvas canvas) {
+    toolbarCanvas.drawRGB(200, 200, 150);
+    for (int i=0; i<toolbarButtons.size(); i++) {
+      ToolbarButton button = toolbarButtons.get(i);
+      toolbarCanvas.drawBitmap(button.getImg(), null, button.getPosition(), null);
+      if (i == toolbarButtonSelectedIndex) {
+        toolbarCanvas.drawBitmap(toolbarSelectedImg, null, button.getPosition(), null);
+      }
+    }
     canvas.drawBitmap(toolbarImg, null, toolbarWindow, null);
   }
 
 
+  /**
+   * Master touch event handler for all modes
+   * @param event touch event
+   * @return true if the event was handled
+   */
   @Override
   public boolean onTouchEvent(MotionEvent event) {
-    mapScaleDetector.onTouchEvent(event);
+    if (mode == Mode.MOVE) {
+      return moveTouchEvent(event);
+    }
+    return editTouchEvent(event);
+  }
+
+  /**
+   * Handles touch events when in MOVE mode
+   * @param event finger event to be handled
+   * @return true if the event is handled false otherwise
+   */
+  public boolean moveTouchEvent(MotionEvent event) {
+    boolean handledEvent = false;
+    handledEvent = mapScaleDetector.onTouchEvent(event);
     int action = MotionEventCompat.getActionMasked(event);
     int index = MotionEventCompat.getActionIndex(event);
     int pointerId = event.getPointerId(index);
@@ -217,6 +291,7 @@ public class EditView extends View {
       gestureStartPointerId = pointerId;
       gestureStartX = newX;
       gestureStartY = newY;
+      handledEvent = true;
     }
     // First finger down (start gesture)
     if (action == MotionEvent.ACTION_DOWN) {
@@ -249,6 +324,7 @@ public class EditView extends View {
         //Log.d("pan", "right="+right+" gestureDiffX="+gestureDiffX+" diffX="+diffX);
         gestureDiffX = diffX;
         gestureDiffY = diffY;
+        handledEvent = true;
       }
 
     } else if (action == MotionEvent.ACTION_POINTER_DOWN) {
@@ -258,15 +334,19 @@ public class EditView extends View {
       Log.d("event", "ACTION_POINTER_UP pointerId="+pointerId);
       // A finger went up, probably ending a two figure gesture (zooming)
       endGesture();
-
-    // Last finger went up
+      handledEvent = true;
+      // Last finger went up
     } else if (action == MotionEvent.ACTION_UP) {
       Log.d("event", "ACTION_UP pointerId="+pointerId);
       endGesture();
+      toolbarDetector(newX, newY);
+      handledEvent = true;
     }
 
-    this.postInvalidate();
-    return false;
+    if (handledEvent) {
+      this.postInvalidate();
+    }
+    return handledEvent;
   }
 
   private void endGesture() {
@@ -279,6 +359,76 @@ public class EditView extends View {
     scaleDiffY = 0;
     gestureStartPointerId = -1;
   }
+
+  /**
+   * Handles touch events when in EDIT mode
+   * @param event finger events
+   * @return true if the event is handled
+   */
+  public boolean editTouchEvent(MotionEvent event) {
+    boolean handledEvent = false;
+    int action = MotionEventCompat.getActionMasked(event);
+    int index = MotionEventCompat.getActionIndex(event);
+    float newX = event.getX(index);
+    float newY = event.getY(index);
+    if (action == MotionEvent.ACTION_UP) {
+      Log.d("edit", "edit event action up");
+      handledEvent = toolbarDetector(newX, newY);
+    }
+    if (!handledEvent) {
+      handledEvent = drawTile(newX, newY);
+    }
+    if (handledEvent) {
+      this.postInvalidate();
+    }
+    return handledEvent;
+  }
+
+  /**
+   * Detects and handles toolbar events
+   */
+  private boolean toolbarDetector(float x, float y) {
+    boolean handledEvent = false;
+    if ((x > toolbarX) && (x < toolbarX + toolbarWidth) &&
+        (y > toolbarY) && (y < toolbarY + toolbarHeight)) {
+      // Which button was clicked
+      int buttonXIndex =(int)((x - toolbarX) / (toolbarWidth / TOOLBAR_BUTTONS_PER_ROW));
+      int buttonYIndex = (int)((y - toolbarY) / (toolbarWidth / TOOLBAR_BUTTONS_PER_ROW));
+      int buttonIndex = buttonYIndex * TOOLBAR_BUTTONS_PER_ROW + buttonXIndex;
+      if (buttonIndex < toolbarButtons.size()) {
+        toolbarButtonSelectedIndex = buttonIndex;
+        toolbarButtonSelectedName = toolbarButtons.get(buttonIndex).getName();
+        if (buttonIndex == 0) {
+          mode = Mode.MOVE;
+        } else if (buttonIndex == 1) {
+          mode = Mode.ERASE;
+        } else {
+          mode = Mode.DRAW;
+        }
+        //Log.d("toolbar", "toolbarButtonSelected="+toolbarButtonSelectedIndex);
+        handledEvent = true;
+      }
+    }
+    return handledEvent;
+  }
+
+  private boolean drawTile(float x, float y) {
+    boolean handledEvent = false;
+    // If the event is on the map
+    if ((x < viewSizeX) && (y < viewSizeY)) {
+      // Find the axial row, col coordinates from the screen x,y
+      int col = (int)((mapX + x + bgCenterX) * 4.0f / (TILE_SIZE * 3.0f));
+      int row =  (int)((2.0f * (mapY + y - bgCenterY) / -TILE_SIZE) + col) / -2;
+      // TODO!  The col/row is wrong, because it's not calcuating the map zoom and pan into effect
+      Log.d("drawTile", "x="+x+" y="+y+" col="+col+" row="+row);
+      bg.getTiles().add(new BackgroundTile(col, row, toolbarButtonSelectedName));
+      drawBackground(); // this will refresh the background image (kind of costly)
+      handledEvent = true;
+    }
+    return handledEvent;
+  }
+
+
 
   private class MapScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
     @Override
@@ -301,6 +451,8 @@ public class EditView extends View {
       return true;
     }
   }
+
+
 
 }
 

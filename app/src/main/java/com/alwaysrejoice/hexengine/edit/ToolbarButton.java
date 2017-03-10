@@ -5,13 +5,24 @@ import android.graphics.Rect;
 
 public class ToolbarButton {
 
+  public String name;
   public Bitmap img;
   Rect position;
-  public boolean selected;
 
-  public ToolbarButton(Bitmap img, Rect position) {
+  public ToolbarButton() { }
+
+  public ToolbarButton(String name, Bitmap img, Rect position) {
+    this.name = name;
     this.img = img;
     this.position = position;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
   }
 
   public Bitmap getImg() {
@@ -28,13 +39,5 @@ public class ToolbarButton {
 
   public void setPosition(Rect position) {
     this.position = position;
-  }
-
-  public boolean isSelected() {
-    return selected;
-  }
-
-  public void setSelected(boolean selected) {
-    this.selected = selected;
   }
 }
