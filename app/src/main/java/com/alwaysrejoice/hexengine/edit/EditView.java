@@ -116,7 +116,7 @@ public class EditView extends View {
       }
 
       // Make a background map
-      backgroundSizeX = (bg.getWidth() * TILE_SIZE * 3) / 4;
+      backgroundSizeX = Math.round(bg.getWidth() * TILE_SIZE * 0.75f);
       backgroundSizeY = bg.getHeight() * TILE_SIZE;
       bgCenterX = backgroundSizeX / 2;
       bgCenterY = backgroundSizeY / 2;
@@ -194,14 +194,14 @@ public class EditView extends View {
     // Draw border
     Paint paint = new Paint();
     paint.setStrokeWidth(5);
-    paint.setColor(Color.GREEN);
+    paint.setColor(Color.WHITE);
     paint.setStyle(Paint.Style.STROKE);
     bgCanvas.drawRect(0, 0, backgroundSizeX, backgroundSizeY, paint);
 
     // Draw all the tiles
     for (BackgroundTile tile : bg.getTiles()) {
-      int x = bgCenterX + Math.round(tile.getCol() * 0.75f * TILE_SIZE);
-      int y = bgCenterY + Math.round(((-tile.getCol() - (2 * tile.getRow())) / 2.0f) * TILE_SIZE * -1);
+      int x = bgCenterX + Math.round((tile.getCol() * 0.75f * TILE_SIZE) - (TILE_SIZE / 2.0f));
+      int y = bgCenterY + Math.round((((-tile.getCol() - (2 * tile.getRow())) / 2.0f) * TILE_SIZE * -1) - (TILE_SIZE / 2.0f));
       Bitmap bitmap = tileTypes.get(tile.getName());
       if (bitmap == null) {
         Log.d("error", "Error! Unknown tile : "+tile.getName());
@@ -416,13 +416,36 @@ public class EditView extends View {
     boolean handledEvent = false;
     // If the event is on the map
     if ((x < viewSizeX) && (y < viewSizeY)) {
+      int bgX = mapX + Math.round(x * mapScaleFactor) - bgCenterX;
+      int bgY = mapY + Math.round(y * mapScaleFactor) - bgCenterY;
       // Find the axial row, col coordinates from the screen x,y
-      int col = (int)((mapX + x + bgCenterX) * 4.0f / (TILE_SIZE * 3.0f));
-      int row =  (int)((2.0f * (mapY + y - bgCenterY) / -TILE_SIZE) + col) / -2;
-      // TODO!  The col/row is wrong, because it's not calcuating the map zoom and pan into effect
-      Log.d("drawTile", "x="+x+" y="+y+" col="+col+" row="+row);
-      bg.getTiles().add(new BackgroundTile(col, row, toolbarButtonSelectedName));
+      //int col = Math.round((bgX - bgCenterX) / (0.75f * TILE_SIZE));
+      //int row =  Math.round(((((bgY - bgCenterY) / (TILE_SIZE * -1)) * 2f) + col) * -0.5f);
+      int col = Math.round(bgX * (2.0f / 3.0f) / TILE_SIZE);
+      // (-x / 3 + sqrt(3)/3 * y) / size
+      int row = Math.round((-bgX / 3.0f + (float)Math.sqrt(3.0f) / 3.0f * bgY) / TILE_SIZE) ;
+      Log.d("drawTile", "x="+x+" y="+y+" bgCenterX="+bgCenterX+" bgCenterY="+bgCenterY+" bgX="+bgX+" bgY="+bgY+" col="+col+" row="+row);
+      // Remove any tiles that exist at that location already
+      for (int i= bg.getTiles().size()-1; i<=0; i--) {
+        BackgroundTile bgTile = bg.getTiles().get(i);
+        if ((bgTile.getCol() == col) && (bgTile.getRow() == row)) {
+          bg.getTiles().remove(i);
+        }
+      } // for
+      if (mode == Mode.DRAW) {
+        bg.getTiles().add(new BackgroundTile(col, row, toolbarButtonSelectedName));
+      }
       drawBackground(); // this will refresh the background image (kind of costly)
+
+      // DEBUG - Draw a circle at the click point on the background
+      Paint paint = new Paint();
+      paint.setStrokeWidth(3);
+      paint.setColor(Color.WHITE);
+      paint.setStyle(Paint.Style.STROKE);
+      bgCanvas.drawCircle(bgCenterX, bgCenterY, 10, paint);
+      paint.setColor(Color.CYAN);
+      bgCanvas.drawCircle(bgX+bgCenterX, bgY+bgCenterY, 10, paint);
+
       handledEvent = true;
     }
     return handledEvent;
