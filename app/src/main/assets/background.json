@@ -10,18 +10,13 @@
   {"name":"water", "type":"water", "fileName":"water.png"},
   {"name":"mountain", "type":"mountain", "fileName":"mountain.png"},
   {"name":"void", "type":"void", "fileName":"void.png"},
-  {"name":"border", "type":"border", "fileName":"hex_bordered.png"}
+  {"name":"green", "type":"grass", "fileName":"green.png"}
 
  ],
  "tiles":[ 
-  {"col":0,  "row":-1, "name":"grass"},
-  {"col":0,  "row":0,  "name":"border"},
-  {"col":0,  "row":1,  "name":"grass2"},
-  {"col":1,  "row":-1, "name":"grass"},
-  {"col":1,  "row":0,  "name":"grass2"},
-  {"col":1,  "row":1,  "name":"grass"},
-  {"col":-1, "row":-1, "name":"grass2"},
-  {"col":-1, "row":0,  "name":"grass"},
-  {"col":-1, "row":1,  "name":"grass2"}
+  {"col":0,  "row":0, "name":"tree"},
+  {"col":1,  "row":1, "name":"grass"},
+  {"col":0,  "row":1, "name":"water"},
+  {"col":1,  "row":0, "name":"mountain"}
  ]
 }

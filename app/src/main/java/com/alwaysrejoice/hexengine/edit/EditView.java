@@ -45,7 +45,10 @@ public class EditView extends View {
   int backgroundSizeY = 500;
   int bgCenterX;
   int bgCenterY;
-  int TILE_SIZE = 60; // size of one tile on the map
+  int TILE_WIDTH = 52; // width of one tile on the map
+  int TILE_HEIGHT = 60; // height of one tile on the map
+  int HEX_SIZE = 30; // Length of one side of a hexagon
+  public static final float SQRT_3 = (float) Math.sqrt(3);
   // Current location of view in the background
   int mapX = 100;
   int mapY = 100;
@@ -116,8 +119,8 @@ public class EditView extends View {
       }
 
       // Make a background map
-      backgroundSizeX = Math.round(bg.getWidth() * TILE_SIZE * 0.75f);
-      backgroundSizeY = bg.getHeight() * TILE_SIZE;
+      backgroundSizeX = Math.round(bg.getWidth() * TILE_WIDTH * 0.75f);
+      backgroundSizeY = bg.getHeight() * TILE_HEIGHT;
       bgCenterX = backgroundSizeX / 2;
       bgCenterY = backgroundSizeY / 2;
       Log.d("init", "Generating background bitmap width="+backgroundSizeX+" height="+backgroundSizeY);
@@ -200,8 +203,8 @@ public class EditView extends View {
 
     // Draw all the tiles
     for (BackgroundTile tile : bg.getTiles()) {
-      int x = bgCenterX + Math.round((tile.getCol() * 0.75f * TILE_SIZE) - (TILE_SIZE / 2.0f));
-      int y = bgCenterY + Math.round((((-tile.getCol() - (2 * tile.getRow())) / 2.0f) * TILE_SIZE * -1) - (TILE_SIZE / 2.0f));
+      int x = bgCenterX + Math.round(HEX_SIZE * 1.5f  * tile.getCol()) - (TILE_WIDTH / 2);
+      int y = bgCenterY + Math.round(HEX_SIZE * SQRT_3 * (tile.getRow() + (tile.getCol() / 2f))) - (TILE_HEIGHT/2);
       Bitmap bitmap = tileTypes.get(tile.getName());
       if (bitmap == null) {
         Log.d("error", "Error! Unknown tile : "+tile.getName());
@@ -419,14 +422,11 @@ public class EditView extends View {
       int bgX = mapX + Math.round(x * mapScaleFactor) - bgCenterX;
       int bgY = mapY + Math.round(y * mapScaleFactor) - bgCenterY;
       // Find the axial row, col coordinates from the screen x,y
-      //int col = Math.round((bgX - bgCenterX) / (0.75f * TILE_SIZE));
-      //int row =  Math.round(((((bgY - bgCenterY) / (TILE_SIZE * -1)) * 2f) + col) * -0.5f);
-      int col = Math.round(bgX * (2.0f / 3.0f) / TILE_SIZE);
-      // (-x / 3 + sqrt(3)/3 * y) / size
-      int row = Math.round((-bgX / 3.0f + (float)Math.sqrt(3.0f) / 3.0f * bgY) / TILE_SIZE) ;
-      Log.d("drawTile", "x="+x+" y="+y+" bgCenterX="+bgCenterX+" bgCenterY="+bgCenterY+" bgX="+bgX+" bgY="+bgY+" col="+col+" row="+row);
+      int col = Math.round(bgX * (2f/3f) / HEX_SIZE);
+      int row = Math.round((-bgX / 3f + (float)Math.sqrt(3f)/3f * bgY) / HEX_SIZE) ;
+      //Log.d("drawTile", "x="+x+" y="+y+" bgCenterX="+bgCenterX+" bgCenterY="+bgCenterY+" bgX="+bgX+" bgY="+bgY+" col="+col+" row="+row);
       // Remove any tiles that exist at that location already
-      for (int i= bg.getTiles().size()-1; i<=0; i--) {
+      for (int i=bg.getTiles().size()-1; i>=0; i--) {
         BackgroundTile bgTile = bg.getTiles().get(i);
         if ((bgTile.getCol() == col) && (bgTile.getRow() == row)) {
           bg.getTiles().remove(i);
@@ -437,7 +437,8 @@ public class EditView extends View {
       }
       drawBackground(); // this will refresh the background image (kind of costly)
 
-      // DEBUG - Draw a circle at the click point on the background
+      /*
+      // DEBUG - Draw a circle at the center and click point on the background
       Paint paint = new Paint();
       paint.setStrokeWidth(3);
       paint.setColor(Color.WHITE);
@@ -445,6 +446,7 @@ public class EditView extends View {
       bgCanvas.drawCircle(bgCenterX, bgCenterY, 10, paint);
       paint.setColor(Color.CYAN);
       bgCanvas.drawCircle(bgX+bgCenterX, bgY+bgCenterY, 10, paint);
+      */
 
       handledEvent = true;
     }
