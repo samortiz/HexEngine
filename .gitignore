@@ -21,7 +21,6 @@
 app/.gitignore
 app/build.gradle
 app/proguard-rules.pro
-app/src/main/AndroidManifest.xml
 app/src/main/res/
 build.gradle
 gradle.properties
