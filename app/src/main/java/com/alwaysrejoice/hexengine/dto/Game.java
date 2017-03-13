@@ -2,12 +2,21 @@ package com.alwaysrejoice.hexengine.dto;
 
 import java.util.List;
 
-public class Background {
+public class Game {
+  private String name;
   private int width;
   private int height;
   private Color backgroundColor;
   private List<TileType> tileTypes;
   private List<BackgroundTile> tiles;
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
 
   public int getWidth() {
     return width;

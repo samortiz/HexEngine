@@ -12,7 +12,7 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 
-import com.alwaysrejoice.hexengine.dto.Background;
+import com.alwaysrejoice.hexengine.dto.Game;
 import com.alwaysrejoice.hexengine.dto.BackgroundTile;
 import com.alwaysrejoice.hexengine.dto.TileType;
 import com.google.gson.Gson;
@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.Random;
 
 public class MapView extends View {
-  // Background drawing variables
+  // Game drawing variables
   Bitmap backgroundImg;
   HashMap<String, Bitmap> tileTypes = new HashMap<>();
   int VIEW_SIZE_X = 1000; // size of viewport on the screen
@@ -71,7 +71,7 @@ public class MapView extends View {
       inputStream = assetManager.open("background.json");
       String JsonBackground = IOUtils.toString(inputStream, "UTF-8");
       inputStream.close();
-      Background bg = gson.fromJson(JsonBackground, Background.class);
+      Game bg = gson.fromJson(JsonBackground, Game.class);
       Log.d("init", "loaded width="+bg.getWidth()+" height="+bg.getHeight());
 
       // Load all the tileType images

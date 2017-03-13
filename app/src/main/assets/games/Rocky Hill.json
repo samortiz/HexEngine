@@ -1,0 +1,22 @@
+{
+ "width":40,
+ "height":30,
+ "backgroundColor": {"red":0, "green":0, "blue":80},
+ "tileTypes":[
+  {"name":"grass",  "type":"grass", "fileName":"grass.png"},
+  {"name":"grass2", "type":"grass", "fileName":"grass2.png"},
+  {"name":"tree",  "type":"tree", "fileName":"tree.png"},
+  {"name":"tree2", "type":"tree", "fileName":"tree2.png"},
+  {"name":"water", "type":"water", "fileName":"water.png"},
+  {"name":"mountain", "type":"mountain", "fileName":"mountain.png"},
+  {"name":"void", "type":"void", "fileName":"void.png"},
+  {"name":"green", "type":"grass", "fileName":"green.png"}
+
+ ],
+ "tiles":[ 
+  {"col":0,  "row":0, "name":"tree"},
+  {"col":1,  "row":1, "name":"mountain"},
+  {"col":0,  "row":1, "name":"mountain"},
+  {"col":1,  "row":0, "name":"mountain"}
+ ]
+}

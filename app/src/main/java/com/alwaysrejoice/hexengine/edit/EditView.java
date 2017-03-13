@@ -16,61 +16,58 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 
-import com.alwaysrejoice.hexengine.dto.Background;
+import com.alwaysrejoice.hexengine.dto.Game;
 import com.alwaysrejoice.hexengine.dto.BackgroundTile;
 import com.alwaysrejoice.hexengine.dto.TileType;
-import com.google.gson.Gson;
-
-import org.apache.commons.io.IOUtils;
+import com.alwaysrejoice.hexengine.util.Util;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Random;
 
 public class EditView extends View {
   // Edit Mode
   public enum Mode { MOVE, ERASE, DRAW};
 
-  // Background drawing variables
-  Background bg; // Data loaded from the user
-  Bitmap backgroundImg;
-  Canvas bgCanvas;
-  HashMap<String, Bitmap> tileTypes = new HashMap<>();
-  int viewSizeX = 200; // size of viewport on the screen
-  int viewSizeY = 700;
-  int backgroundSizeX = 500; // size of background map
-  int backgroundSizeY = 500;
-  int bgCenterX;
-  int bgCenterY;
-  int TILE_WIDTH = 52; // width of one tile on the map
-  int TILE_HEIGHT = 60; // height of one tile on the map
-  int HEX_SIZE = 30; // Length of one side of a hexagon
+  // Game drawing variables
+  public static final int TILE_WIDTH = 52; // width of one tile on the map
+  public static final int TILE_HEIGHT = 60; // height of one tile on the map
+  public static final int HEX_SIZE = 30; // Length of one side of a hexagon
   public static final float SQRT_3 = (float) Math.sqrt(3);
+  private Game game; // Data loaded from the user
+  private Bitmap backgroundImg;
+  private Canvas bgCanvas;
+  private HashMap<String, Bitmap> tileTypes = new HashMap<>();
+  private int viewSizeX = 200; // size of viewport on the screen
+  private int viewSizeY = 700;
+  private int backgroundSizeX = 500; // size of background map
+  private int backgroundSizeY = 500;
+  private int bgCenterX;
+  private int bgCenterY;
   // Current location of view in the background
-  int mapX = 100;
-  int mapY = 100;
+  private int mapX = 100;
+  private int mapY = 100;
 
   // Toolbar
-  int toolbarWidth;
-  int toolbarHeight;
-  int toolbarX;
-  int toolbarY;
-  Canvas toolbarCanvas;
-  Bitmap toolbarImg;
-  Rect toolbarWindow;
-  List<ToolbarButton> toolbarButtons;
-  int TOOLBAR_BUTTONS_PER_ROW = 5;
-  Bitmap toolbarSelectedImg;
-  int toolbarButtonSelectedIndex = 0;
-  Mode mode = Mode.MOVE; // because toolbarButtonSelectedInex == 0
-  String toolbarButtonSelectedName = "";
+  private static final int TOOLBAR_BUTTONS_PER_ROW = 5;
+  private int toolbarWidth;
+  private int toolbarHeight;
+  private int toolbarX;
+  private int toolbarY;
+  private Canvas toolbarCanvas;
+  private Bitmap toolbarImg;
+  private Rect toolbarWindow;
+  private List<ToolbarButton> toolbarButtons;
+  private Bitmap toolbarSelectedImg;
+  private int toolbarButtonSelectedIndex = 0;
+  private Mode mode = Mode.MOVE; // because toolbarButtonSelectedInex == 0
+  private String toolbarButtonSelectedName = "";
 
   // Drawing
-  Rect panZoomWindow = new Rect(0, 0, 10, 10);
-  Rect uiWindow = null;
+  private Rect panZoomWindow = new Rect(0, 0, 10, 10);
+  private Rect uiWindow = null;
 
   // Panning
   private float gestureStartX = 0f; // Screen location gesture started
@@ -80,47 +77,40 @@ public class EditView extends View {
   private float gestureDiffY = 0;
 
   // Zooming (scaling)
-  private static float MIN_SCALE = 0.10f;
-  private static float MAX_SCALE = 3.0f;
+  private static final float MIN_SCALE = 0.10f;
+  private static final float MAX_SCALE = 3.0f;
   private ScaleGestureDetector mapScaleDetector;
   private float mapScaleFactor = 0.5f;
   private float scaleDiffX = 0;
   private float scaleDiffY = 0;
 
-  public EditView(Context context) {
+  public EditView(Context context, String gameName) {
     super(context);
     mapScaleDetector = new ScaleGestureDetector(context, new MapScaleListener());
     Log.d("init", "Starting");
     InputStream inputStream = null;
-    Random rand = new Random();
-    Gson gson = new Gson();
     DisplayMetrics displayMetrics = new DisplayMetrics();
     ((Activity) getContext()).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
 
     try {
       AssetManager assetManager = context.getAssets();
-
-      // Load the main background file
-      inputStream = assetManager.open("background.json");
-      String JsonBackground = IOUtils.toString(inputStream, "UTF-8");
-      inputStream.close();
-      bg = gson.fromJson(JsonBackground, Background.class);
-      Log.d("init", "loaded width="+bg.getWidth()+" height="+bg.getHeight());
+      game = Util.loadGame(gameName, getContext());
+      Log.d("init", "loaded width="+ game.getWidth()+" height="+ game.getHeight());
       // System editor images
-      toolbarSelectedImg = loadBitmap(inputStream, assetManager, "selected.png");
-      Bitmap handImg = loadBitmap(inputStream, assetManager, "hand.png");
-      Bitmap eraserImg = loadBitmap(inputStream, assetManager, "eraser.png");
+      toolbarSelectedImg = loadBitmap(inputStream, assetManager, "images/selected.png");
+      Bitmap handImg = loadBitmap(inputStream, assetManager, "images/hand.png");
+      Bitmap eraserImg = loadBitmap(inputStream, assetManager, "images/eraser.png");
       // Load all the tileType images
-      for (TileType type: bg.getTileTypes()) {
-        inputStream = assetManager.open(type.getFileName());
+      for (TileType type: game.getTileTypes()) {
+        inputStream = assetManager.open("images/"+type.getFileName());
         Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
         inputStream.close();
         tileTypes.put(type.getName(), bitmap);
       }
 
       // Make a background map
-      backgroundSizeX = Math.round(bg.getWidth() * TILE_WIDTH * 0.75f);
-      backgroundSizeY = bg.getHeight() * TILE_HEIGHT;
+      backgroundSizeX = Math.round(game.getWidth() * TILE_WIDTH * 0.75f);
+      backgroundSizeY = game.getHeight() * TILE_HEIGHT;
       bgCenterX = backgroundSizeX / 2;
       bgCenterY = backgroundSizeY / 2;
       Log.d("init", "Generating background bitmap width="+backgroundSizeX+" height="+backgroundSizeY);
@@ -166,7 +156,7 @@ public class EditView extends View {
       buttonX += buttonSize;
       toolbarButtons.add(new ToolbarButton("eraser", eraserImg, new Rect(buttonX, buttonY, buttonX+buttonSize, buttonY+buttonSize)));
       buttonX += buttonSize;
-      for (TileType tileType : bg.getTileTypes()) {
+      for (TileType tileType : game.getTileTypes()) {
         Bitmap img = tileTypes.get(tileType.getName());
         toolbarButtons.add(new ToolbarButton(tileType.getName(), img, new Rect(buttonX, buttonY, buttonX+buttonSize, buttonY+buttonSize)));
         buttonX += buttonSize;
@@ -190,10 +180,10 @@ public class EditView extends View {
   }
 
   /**
-   * Draws the background onto the bgImg through bgCanvas from the bg data set
+   * Draws the background onto the bgImg through bgCanvas from the game data set
    */
   private void drawBackground() {
-    bgCanvas.drawRGB(bg.getBackgroundColor().getRed(), bg.getBackgroundColor().getGreen(), bg.getBackgroundColor().getBlue());
+    bgCanvas.drawRGB(game.getBackgroundColor().getRed(), game.getBackgroundColor().getGreen(), game.getBackgroundColor().getBlue());
     // Draw border
     Paint paint = new Paint();
     paint.setStrokeWidth(5);
@@ -202,7 +192,7 @@ public class EditView extends View {
     bgCanvas.drawRect(0, 0, backgroundSizeX, backgroundSizeY, paint);
 
     // Draw all the tiles
-    for (BackgroundTile tile : bg.getTiles()) {
+    for (BackgroundTile tile : game.getTiles()) {
       int x = bgCenterX + Math.round(HEX_SIZE * 1.5f  * tile.getCol()) - (TILE_WIDTH / 2);
       int y = bgCenterY + Math.round(HEX_SIZE * SQRT_3 * (tile.getRow() + (tile.getCol() / 2f))) - (TILE_HEIGHT/2);
       Bitmap bitmap = tileTypes.get(tile.getName());
@@ -426,14 +416,14 @@ public class EditView extends View {
       int row = Math.round((-bgX / 3f + (float)Math.sqrt(3f)/3f * bgY) / HEX_SIZE) ;
       //Log.d("drawTile", "x="+x+" y="+y+" bgCenterX="+bgCenterX+" bgCenterY="+bgCenterY+" bgX="+bgX+" bgY="+bgY+" col="+col+" row="+row);
       // Remove any tiles that exist at that location already
-      for (int i=bg.getTiles().size()-1; i>=0; i--) {
-        BackgroundTile bgTile = bg.getTiles().get(i);
+      for (int i = game.getTiles().size()-1; i>=0; i--) {
+        BackgroundTile bgTile = game.getTiles().get(i);
         if ((bgTile.getCol() == col) && (bgTile.getRow() == row)) {
-          bg.getTiles().remove(i);
+          game.getTiles().remove(i);
         }
       } // for
       if (mode == Mode.DRAW) {
-        bg.getTiles().add(new BackgroundTile(col, row, toolbarButtonSelectedName));
+        game.getTiles().add(new BackgroundTile(col, row, toolbarButtonSelectedName));
       }
       drawBackground(); // this will refresh the background image (kind of costly)
 
@@ -476,8 +466,6 @@ public class EditView extends View {
       return true;
     }
   }
-
-
 
 }
 
