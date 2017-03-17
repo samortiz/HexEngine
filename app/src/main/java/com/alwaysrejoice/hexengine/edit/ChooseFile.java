@@ -1,8 +1,10 @@
 package com.alwaysrejoice.hexengine.edit;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -13,7 +15,7 @@ import android.widget.ListView;
 import com.alwaysrejoice.hexengine.R;
 import com.alwaysrejoice.hexengine.dto.Color;
 import com.alwaysrejoice.hexengine.dto.Game;
-import com.alwaysrejoice.hexengine.util.Util;
+import com.alwaysrejoice.hexengine.util.Utils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,21 +30,14 @@ public class ChooseFile extends Activity implements AdapterView.OnItemClickListe
     setContentView(R.layout.edit_list);
 
     gameList = (ListView) findViewById(R.id.edit_list_view);
-    String[] files = new String[0];
-    try {
-      files = getAssets().list("games");
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    String[] files = Utils.getGamePath().list();
+    if (files == null) files = new String[0];
     ArrayList<String> games = new ArrayList<String>();
     for (String file : files) {
       String  gameName = file.substring(0, file.length()-5); // remove .json
       games.add(gameName);
       Log.d("chooseFile", "found file "+file+" gameName="+gameName);
     }
-
-    Log.d("chooseFile", "Games size = "+games.size());
-
     ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, games);
     gameList.setAdapter(arrayAdapter);
     gameList.setOnItemClickListener(this);
@@ -72,12 +67,14 @@ public class ChooseFile extends Activity implements AdapterView.OnItemClickListe
    * Called when the user clicks "Create New Game" on the new game screen
    */
   public void createNewGame(View view) {
+    Log.d("chooseFile", "permission is "+ ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE));
+
     EditText nameInput = (EditText) findViewById(R.id.nameInput);
     EditText widthInput = (EditText) findViewById(R.id.widthInput);
     EditText heightInput = (EditText) findViewById(R.id.heightInput);
     String gameName = nameInput.getText().toString();
-    int width = Integer.parseInt(widthInput.getText().toString());
-    int height = Integer.parseInt(heightInput.getText().toString());
+    int width = getInputInt(widthInput, 10);
+    int height = getInputInt(heightInput, 10);
     Game game = new Game();
     game.setName(gameName);
     game.setWidth(width);
@@ -86,11 +83,25 @@ public class ChooseFile extends Activity implements AdapterView.OnItemClickListe
     game.setTiles(new ArrayList());
     game.setBackgroundColor(new Color(00, 50, 50));
     Log.d("chooseFile", "createNewGame gameName="+game.getName()+" width="+width+" height="+height);
-    Util.saveGame(game, getApplicationContext());
+    Utils.saveGame(game);
 
+    // Set the view back to the game list (when the back button is pressed)
+    gameList = (ListView) findViewById(R.id.edit_list_view);
     Intent myIntent = new Intent(ChooseFile.this, EditActivity.class);
     myIntent.putExtra("GAME_NAME", gameName);
     startActivity(myIntent);
+  }
+
+  /**
+   * Gets a value from a text input and returns it as a String
+   * @return int value of input, or defaultVal if there was any problem
+   */
+  public int getInputInt(EditText input, int defaultVal) {
+    String val = input.getText().toString();
+    if ((val != null) && (val.length() > 0)) {
+      return Integer.parseInt(val);
+    }
+    return defaultVal;
   }
 
 }

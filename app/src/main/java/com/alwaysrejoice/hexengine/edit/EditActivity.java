@@ -6,6 +6,8 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
+import com.alwaysrejoice.hexengine.util.Utils;
+
 public class EditActivity extends AppCompatActivity implements View.OnTouchListener {
   EditView editView;
 
@@ -28,5 +30,14 @@ public class EditActivity extends AppCompatActivity implements View.OnTouchListe
     editView.onTouchEvent(event);
     return true;
   }
+
+  @Override
+  public void onBackPressed() {
+    Log.d("edit", "Back pressed");
+    Utils.saveGame(editView.getGame());
+    // default behavior
+    super.onBackPressed();
+  }
+
 
 }

@@ -16,20 +16,16 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 
-import com.alwaysrejoice.hexengine.dto.Game;
 import com.alwaysrejoice.hexengine.dto.BackgroundTile;
+import com.alwaysrejoice.hexengine.dto.Game;
 import com.alwaysrejoice.hexengine.dto.TileType;
-import com.alwaysrejoice.hexengine.util.Util;
+import com.alwaysrejoice.hexengine.util.Utils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 public class EditView extends View {
-  // Edit Mode
-  public enum Mode { MOVE, ERASE, DRAW};
 
   // Game drawing variables
   public static final int TILE_WIDTH = 52; // width of one tile on the map
@@ -49,21 +45,7 @@ public class EditView extends View {
   // Current location of view in the background
   private int mapX = 100;
   private int mapY = 100;
-
-  // Toolbar
-  private static final int TOOLBAR_BUTTONS_PER_ROW = 5;
-  private int toolbarWidth;
-  private int toolbarHeight;
-  private int toolbarX;
-  private int toolbarY;
-  private Canvas toolbarCanvas;
-  private Bitmap toolbarImg;
-  private Rect toolbarWindow;
-  private List<ToolbarButton> toolbarButtons;
-  private Bitmap toolbarSelectedImg;
-  private int toolbarButtonSelectedIndex = 0;
-  private Mode mode = Mode.MOVE; // because toolbarButtonSelectedInex == 0
-  private String toolbarButtonSelectedName = "";
+  private Toolbar toolbar; // the toolbar with all the buttons
 
   // Drawing
   private Rect panZoomWindow = new Rect(0, 0, 10, 10);
@@ -84,6 +66,7 @@ public class EditView extends View {
   private float scaleDiffX = 0;
   private float scaleDiffY = 0;
 
+
   public EditView(Context context, String gameName) {
     super(context);
     mapScaleDetector = new ScaleGestureDetector(context, new MapScaleListener());
@@ -94,19 +77,16 @@ public class EditView extends View {
 
     try {
       AssetManager assetManager = context.getAssets();
-      game = Util.loadGame(gameName, getContext());
+      game = Utils.loadGame(gameName);
       Log.d("init", "loaded width="+ game.getWidth()+" height="+ game.getHeight());
-      // System editor images
-      toolbarSelectedImg = loadBitmap(inputStream, assetManager, "images/selected.png");
-      Bitmap handImg = loadBitmap(inputStream, assetManager, "images/hand.png");
-      Bitmap eraserImg = loadBitmap(inputStream, assetManager, "images/eraser.png");
-      // Load all the tileType images
-      for (TileType type: game.getTileTypes()) {
+      // Load all the system tileType images
+      for (TileType type: TileType.SYSTEM_TILE_TYPES) {
         inputStream = assetManager.open("images/"+type.getFileName());
         Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
         inputStream.close();
         tileTypes.put(type.getName(), bitmap);
       }
+      // TODO : Load custom tileTypes
 
       // Make a background map
       backgroundSizeX = Math.round(game.getWidth() * TILE_WIDTH * 0.75f);
@@ -123,48 +103,14 @@ public class EditView extends View {
       // Full size of the screen (square)
       viewSizeX = Math.min(displayMetrics.widthPixels, displayMetrics.heightPixels);
       viewSizeY = viewSizeX;
-      Log.i("init", "Edit viewSizeX="+viewSizeX+" viewSizeY="+viewSizeY);
+      Log.i("init", "edit viewSizeX="+viewSizeX+" viewSizeY="+viewSizeY);
       uiWindow = new Rect(0, 0, viewSizeX, viewSizeY);
       mapScaleFactor = Math.max(MIN_SCALE, Math.min(((float)backgroundSizeX / (float)viewSizeX), MAX_SCALE));
       mapX = (backgroundSizeX / 2) - Math.round(viewSizeX * mapScaleFactor / 2);
       mapY = (backgroundSizeY / 2) - Math.round(viewSizeY * mapScaleFactor / 2);
 
-      // Setup the toolbar
-      if (displayMetrics.heightPixels > displayMetrics.widthPixels) {
-        // Portrait
-        toolbarHeight = displayMetrics.heightPixels - viewSizeY;
-        toolbarWidth = displayMetrics.widthPixels;
-        toolbarX = 0;
-        toolbarY = viewSizeY + 1;
-      } else {
-        // Landscape
-        toolbarHeight = displayMetrics.heightPixels;
-        toolbarWidth = displayMetrics.widthPixels - displayMetrics.heightPixels;
-        toolbarX = toolbarWidth;
-        toolbarY = 0;
-      }
-      toolbarImg = Bitmap.createBitmap(toolbarWidth,toolbarHeight, Bitmap.Config.ARGB_8888);
-      toolbarCanvas = new Canvas(toolbarImg);
-      toolbarWindow = new Rect(toolbarX, toolbarY, toolbarX + toolbarWidth, toolbarY + toolbarHeight);
-      // Toolbar buttons
-      toolbarButtons = new ArrayList<>();
-      int buttonX = 0;
-      int buttonY = 0;
-      int buttonSize = toolbarWidth / TOOLBAR_BUTTONS_PER_ROW;
-      // Setup the system buttons
-      toolbarButtons.add(new ToolbarButton("move", handImg, new Rect(buttonX, buttonY, buttonX+buttonSize, buttonY+buttonSize)));
-      buttonX += buttonSize;
-      toolbarButtons.add(new ToolbarButton("eraser", eraserImg, new Rect(buttonX, buttonY, buttonX+buttonSize, buttonY+buttonSize)));
-      buttonX += buttonSize;
-      for (TileType tileType : game.getTileTypes()) {
-        Bitmap img = tileTypes.get(tileType.getName());
-        toolbarButtons.add(new ToolbarButton(tileType.getName(), img, new Rect(buttonX, buttonY, buttonX+buttonSize, buttonY+buttonSize)));
-        buttonX += buttonSize;
-        if (buttonX >= toolbarWidth) {
-          buttonX = 0;
-          buttonY += buttonSize +1;
-        }
-      }
+      // Create the toolbar
+      toolbar = new Toolbar(assetManager, viewSizeX, viewSizeY, tileTypes, displayMetrics.widthPixels, displayMetrics.heightPixels);
 
     } catch (IOException e) {
       e.printStackTrace();
@@ -204,12 +150,6 @@ public class EditView extends View {
     }
   }
 
-  private Bitmap loadBitmap(InputStream inputStream, AssetManager assetManager, String filename) throws IOException {
-    inputStream = assetManager.open(filename);
-    Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
-    inputStream.close();
-    return bitmap;
-  }
 
   /**
    * Main draw method
@@ -219,7 +159,7 @@ public class EditView extends View {
     super.onDraw(canvas);
     canvas.drawRGB(0, 0, 0);
     drawMap(canvas);
-    drawToolbar(canvas);
+    toolbar.drawToolbar(canvas);
   }
 
   /**
@@ -235,21 +175,6 @@ public class EditView extends View {
     canvas.drawBitmap(backgroundImg, panZoomWindow, uiWindow, null);
   }
 
-  /**
-   * Draws the toolbar on the canvas
-   */
-  private void drawToolbar(Canvas canvas) {
-    toolbarCanvas.drawRGB(200, 200, 150);
-    for (int i=0; i<toolbarButtons.size(); i++) {
-      ToolbarButton button = toolbarButtons.get(i);
-      toolbarCanvas.drawBitmap(button.getImg(), null, button.getPosition(), null);
-      if (i == toolbarButtonSelectedIndex) {
-        toolbarCanvas.drawBitmap(toolbarSelectedImg, null, button.getPosition(), null);
-      }
-    }
-    canvas.drawBitmap(toolbarImg, null, toolbarWindow, null);
-  }
-
 
   /**
    * Master touch event handler for all modes
@@ -258,7 +183,7 @@ public class EditView extends View {
    */
   @Override
   public boolean onTouchEvent(MotionEvent event) {
-    if (mode == Mode.MOVE) {
+    if (toolbar.getMode() == Toolbar.Mode.MOVE) {
       return moveTouchEvent(event);
     }
     return editTouchEvent(event);
@@ -288,6 +213,7 @@ public class EditView extends View {
     }
     // First finger down (start gesture)
     if (action == MotionEvent.ACTION_DOWN) {
+      toolbar.toolbarDetector(newX, newY);
       Log.d("event", "ACTION_DOWN pointerId="+pointerId);
       // Don't need to do anything all the startup has been taken care of already
 
@@ -332,7 +258,6 @@ public class EditView extends View {
     } else if (action == MotionEvent.ACTION_UP) {
       Log.d("event", "ACTION_UP pointerId="+pointerId);
       endGesture();
-      toolbarDetector(newX, newY);
       handledEvent = true;
     }
 
@@ -364,9 +289,9 @@ public class EditView extends View {
     int index = MotionEventCompat.getActionIndex(event);
     float newX = event.getX(index);
     float newY = event.getY(index);
-    if (action == MotionEvent.ACTION_UP) {
-      Log.d("edit", "edit event action up");
-      handledEvent = toolbarDetector(newX, newY);
+    if (action == MotionEvent.ACTION_DOWN) {
+      Log.d("edit", "edit click on "+newX+","+newY);
+      handledEvent = toolbar.toolbarDetector(newX, newY);
     }
     if (!handledEvent) {
       handledEvent = drawTile(newX, newY);
@@ -377,33 +302,7 @@ public class EditView extends View {
     return handledEvent;
   }
 
-  /**
-   * Detects and handles toolbar events
-   */
-  private boolean toolbarDetector(float x, float y) {
-    boolean handledEvent = false;
-    if ((x > toolbarX) && (x < toolbarX + toolbarWidth) &&
-        (y > toolbarY) && (y < toolbarY + toolbarHeight)) {
-      // Which button was clicked
-      int buttonXIndex =(int)((x - toolbarX) / (toolbarWidth / TOOLBAR_BUTTONS_PER_ROW));
-      int buttonYIndex = (int)((y - toolbarY) / (toolbarWidth / TOOLBAR_BUTTONS_PER_ROW));
-      int buttonIndex = buttonYIndex * TOOLBAR_BUTTONS_PER_ROW + buttonXIndex;
-      if (buttonIndex < toolbarButtons.size()) {
-        toolbarButtonSelectedIndex = buttonIndex;
-        toolbarButtonSelectedName = toolbarButtons.get(buttonIndex).getName();
-        if (buttonIndex == 0) {
-          mode = Mode.MOVE;
-        } else if (buttonIndex == 1) {
-          mode = Mode.ERASE;
-        } else {
-          mode = Mode.DRAW;
-        }
-        //Log.d("toolbar", "toolbarButtonSelected="+toolbarButtonSelectedIndex);
-        handledEvent = true;
-      }
-    }
-    return handledEvent;
-  }
+
 
   private boolean drawTile(float x, float y) {
     boolean handledEvent = false;
@@ -422,27 +321,14 @@ public class EditView extends View {
           game.getTiles().remove(i);
         }
       } // for
-      if (mode == Mode.DRAW) {
-        game.getTiles().add(new BackgroundTile(col, row, toolbarButtonSelectedName));
+      if (toolbar.getMode() == Toolbar.Mode.DRAW) {
+        game.getTiles().add(new BackgroundTile(col, row, toolbar.getToolbarButtonSelectedName()));
       }
       drawBackground(); // this will refresh the background image (kind of costly)
-
-      /*
-      // DEBUG - Draw a circle at the center and click point on the background
-      Paint paint = new Paint();
-      paint.setStrokeWidth(3);
-      paint.setColor(Color.WHITE);
-      paint.setStyle(Paint.Style.STROKE);
-      bgCanvas.drawCircle(bgCenterX, bgCenterY, 10, paint);
-      paint.setColor(Color.CYAN);
-      bgCanvas.drawCircle(bgX+bgCenterX, bgY+bgCenterY, 10, paint);
-      */
-
       handledEvent = true;
     }
     return handledEvent;
   }
-
 
 
   private class MapScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
@@ -465,6 +351,10 @@ public class EditView extends View {
       Log.d("scale", "mapScaleFactor="+newScaleFactor);
       return true;
     }
+  }
+
+  public Game getGame() {
+    return game;
   }
 
 }
