@@ -115,9 +115,9 @@ public class Toolbar {
       if (selectedButton.getParent() == button) {
         // Draw the selected button at the location of the parent
         canvas.drawBitmap(selectedButton.getImg(), null, button.getPosition(), null);
+        canvas.drawBitmap(selectedImg, null, button.getPosition(), null);
       }
       if (button == selectedButton) {
-        // Mark this button as selected
         canvas.drawBitmap(selectedImg, null, button.getPosition(), null);
         if (selectedButtonChildrenVisible) {
           // Second-level buttons (up)
@@ -149,12 +149,14 @@ public class Toolbar {
       if (buttonDetector(x, y, button)) {
         handledEvent = true;
         break;
-      };
-      // Second-level buttons (up)
-      for (ToolbarButton childButton : button.getChildren()) {
-        if (buttonDetector(x, y, childButton)) {
-          handledEvent = true;
-          break;
+      }
+      if (selectedButton == button) {
+        // Second-level buttons (up)
+        for (ToolbarButton childButton : button.getChildren()) {
+          if (buttonDetector(x, y, childButton)) {
+            handledEvent = true;
+            break;
+          }
         }
       }
     }
@@ -162,6 +164,7 @@ public class Toolbar {
     if (!handledEvent) {
       selectedButtonChildrenVisible = false;
     }
+    Log.d("toolbar", "detector handledEvent="+handledEvent);
     return handledEvent;
   }
 
@@ -175,18 +178,19 @@ public class Toolbar {
     // If the click is on this button
     if (button.getPosition().contains((int)x, (int)y) &&
         // And it's a top level parent
-        (button.getParent() == null) ||
+        ((button.getParent() == null) ||
         // Or it's a visible child button
-        (button.getParent() == selectedButton) && selectedButtonChildrenVisible) {
-      Log.d("toolbar", "selected="+selectedButton.getName()+" button clicked="+button.getName());
+        (button.getParent() == selectedButton) && selectedButtonChildrenVisible)) {
+      Log.d("toolbar", "button selected="+selectedButton.getName()+" clicked="+button.getName()+" x="+x+" y="+y+" pos="+button.getPosition());
       // If we have a main button (no parent)
       if (button.getParent() == null) {
-        if (selectedButton == button) {
+        if ((selectedButton == button) && selectedButtonChildrenVisible) {
           Log.d("toolbar", "top level button already selected hiding children");
           selectedButtonChildrenVisible = false;
         } else {
           Log.d("toolbar", "showing children");
           // We have a main button that was not already selected
+          // Or a main button that was selected but the children were hidden
           selectedButtonChildrenVisible = true;
         }
       } else {

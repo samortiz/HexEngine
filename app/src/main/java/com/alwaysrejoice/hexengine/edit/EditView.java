@@ -287,15 +287,30 @@ public class EditView extends View {
     boolean handledEvent = false;
     int action = MotionEventCompat.getActionMasked(event);
     int index = MotionEventCompat.getActionIndex(event);
+    int pointerId = event.getPointerId(index);
     float newX = event.getX(index);
     float newY = event.getY(index);
+
     if (action == MotionEvent.ACTION_DOWN) {
-      Log.d("edit", "edit click on "+newX+","+newY);
       handledEvent = toolbar.toolbarDetector(newX, newY);
+      Log.d("editTouch", "edit clicked on "+newX+","+newY+" handledEvent="+handledEvent);
+      if (!handledEvent && (gestureStartPointerId == -1)) {
+        //Log.d("editTouch", "start gesture pointer=" + pointerId);
+        gestureStartPointerId = pointerId;
+      }
+    } else if (action == MotionEvent.ACTION_UP) {
+      //Log.d("editTouch", "end gesture pointer="+pointerId);
+      gestureStartPointerId = -1;
     }
-    if (!handledEvent) {
-      handledEvent = drawTile(newX, newY);
+
+    // Only draw tiles if we are in a gesture
+    if (gestureStartPointerId != -1) {
+      if (!handledEvent) {
+        //Log.d("editTouch", "gesture started, drawing tile");
+        handledEvent = drawTile(newX, newY);
+      }
     }
+
     if (handledEvent) {
       this.postInvalidate();
     }
