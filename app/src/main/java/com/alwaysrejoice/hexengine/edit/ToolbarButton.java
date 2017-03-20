@@ -14,6 +14,7 @@ public class ToolbarButton {
   private Rect position;
   private ToolbarButton parent = null;
   private List<ToolbarButton> children = new ArrayList<ToolbarButton>();
+  private Rect popupPosition;
 
   // Constructors
   public ToolbarButton() { }
@@ -98,5 +99,11 @@ public class ToolbarButton {
     this.children = children;
   }
 
+  public Rect getPopupPosition() {
+    return popupPosition;
+  }
 
+  public void setPopupPosition(Rect popupPosition) {
+    this.popupPosition = popupPosition;
+  }
 }

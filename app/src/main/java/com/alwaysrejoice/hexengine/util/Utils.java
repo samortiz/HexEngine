@@ -88,6 +88,17 @@ public class Utils {
     }
   }
 
+  /**
+   * Deletes the specified game from the file system
+   */
+  public static boolean deleteGame(String gameName) {
+    File gameFile = Utils.getGameFile(gameName);
+    if (gameFile != null) {
+      return gameFile.delete();
+    }
+    return false;
+  }
+
   /* Checks if external storage is available for read and write */
   public static boolean isExternalStorageWritable() {
     String state = Environment.getExternalStorageState();

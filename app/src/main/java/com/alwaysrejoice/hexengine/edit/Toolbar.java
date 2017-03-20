@@ -1,5 +1,7 @@
 package com.alwaysrejoice.hexengine.edit;
 
+import android.content.Context;
+import android.content.Intent;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -8,6 +10,8 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.Log;
 
+import com.alwaysrejoice.hexengine.MainActivity;
+import com.alwaysrejoice.hexengine.dto.Game;
 import com.alwaysrejoice.hexengine.dto.TileType;
 import com.alwaysrejoice.hexengine.util.Utils;
 
@@ -20,6 +24,7 @@ public class Toolbar {
   private static final int TOOLBAR_BUTTONS_PER_ROW = 5;
 
   Paint paint = new Paint();
+  EditView editView;
 
   // Toolbar Variables
   private int toolbarWidth;
@@ -40,7 +45,8 @@ public class Toolbar {
   private int viewSizeY;
 
   // Default Constructor
-  public Toolbar(AssetManager assetManager, int viewSizeX, int viewSizeY, HashMap<String, Bitmap> tileTypes, int screenWidth, int screenHeight) {
+  public Toolbar(EditView editView, AssetManager assetManager, int viewSizeX, int viewSizeY, HashMap<String, Bitmap> tileTypes, int screenWidth, int screenHeight) {
+    this.editView = editView;
     this.assetManager = assetManager;
     this.viewSizeX = viewSizeX;
     this.viewSizeY = viewSizeY;
@@ -66,7 +72,6 @@ public class Toolbar {
       toolbarX = toolbarWidth;
       toolbarY = 0;
     }
-    Log.d("toolbar", "toolbarWidth="+toolbarWidth+" height="+toolbarHeight);
     toolbarWindow = new Rect(toolbarX, toolbarY, toolbarX + toolbarWidth, toolbarY + toolbarHeight);
     // Toolbar buttons
     toolbarButtons = new ArrayList<>();
@@ -74,6 +79,7 @@ public class Toolbar {
     int buttonHeight = buttonWidth;
     int buttonX = -buttonWidth; // so we can pre-increment
     int buttonY = toolbarY;
+    Log.d("toolbar", "toolbarWidth="+toolbarWidth+" toolbarHeight="+toolbarHeight+" buttonWidth="+buttonWidth+" buttonHeight="+buttonHeight+" toolbarY="+toolbarY);
     // Setup the system buttons
     for (TileType tileType : TileType.SYSTEM_TILE_TYPES) {
       Bitmap img = tileTypes.get(tileType.getName());
@@ -91,12 +97,42 @@ public class Toolbar {
       } else {
         // parentButton != null
         int childCount = parentButton.getChildren().size() +1; // +1 for the child about to be added
+        int childLeft = buttonX;
+        int childTop = buttonY-(buttonHeight*childCount);
+        int childRight = buttonX+buttonWidth;
+        int childBottom = childTop + buttonHeight;
+        while (childTop < 0) {
+          childLeft += buttonWidth;
+          childTop += buttonY;
+          childRight += buttonWidth;
+          childBottom = childTop + buttonHeight;
+        }
         ToolbarButton newButton = new ToolbarButton(tileType.getName(), tileType.getType(), img,
-            new Rect(buttonX, buttonY-(buttonHeight*childCount), buttonX+buttonWidth, buttonY-(buttonHeight*(childCount-1))), parentButton);
+            new Rect(childLeft, childTop, childRight, childBottom), parentButton);
         parentButton.addChild(newButton);
         Log.d("toolbar", "added child "+newButton.getName()+" type="+newButton.getType()+" position="+newButton.getPosition());
       }
     } // for
+
+    // For each parent calculate the toolbar popup background size
+    for (ToolbarButton button : toolbarButtons) {
+      int buttonTop = button.getPosition().top;
+      int childCount = button.getChildren().size();
+      int colCount = 1;
+      int popupHeight = 0;
+      if (childCount > 0) {
+        colCount = (int)Math.ceil((double)(childCount * buttonHeight) / (double)buttonTop);
+        if (colCount == 1) {
+          popupHeight = childCount * buttonHeight;
+        } else {
+          popupHeight = buttonTop;
+        }
+      }
+      Rect popupPosition = new Rect(button.getPosition().left, buttonTop-popupHeight, button.getPosition().right+((colCount-1)*buttonWidth), buttonTop);
+      button.setPopupPosition(popupPosition);
+
+      Log.d("toolbar", "childCount="+childCount+" colCount="+colCount+ " popupPosition="+popupPosition);
+    }
 
     // Select the first button (move)
     selectedButton = toolbarButtons.get(0);
@@ -120,6 +156,7 @@ public class Toolbar {
       if (button == selectedButton) {
         canvas.drawBitmap(selectedImg, null, button.getPosition(), null);
         if (selectedButtonChildrenVisible) {
+          canvas.drawRect(button.getPopupPosition(), paint);
           // Second-level buttons (up)
           for (ToolbarButton childButton : button.getChildren()) {
             drawButton(childButton, canvas);
@@ -145,7 +182,9 @@ public class Toolbar {
   public boolean toolbarDetector(float x, float y) {
     boolean handledEvent = false;
     // First level of buttons (across)
-    for (ToolbarButton button : toolbarButtons) {
+    // reverse iteration so the bottom ones go first (the popup of the bottom ones may be "on top" of the first ones)
+    for (int i=toolbarButtons.size()-1; i>=0; i--) {
+      ToolbarButton button = toolbarButtons.get(i);
       if (buttonDetector(x, y, button)) {
         handledEvent = true;
         break;
@@ -157,6 +196,10 @@ public class Toolbar {
             handledEvent = true;
             break;
           }
+        }
+        // If a child button found a click, we can exit the outer loop
+        if (handledEvent) {
+          break;
         }
       }
     }
@@ -205,9 +248,11 @@ public class Toolbar {
       } else if (TileType.SYSTEM_ERASER.getName().equals(button.getName())) {
         mode = Mode.ERASE;
       } else if (TileType.SYSTEM_SAVE.getName().equals(button.getName())) {
-        // TODO
+        Utils.saveGame(editView.getGame());
       } else if (TileType.SYSTEM_EXIT.getName().equals(button.getName())) {
-        // TODO
+        Utils.saveGame(editView.getGame());
+        Intent myIntent = new Intent(editView.getContext(), ChooseFile.class);
+        editView.getContex().startActivity(myIntent);
       } else {
         mode = Mode.DRAW;
       }

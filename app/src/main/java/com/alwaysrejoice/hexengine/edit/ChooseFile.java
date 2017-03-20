@@ -8,20 +8,23 @@ import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 
+import com.alwaysrejoice.hexengine.MainActivity;
 import com.alwaysrejoice.hexengine.R;
 import com.alwaysrejoice.hexengine.dto.Color;
 import com.alwaysrejoice.hexengine.dto.Game;
 import com.alwaysrejoice.hexengine.util.Utils;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class ChooseFile extends Activity implements AdapterView.OnItemClickListener {
   ListView gameList;
+  ChooseFileListAdapter adapter;
+  Game chosenGame = null;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -38,8 +41,9 @@ public class ChooseFile extends Activity implements AdapterView.OnItemClickListe
       games.add(gameName);
       Log.d("chooseFile", "found file "+file+" gameName="+gameName);
     }
-    ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, games);
-    gameList.setAdapter(arrayAdapter);
+
+    adapter = new ChooseFileListAdapter(this, games);
+    gameList.setAdapter(adapter);
     gameList.setOnItemClickListener(this);
   }
 
@@ -54,39 +58,32 @@ public class ChooseFile extends Activity implements AdapterView.OnItemClickListe
     startActivity(myIntent);
   }
 
-  /**
-   * Called when the user clicks "New Game" on the main edit screen
-   * Takes the user to the create a new game screen
-   */
-  public void newGame(View view) {
-    setContentView(R.layout.create_new_game);
-    Log.d("chooseFile", "newGame");
-  }
 
   /**
    * Called when the user clicks "Create New Game" on the new game screen
    */
-  public void createNewGame(View view) {
-    Log.d("chooseFile", "permission is "+ ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE));
-
-    EditText nameInput = (EditText) findViewById(R.id.nameInput);
-    EditText widthInput = (EditText) findViewById(R.id.widthInput);
-    EditText heightInput = (EditText) findViewById(R.id.heightInput);
+  public void saveGame(View view) {
+    EditText nameInput = (EditText) findViewById(R.id.edit_game_name);
+    EditText widthInput = (EditText) findViewById(R.id.edit_game_width);
+    EditText heightInput = (EditText) findViewById(R.id.edit_game_height);
     String gameName = nameInput.getText().toString();
     int width = getInputInt(widthInput, 10);
     int height = getInputInt(heightInput, 10);
-    Game game = new Game();
-    game.setName(gameName);
-    game.setWidth(width);
-    game.setHeight(height);
-    game.setTileTypes(new ArrayList());
-    game.setTiles(new ArrayList());
-    game.setBackgroundColor(new Color(00, 50, 50));
-    Log.d("chooseFile", "createNewGame gameName="+game.getName()+" width="+width+" height="+height);
-    Utils.saveGame(game);
 
-    // Set the view back to the game list (when the back button is pressed)
-    gameList = (ListView) findViewById(R.id.edit_list_view);
+    // TODO : Validate that the game is not too large or too small
+    // TODO : Validate that the old game does not have tiles in excess of the new game size
+    if (chosenGame == null) {
+      chosenGame = new Game();
+      chosenGame.setTileTypes(new ArrayList());
+      chosenGame.setTiles(new ArrayList());
+      chosenGame.setBackgroundColor(new Color(00, 50, 50));
+    }
+    chosenGame.setName(gameName);
+    chosenGame.setWidth(width);
+    chosenGame.setHeight(height);
+    Log.d("chooseFile", "editGame gameName="+chosenGame.getName()+" width="+width+" height="+height);
+    Utils.saveGame(chosenGame);
+
     Intent myIntent = new Intent(ChooseFile.this, EditActivity.class);
     myIntent.putExtra("GAME_NAME", gameName);
     startActivity(myIntent);
@@ -98,10 +95,66 @@ public class ChooseFile extends Activity implements AdapterView.OnItemClickListe
    */
   public int getInputInt(EditText input, int defaultVal) {
     String val = input.getText().toString();
-    if ((val != null) && (val.length() > 0)) {
+    if (val.length() > 0) {
       return Integer.parseInt(val);
     }
     return defaultVal;
   }
+
+  /**
+   * Called when the user clicks "Home" on the edit list screen
+   * Takes the user to the create a new game screen
+   */
+  public void gotoHome(View view) {
+    Intent myIntent = new Intent(ChooseFile.this, MainActivity.class);
+    startActivity(myIntent);
+    Log.d("chooseFile", "home");
+  }
+
+  /**
+   * Called when the user clicks on the delete icon on a row
+   */
+  public void deleteGame(View view) {
+    int position = (int) view.getTag();
+    String gameName = gameList.getItemAtPosition(position).toString();
+    if (Utils.deleteGame(gameName)) {
+      adapter.removeItem(position);
+      adapter.notifyDataSetChanged();
+      Log.d("chooseFile", "Deleted gameName="+gameName);
+    } else {
+      Log.e("chooseFile", "unable to delete gameName="+gameName);
+    }
+  }
+
+  /**
+   * Called when the user clicks on the delete icon on a row
+   */
+  public void startEditGame(View view) {
+    int position = (int) view.getTag();
+    String gameName = gameList.getItemAtPosition(position).toString();
+    chosenGame = Utils.loadGame(gameName);
+    setContentView(R.layout.edit_game);
+
+    EditText nameInput = (EditText) findViewById(R.id.edit_game_name);
+    EditText widthInput = (EditText) findViewById(R.id.edit_game_width);
+    EditText heightInput = (EditText) findViewById(R.id.edit_game_height);
+    nameInput.setText(gameName);
+    widthInput.setText(Integer.toString(chosenGame.getWidth()));
+    heightInput.setText(Integer.toString(chosenGame.getHeight()));
+    TextView title = (TextView) findViewById(R.id.edit_game_title);
+    title.setText("Edit Game");
+    Log.d("chooseFile", "Edit gameName="+gameName+" position="+position);
+  }
+
+  /**
+   * Called when the user clicks "New Game" on the game list screen
+   * Takes the user to the create a new game screen
+   */
+  public void startNewGame(View view) {
+    this.chosenGame = null;
+    setContentView(R.layout.edit_game);
+    Log.d("chooseFile", "newGame");
+  }
+
 
 }

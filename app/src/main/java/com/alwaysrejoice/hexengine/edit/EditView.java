@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 
 public class EditView extends View {
+  Context context;
 
   // Game drawing variables
   public static final int TILE_WIDTH = 52; // width of one tile on the map
@@ -69,6 +70,7 @@ public class EditView extends View {
 
   public EditView(Context context, String gameName) {
     super(context);
+    this.context = context;
     mapScaleDetector = new ScaleGestureDetector(context, new MapScaleListener());
     Log.d("init", "Starting");
     InputStream inputStream = null;
@@ -110,7 +112,7 @@ public class EditView extends View {
       mapY = (backgroundSizeY / 2) - Math.round(viewSizeY * mapScaleFactor / 2);
 
       // Create the toolbar
-      toolbar = new Toolbar(assetManager, viewSizeX, viewSizeY, tileTypes, displayMetrics.widthPixels, displayMetrics.heightPixels);
+      toolbar = new Toolbar(this, assetManager, viewSizeX, viewSizeY, tileTypes, displayMetrics.widthPixels, displayMetrics.heightPixels);
 
     } catch (IOException e) {
       e.printStackTrace();
@@ -370,6 +372,10 @@ public class EditView extends View {
 
   public Game getGame() {
     return game;
+  }
+
+  public Context getContex() {
+    return context;
   }
 
 }
