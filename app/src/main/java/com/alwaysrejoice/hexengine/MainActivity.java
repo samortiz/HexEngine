@@ -6,9 +6,12 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
-import com.alwaysrejoice.hexengine.edit.ChooseFile;
+import com.alwaysrejoice.hexengine.edit.GameList;
 import com.alwaysrejoice.hexengine.play.MapActivity;
 
+/**
+ * Home Screen
+ */
 public class MainActivity extends Activity {
 
   public void onCreate(Bundle savedInstanceState) {
@@ -19,7 +22,7 @@ public class MainActivity extends Activity {
   }
 
   public void showEdit(View view){
-    Intent myIntent = new Intent(MainActivity.this, ChooseFile.class);
+    Intent myIntent = new Intent(MainActivity.this, GameList.class);
     startActivity(myIntent);
     Log.d("click", "mainActivity showEdit");
   }

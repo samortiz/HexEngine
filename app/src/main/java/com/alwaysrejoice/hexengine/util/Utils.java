@@ -11,8 +11,10 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
+import com.alwaysrejoice.hexengine.dto.BitmapGsonAdapter;
 import com.alwaysrejoice.hexengine.dto.Game;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -24,6 +26,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 public class Utils {
+
+  // Custom GSON serialize/deserializer
+  // This will allow my DTO to store/load Bitmaps as Base64
+  public static final Gson gson = new GsonBuilder().registerTypeHierarchyAdapter(Bitmap.class, new BitmapGsonAdapter()).create();
 
   /**
    * @return The storage location of the games
@@ -57,7 +63,6 @@ public class Utils {
    * @param gameName name of game
    */
   public static Game loadGame(String gameName) {
-    Gson gson = new Gson();
     InputStream inputStream = null;
     Game game = null;
     try {
@@ -78,13 +83,12 @@ public class Utils {
    * Writes out a game to a file, based on the gameName
    */
   public static void saveGame(Game game) {
-    Gson gson = new Gson();
     try {
       String gameJson = gson.toJson(game);
-      File gameFile = Utils.getGameFile(game.getName());
+      File gameFile = Utils.getGameFile(game.getGameInfo().getName());
       FileUtils.writeStringToFile(gameFile, gameJson, "UTF-8");
     } catch (IOException e) {
-      Log.e("IO Error", "Error in saveGame saving '"+game.getName()+"'", e);
+      Log.e("IO Error", "Error in saveGame saving '"+game.getGameInfo().getName()+"'", e);
     }
   }
 

@@ -1,14 +1,13 @@
 package com.alwaysrejoice.hexengine.edit;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -17,11 +16,16 @@ import com.alwaysrejoice.hexengine.MainActivity;
 import com.alwaysrejoice.hexengine.R;
 import com.alwaysrejoice.hexengine.dto.Color;
 import com.alwaysrejoice.hexengine.dto.Game;
+import com.alwaysrejoice.hexengine.dto.GameInfo;
+import com.alwaysrejoice.hexengine.dto.TileTypeBackup;
 import com.alwaysrejoice.hexengine.util.Utils;
 
 import java.util.ArrayList;
 
-public class ChooseFile extends Activity implements AdapterView.OnItemClickListener {
+/**
+ * Displays and handles events for the list of games screen
+ */
+public class GameList extends Activity implements AdapterView.OnItemClickListener {
   ListView gameList;
   ChooseFileListAdapter adapter;
   Game chosenGame = null;
@@ -29,7 +33,7 @@ public class ChooseFile extends Activity implements AdapterView.OnItemClickListe
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    Log.d("ChooseFile", "onCreate");
+    Log.d("GameList", "onCreate");
     setContentView(R.layout.edit_list);
 
     gameList = (ListView) findViewById(R.id.edit_list_view);
@@ -51,16 +55,16 @@ public class ChooseFile extends Activity implements AdapterView.OnItemClickListe
    * Called when a particular game row is clicked on the edit screen (choose file screen)
    */
   public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
-    Log.d("ChooseFile", "onItemClick ");
+    Log.d("GameList", "onItemClick ");
     String gameName = (String) arg0.getItemAtPosition(position);
-    Intent myIntent = new Intent(ChooseFile.this, EditActivity.class);
+    Intent myIntent = new Intent(GameList.this, EditActivity.class);
     myIntent.putExtra("GAME_NAME", gameName);
     startActivity(myIntent);
   }
 
 
   /**
-   * Called when the user clicks "Create New Game" on the new game screen
+   * Called when the user clicks "Save" on the edit/new game screen
    */
   public void saveGame(View view) {
     EditText nameInput = (EditText) findViewById(R.id.edit_game_name);
@@ -72,19 +76,25 @@ public class ChooseFile extends Activity implements AdapterView.OnItemClickListe
 
     // TODO : Validate that the game is not too large or too small
     // TODO : Validate that the old game does not have tiles in excess of the new game size
+
     if (chosenGame == null) {
       chosenGame = new Game();
-      chosenGame.setTileTypes(new ArrayList());
-      chosenGame.setTiles(new ArrayList());
-      chosenGame.setBackgroundColor(new Color(00, 50, 50));
+      // Do the initial setup, so new games don't start totally blank
+      // TODO : Load the default tiles from assets
+
+    } else {
+      // The user changed the name of the game, this will need a new filename too
+      if (!gameName.equals(chosenGame.getGameInfo().getName())) {
+        Utils.deleteGame(chosenGame.getGameInfo().getName());
+      }
     }
-    chosenGame.setName(gameName);
-    chosenGame.setWidth(width);
-    chosenGame.setHeight(height);
-    Log.d("chooseFile", "editGame gameName="+chosenGame.getName()+" width="+width+" height="+height);
+    chosenGame.getGameInfo().setName(gameName);
+    chosenGame.getGameInfo().setWidth(width);
+    chosenGame.getGameInfo().setHeight(height);
+    Log.d("chooseFile", "editGame gameName="+gameName+" width="+width+" height="+height);
     Utils.saveGame(chosenGame);
 
-    Intent myIntent = new Intent(ChooseFile.this, EditActivity.class);
+    Intent myIntent = new Intent(GameList.this, EditActivity.class);
     myIntent.putExtra("GAME_NAME", gameName);
     startActivity(myIntent);
   }
@@ -106,7 +116,7 @@ public class ChooseFile extends Activity implements AdapterView.OnItemClickListe
    * Takes the user to the create a new game screen
    */
   public void gotoHome(View view) {
-    Intent myIntent = new Intent(ChooseFile.this, MainActivity.class);
+    Intent myIntent = new Intent(GameList.this, MainActivity.class);
     startActivity(myIntent);
     Log.d("chooseFile", "home");
   }
@@ -127,7 +137,7 @@ public class ChooseFile extends Activity implements AdapterView.OnItemClickListe
   }
 
   /**
-   * Called when the user clicks on the delete icon on a row
+   * Called when the user clicks on the edit icon on a row (goes to edit/add screen)
    */
   public void startEditGame(View view) {
     int position = (int) view.getTag();
@@ -139,8 +149,8 @@ public class ChooseFile extends Activity implements AdapterView.OnItemClickListe
     EditText widthInput = (EditText) findViewById(R.id.edit_game_width);
     EditText heightInput = (EditText) findViewById(R.id.edit_game_height);
     nameInput.setText(gameName);
-    widthInput.setText(Integer.toString(chosenGame.getWidth()));
-    heightInput.setText(Integer.toString(chosenGame.getHeight()));
+    widthInput.setText(Integer.toString(chosenGame.getGameInfo().getWidth()));
+    heightInput.setText(Integer.toString(chosenGame.getGameInfo().getHeight()));
     TextView title = (TextView) findViewById(R.id.edit_game_title);
     title.setText("Edit Game");
     Log.d("chooseFile", "Edit gameName="+gameName+" position="+position);

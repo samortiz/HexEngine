@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -16,14 +15,13 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 
-import com.alwaysrejoice.hexengine.dto.BackgroundTile;
+import com.alwaysrejoice.hexengine.dto.BgMap;
+import com.alwaysrejoice.hexengine.dto.BgTile;
 import com.alwaysrejoice.hexengine.dto.Game;
-import com.alwaysrejoice.hexengine.dto.TileType;
+import com.alwaysrejoice.hexengine.dto.SystemTile;
 import com.alwaysrejoice.hexengine.util.Utils;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
 
 public class EditView extends View {
   Context context;
@@ -36,7 +34,6 @@ public class EditView extends View {
   private Game game; // Data loaded from the user
   private Bitmap backgroundImg;
   private Canvas bgCanvas;
-  private HashMap<String, Bitmap> tileTypes = new HashMap<>();
   private int viewSizeX = 200; // size of viewport on the screen
   private int viewSizeY = 700;
   private int backgroundSizeX = 500; // size of background map
@@ -73,65 +70,44 @@ public class EditView extends View {
     this.context = context;
     mapScaleDetector = new ScaleGestureDetector(context, new MapScaleListener());
     Log.d("init", "Starting");
-    InputStream inputStream = null;
     DisplayMetrics displayMetrics = new DisplayMetrics();
     ((Activity) getContext()).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+    game = Utils.loadGame(gameName);
+    SystemTile.init(context.getAssets());
+    Log.d("init", "loaded width="+ game.getGameInfo().getWidth()+" height="+ game.getGameInfo().getHeight());
 
-    try {
-      AssetManager assetManager = context.getAssets();
-      game = Utils.loadGame(gameName);
-      Log.d("init", "loaded width="+ game.getWidth()+" height="+ game.getHeight());
-      // Load all the system tileType images
-      for (TileType type: TileType.SYSTEM_TILE_TYPES) {
-        inputStream = assetManager.open("images/"+type.getFileName());
-        Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
-        inputStream.close();
-        tileTypes.put(type.getName(), bitmap);
-      }
-      // TODO : Load custom tileTypes
+    // Make a background map
+    backgroundSizeX = Math.round(game.getGameInfo().getWidth() * TILE_WIDTH * 0.75f);
+    backgroundSizeY = game.getGameInfo().getHeight() * TILE_HEIGHT;
+    bgCenterX = backgroundSizeX / 2;
+    bgCenterY = backgroundSizeY / 2;
+    Log.d("init", "Generating background bitmap width="+backgroundSizeX+" height="+backgroundSizeY);
+    backgroundImg = Bitmap.createBitmap(backgroundSizeX,backgroundSizeY, Bitmap.Config.ARGB_8888);
+    bgCanvas = new Canvas(backgroundImg);
 
-      // Make a background map
-      backgroundSizeX = Math.round(game.getWidth() * TILE_WIDTH * 0.75f);
-      backgroundSizeY = game.getHeight() * TILE_HEIGHT;
-      bgCenterX = backgroundSizeX / 2;
-      bgCenterY = backgroundSizeY / 2;
-      Log.d("init", "Generating background bitmap width="+backgroundSizeX+" height="+backgroundSizeY);
-      backgroundImg = Bitmap.createBitmap(backgroundSizeX,backgroundSizeY, Bitmap.Config.ARGB_8888);
-      bgCanvas = new Canvas(backgroundImg);
+    drawBackground();
 
-      drawBackground();
+    // Setup the ViewPort
+    // Full size of the screen (square)
+    viewSizeX = Math.min(displayMetrics.widthPixels, displayMetrics.heightPixels);
+    viewSizeY = viewSizeX;
+    Log.i("init", "edit viewSizeX="+viewSizeX+" viewSizeY="+viewSizeY);
+    uiWindow = new Rect(0, 0, viewSizeX, viewSizeY);
+    mapScaleFactor = Math.max(MIN_SCALE, Math.min(((float)backgroundSizeX / (float)viewSizeX), MAX_SCALE));
+    mapX = (backgroundSizeX / 2) - Math.round(viewSizeX * mapScaleFactor / 2);
+    mapY = (backgroundSizeY / 2) - Math.round(viewSizeY * mapScaleFactor / 2);
 
-      // Setup the ViewPort
-      // Full size of the screen (square)
-      viewSizeX = Math.min(displayMetrics.widthPixels, displayMetrics.heightPixels);
-      viewSizeY = viewSizeX;
-      Log.i("init", "edit viewSizeX="+viewSizeX+" viewSizeY="+viewSizeY);
-      uiWindow = new Rect(0, 0, viewSizeX, viewSizeY);
-      mapScaleFactor = Math.max(MIN_SCALE, Math.min(((float)backgroundSizeX / (float)viewSizeX), MAX_SCALE));
-      mapX = (backgroundSizeX / 2) - Math.round(viewSizeX * mapScaleFactor / 2);
-      mapY = (backgroundSizeY / 2) - Math.round(viewSizeY * mapScaleFactor / 2);
-
-      // Create the toolbar
-      toolbar = new Toolbar(this, assetManager, viewSizeX, viewSizeY, tileTypes, displayMetrics.widthPixels, displayMetrics.heightPixels);
-
-    } catch (IOException e) {
-      e.printStackTrace();
-    } finally {
-      if (inputStream != null) {
-        try {
-          inputStream.close();
-        } catch (IOException e) {
-          Log.d("ERROR", "Error closing stream");
-        }
-      }
-    }
+    // Create the toolbar
+    toolbar = new Toolbar(this, game, viewSizeX, viewSizeY, displayMetrics.widthPixels, displayMetrics.heightPixels);
   }
 
   /**
    * Draws the background onto the bgImg through bgCanvas from the game data set
    */
   private void drawBackground() {
-    bgCanvas.drawRGB(game.getBackgroundColor().getRed(), game.getBackgroundColor().getGreen(), game.getBackgroundColor().getBlue());
+    bgCanvas.drawRGB(game.getGameInfo().getBackgroundColor().getRed(),
+                     game.getGameInfo().getBackgroundColor().getGreen(),
+                     game.getGameInfo().getBackgroundColor().getBlue());
     // Draw border
     Paint paint = new Paint();
     paint.setStrokeWidth(5);
@@ -139,17 +115,20 @@ public class EditView extends View {
     paint.setStyle(Paint.Style.STROKE);
     bgCanvas.drawRect(0, 0, backgroundSizeX, backgroundSizeY, paint);
 
-    // Draw all the tiles
-    for (BackgroundTile tile : game.getTiles()) {
+    // Draw all the background
+    for (BgMap tile : game.getBgMaps()) {
       int x = bgCenterX + Math.round(HEX_SIZE * 1.5f  * tile.getCol()) - (TILE_WIDTH / 2);
       int y = bgCenterY + Math.round(HEX_SIZE * SQRT_3 * (tile.getRow() + (tile.getCol() / 2f))) - (TILE_HEIGHT/2);
-      Bitmap bitmap = tileTypes.get(tile.getName());
-      if (bitmap == null) {
-        Log.d("error", "Error! Unknown tile : "+tile.getName());
-      } else {
-        bgCanvas.drawBitmap(bitmap, x, y, null);
-      }
+      BgTile bgTile = game.getBgTiles().get(tile.getName());
+      if (bgTile != null) {
+        Bitmap bitmap = bgTile.getImg().getBitmap();
+        if (bitmap != null) {
+          bgCanvas.drawBitmap(bitmap, x, y, null);
+        } else Log.e("editView", "Error in drawBackground, no image for BgTile with name="+bgTile.getName());
+      } else Log.e("editView", "Error in drawBackground, no tile in BgTiles with name="+tile.getName());
     }
+
+    // TODO : Draw the units
   }
 
 
@@ -320,7 +299,11 @@ public class EditView extends View {
   }
 
 
-
+  /**
+   * Draws a tile given a click at the specified location
+   * @param x,y : The UI click location
+   * @return true if the tile was drawn
+   */
   private boolean drawTile(float x, float y) {
     boolean handledEvent = false;
     // If the event is on the map
@@ -332,15 +315,16 @@ public class EditView extends View {
       int row = Math.round((-bgX / 3f + (float)Math.sqrt(3f)/3f * bgY) / HEX_SIZE) ;
       //Log.d("drawTile", "x="+x+" y="+y+" bgCenterX="+bgCenterX+" bgCenterY="+bgCenterY+" bgX="+bgX+" bgY="+bgY+" col="+col+" row="+row);
       // Remove any tiles that exist at that location already
-      for (int i = game.getTiles().size()-1; i>=0; i--) {
-        BackgroundTile bgTile = game.getTiles().get(i);
-        if ((bgTile.getCol() == col) && (bgTile.getRow() == row)) {
-          game.getTiles().remove(i);
+      for (int i = game.getBgMaps().size()-1; i>=0; i--) {
+        BgMap bgMap = game.getBgMaps().get(i);
+        if ((bgMap.getCol() == col) && (bgMap.getRow() == row)) {
+          game.getBgMaps().remove(i);
         }
       } // for
       if (toolbar.getMode() == Toolbar.Mode.DRAW) {
-        game.getTiles().add(new BackgroundTile(col, row, toolbar.getToolbarButtonSelectedName()));
+        game.getBgMaps().add(new BgMap(col, row, toolbar.getToolbarButtonSelectedName()));
       }
+      // TODO : Add units if in Unit adding mode
       drawBackground(); // this will refresh the background image (kind of costly)
       handledEvent = true;
     }

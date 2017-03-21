@@ -1,13 +1,13 @@
 package com.alwaysrejoice.hexengine.dto;
 
-public class BackgroundTile {
+public class BgMap {
   private int col;
   private int row;
   private String name;
 
-  public BackgroundTile() {}
+  public BgMap() {}
 
-  public BackgroundTile(int col, int row, String name) {
+  public BgMap(int col, int row, String name) {
     this.col = col;
     this.row = row;
     this.name = name;

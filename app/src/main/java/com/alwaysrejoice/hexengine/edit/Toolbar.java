@@ -1,8 +1,6 @@
 package com.alwaysrejoice.hexengine.edit;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -10,27 +8,30 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.Log;
 
-import com.alwaysrejoice.hexengine.MainActivity;
 import com.alwaysrejoice.hexengine.dto.Game;
+import com.alwaysrejoice.hexengine.dto.SystemTile;
+import com.alwaysrejoice.hexengine.dto.TileGroup;
 import com.alwaysrejoice.hexengine.dto.TileType;
+import com.alwaysrejoice.hexengine.dto.TileTypeBackup;
 import com.alwaysrejoice.hexengine.util.Utils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class Toolbar {
   public enum Mode { MOVE, ERASE, DRAW};
   private static final int TOOLBAR_BUTTONS_PER_ROW = 5;
 
-  Paint paint = new Paint();
   EditView editView;
+  Game game;
+  Paint paint = new Paint();
 
   // Toolbar Variables
   private int toolbarWidth;
   private int toolbarHeight;
   private int toolbarX;
   private int toolbarY;
+  private List<TileGroup> tileGroups;
   private Rect toolbarWindow;
   private List<ToolbarButton> toolbarButtons;
   private Bitmap selectedImg;
@@ -39,22 +40,18 @@ public class Toolbar {
   private boolean selectedButtonChildrenVisible = false;
 
   // Variables from EditView
-  private AssetManager assetManager;
-  private HashMap<String, Bitmap> tileTypes;
   private int viewSizeX;
   private int viewSizeY;
 
   // Default Constructor
-  public Toolbar(EditView editView, AssetManager assetManager, int viewSizeX, int viewSizeY, HashMap<String, Bitmap> tileTypes, int screenWidth, int screenHeight) {
+  public Toolbar(EditView editView, Game game, int viewSizeX, int viewSizeY, int screenWidth, int screenHeight) {
     this.editView = editView;
-    this.assetManager = assetManager;
+    this.game = game;
     this.viewSizeX = viewSizeX;
     this.viewSizeY = viewSizeY;
-    this.tileTypes = tileTypes;
     Log.d("toolbar", "Creating toolbar viewSizeX="+viewSizeX+" viewSizeY="+viewSizeY);
 
-    selectedImg = Utils.loadBitmap(assetManager, "images/selected.png");
-
+    selectedImg = SystemTile.getTile(SystemTile.NAME.SELECTED).getImg().getBitmap();
     paint.setColor(Color.rgb(200, 200, 255));
 
     Log.d("toolbar", "loaded img");
@@ -80,39 +77,58 @@ public class Toolbar {
     int buttonX = -buttonWidth; // so we can pre-increment
     int buttonY = toolbarY;
     Log.d("toolbar", "toolbarWidth="+toolbarWidth+" toolbarHeight="+toolbarHeight+" buttonWidth="+buttonWidth+" buttonHeight="+buttonHeight+" toolbarY="+toolbarY);
-    // Setup the system buttons
-    for (TileType tileType : TileType.SYSTEM_TILE_TYPES) {
-      Bitmap img = tileTypes.get(tileType.getName());
-      ToolbarButton parentButton = ToolbarButton.getButtonOfType(toolbarButtons, tileType.getType());
-      if (parentButton == null) {
-        buttonX += buttonWidth;
-        if (buttonX >= toolbarWidth) {
-          buttonX = 0;
-          buttonY += buttonHeight +1;
-        }
-        ToolbarButton newButton = new ToolbarButton(tileType.getName(), tileType.getType(), img,
-            new Rect(buttonX, buttonY, buttonX+buttonWidth, buttonY+buttonHeight), null);
-        toolbarButtons.add(newButton);
-        Log.d("toolbar", "Added parent "+newButton.getName()+" of type="+newButton.getType()+" position="+newButton.getPosition());
-      } else {
-        // parentButton != null
-        int childCount = parentButton.getChildren().size() +1; // +1 for the child about to be added
-        int childLeft = buttonX;
-        int childTop = buttonY-(buttonHeight*childCount);
-        int childRight = buttonX+buttonWidth;
-        int childBottom = childTop + buttonHeight;
-        while (childTop < 0) {
-          childLeft += buttonWidth;
-          childTop += buttonY;
-          childRight += buttonWidth;
-          childBottom = childTop + buttonHeight;
-        }
-        ToolbarButton newButton = new ToolbarButton(tileType.getName(), tileType.getType(), img,
-            new Rect(childLeft, childTop, childRight, childBottom), parentButton);
-        parentButton.addChild(newButton);
-        Log.d("toolbar", "added child "+newButton.getName()+" type="+newButton.getType()+" position="+newButton.getPosition());
+
+    // Setup the System Tiles
+    ArrayList<TileType> systemTiles = new ArrayList();
+    systemTiles.add(SystemTile.getTile(SystemTile.NAME.HAND));
+    systemTiles.add(SystemTile.getTile(SystemTile.NAME.ERASER));
+    systemTiles.add(SystemTile.getTile(SystemTile.NAME.SAVE));
+    systemTiles.add(SystemTile.getTile(SystemTile.NAME.EXIT));
+    TileGroup systemTileGroup = new TileGroup();
+    systemTileGroup.setName("system");
+    systemTileGroup.setTiles(systemTiles);
+    // Load the rest of the game-specific tiles
+    tileGroups = game.getTileGroups();
+    tileGroups.add(0, systemTileGroup);
+
+    // Setup the custom buttons
+    for (TileGroup group : tileGroups) {
+      buttonX += buttonWidth;
+      if (buttonX >= toolbarWidth) {
+        buttonX = 0;
+        buttonY += buttonHeight +1;
       }
-    } // for
+      ToolbarButton parentButton = null;
+
+      // Draw the buttons
+      for (int i=0; i<group.getTiles().size(); i++) {
+        TileType tile = group.getTiles().get(i);
+        String name = tile.getName();
+        Bitmap img = tile.getImg().getBitmap();
+        if (i == 0) {
+          // It's a parent button
+          ToolbarButton newButton = new ToolbarButton(name, tile.getTileType(), img, new Rect(buttonX, buttonY, buttonX+buttonWidth, buttonY+buttonHeight), null);
+          toolbarButtons.add(newButton);
+          parentButton = newButton;
+          Log.d("toolbar", "Added parent "+newButton.getName()+" of group="+group.getName()+" position="+newButton.getPosition());
+        } else {
+          // It's a child button
+          int childLeft = buttonX;
+          int childTop = buttonY - (buttonHeight * i);
+          int childRight = buttonX + buttonWidth;
+          int childBottom = childTop + buttonHeight;
+          while (childTop < 0) {
+            childLeft += buttonWidth;
+            childTop += buttonY;
+            childRight += buttonWidth;
+            childBottom = childTop + buttonHeight;
+          } // while
+          ToolbarButton newButton = new ToolbarButton(name, tile.getTileType(), img, new Rect(childLeft, childTop, childRight, childBottom), parentButton);
+          parentButton.addChild(newButton);
+          Log.d("toolbar", "added child " + newButton.getName() + " position=" + newButton.getPosition());
+        }
+      } // for tile
+    } // for group
 
     // For each parent calculate the toolbar popup background size
     for (ToolbarButton button : toolbarButtons) {
@@ -132,7 +148,7 @@ public class Toolbar {
       button.setPopupPosition(popupPosition);
 
       Log.d("toolbar", "childCount="+childCount+" colCount="+colCount+ " popupPosition="+popupPosition);
-    }
+    } // for
 
     // Select the first button (move)
     selectedButton = toolbarButtons.get(0);
@@ -243,16 +259,24 @@ public class Toolbar {
       }
       selectedButton = button;
 
-      if (TileType.SYSTEM_HAND.getName().equals(button.getName())) {
-        mode = Mode.MOVE;
-      } else if (TileType.SYSTEM_ERASER.getName().equals(button.getName())) {
-        mode = Mode.ERASE;
-      } else if (TileType.SYSTEM_SAVE.getName().equals(button.getName())) {
-        Utils.saveGame(editView.getGame());
-      } else if (TileType.SYSTEM_EXIT.getName().equals(button.getName())) {
-        Utils.saveGame(editView.getGame());
-        Intent myIntent = new Intent(editView.getContext(), ChooseFile.class);
-        editView.getContex().startActivity(myIntent);
+      if (TileType.TILE_TYPE.SYSTEM.equals(button.getType()) ) {
+        if (SystemTile.NAME.HAND.toString().equals(button.getName())) {
+          mode = Mode.MOVE;
+          Log.d("toolbar", "hand mode");
+        } else if (SystemTile.NAME.ERASER.toString().equals(button.getName())) {
+          mode = Mode.ERASE;
+          Log.d("toolbar", "eraser mode");
+        } else if (SystemTile.NAME.SAVE.toString().equals(button.getName())) {
+          Utils.saveGame(editView.getGame());
+          Log.d("toolbar", "Saved game");
+        } else if (SystemTile.NAME.EXIT.toString().equals(button.getName())) {
+          Utils.saveGame(editView.getGame());
+          Intent myIntent = new Intent(editView.getContext(), GameList.class);
+          editView.getContex().startActivity(myIntent);
+          Log.d("toolbar", "exit");
+        } else {
+          Log.e("toolbar", "Error! Unknown system button "+button.getName());
+        }
       } else {
         mode = Mode.DRAW;
       }

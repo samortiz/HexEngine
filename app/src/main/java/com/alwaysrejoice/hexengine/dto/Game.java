@@ -1,60 +1,63 @@
 package com.alwaysrejoice.hexengine.dto;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Game {
-  private String name;
-  private int width;
-  private int height;
-  private Color backgroundColor;
-  private List<TileType> tileTypes;
-  private List<BackgroundTile> tiles;
+  private GameInfo gameInfo =  new GameInfo();
+  private List<BgMap> bgMaps = new ArrayList();
+  private Map<String, BgTile> bgTiles = new HashMap();
+  private List<UnitMap> unitMaps = new ArrayList();
+  private Map<String, UnitTile> unitTiles = new HashMap();
+  private List<TileGroup> tileGroups = new ArrayList();
 
-  public String getName() {
-    return name;
+  public GameInfo getGameInfo() {
+    return gameInfo;
   }
 
-  public void setName(String name) {
-    this.name = name;
+  public void setGameInfo(GameInfo gameInfo) {
+    this.gameInfo = gameInfo;
   }
 
-  public int getWidth() {
-    return width;
+  public List<BgMap> getBgMaps() {
+    return bgMaps;
   }
 
-  public void setWidth(int width) {
-    this.width = width;
+  public void setBgMaps(List<BgMap> bgMaps) {
+    this.bgMaps = bgMaps;
   }
 
-  public int getHeight() {
-    return height;
+  public Map<String, BgTile> getBgTiles() {
+    return bgTiles;
   }
 
-  public void setHeight(int height) {
-    this.height = height;
+  public void setBgTiles(Map<String, BgTile> bgTiles) {
+    this.bgTiles = bgTiles;
   }
 
-  public Color getBackgroundColor() {
-    return backgroundColor;
+  public List<UnitMap> getUnitMaps() {
+    return unitMaps;
   }
 
-  public void setBackgroundColor(Color backgroundColor) {
-    this.backgroundColor = backgroundColor;
+  public void setUnitMaps(List<UnitMap> unitMaps) {
+    this.unitMaps = unitMaps;
   }
 
-  public List<TileType> getTileTypes() {
-    return tileTypes;
+  public Map<String, UnitTile> getUnitTiles() {
+    return unitTiles;
   }
 
-  public void setTileTypes(List<TileType> tileTypes) {
-    this.tileTypes = tileTypes;
+  public void setUnitTiles(Map<String, UnitTile> unitTiles) {
+    this.unitTiles = unitTiles;
   }
 
-  public List<BackgroundTile> getTiles() {
-    return tiles;
+  public List<TileGroup> getTileGroups() {
+    return tileGroups;
   }
 
-  public void setTiles(List<BackgroundTile> tiles) {
-    this.tiles = tiles;
+  public void setTileGroups(List<TileGroup> tileGroups) {
+    this.tileGroups = tileGroups;
   }
 }

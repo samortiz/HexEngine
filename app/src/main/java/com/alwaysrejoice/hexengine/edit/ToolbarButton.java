@@ -3,13 +3,15 @@ package com.alwaysrejoice.hexengine.edit;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 
+import com.alwaysrejoice.hexengine.dto.TileType;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class ToolbarButton {
 
   private String name;
-  private String type;
+  private TileType.TILE_TYPE type;
   private Bitmap img;
   private Rect position;
   private ToolbarButton parent = null;
@@ -19,8 +21,8 @@ public class ToolbarButton {
   // Constructors
   public ToolbarButton() { }
 
-  public ToolbarButton(String name, String type, Bitmap img, Rect position, ToolbarButton parent) {
-   this.name = name;
+  public ToolbarButton(String name, TileType.TILE_TYPE type, Bitmap img, Rect position, ToolbarButton parent) {
+    this.name = name;
     this.type = type;
     this.img = img;
     this.position = position;
@@ -39,16 +41,6 @@ public class ToolbarButton {
     return children.size() > 0;
   }
 
-  // Static
-  public static ToolbarButton getButtonOfType(List<ToolbarButton> buttons, String type) {
-    if ((type == null) || (buttons == null)) return null;
-    for (ToolbarButton button : buttons) {
-      if (type.equals(button.getType())) {
-        return button;
-      }
-    }
-    return null;
-  }
 
   // Getter / Setter
   public String getName() {
@@ -59,11 +51,11 @@ public class ToolbarButton {
     this.name = name;
   }
 
-  public String getType() {
+  public TileType.TILE_TYPE getType() {
     return type;
   }
 
-  public void setType(String type) {
+  public void setType(TileType.TILE_TYPE type) {
     this.type = type;
   }
 
