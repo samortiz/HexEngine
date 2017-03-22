@@ -2,7 +2,6 @@ package com.alwaysrejoice.hexengine.edit;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -19,11 +18,9 @@ import com.alwaysrejoice.hexengine.dto.BgMap;
 import com.alwaysrejoice.hexengine.dto.BgTile;
 import com.alwaysrejoice.hexengine.dto.Game;
 import com.alwaysrejoice.hexengine.dto.SystemTile;
-import com.alwaysrejoice.hexengine.util.Utils;
+import com.alwaysrejoice.hexengine.util.GameUtils;
 
-import java.io.InputStream;
-
-public class EditView extends View {
+public class EditMapView extends View {
   Context context;
 
   // Game drawing variables
@@ -65,14 +62,14 @@ public class EditView extends View {
   private float scaleDiffY = 0;
 
 
-  public EditView(Context context, String gameName) {
+  public EditMapView(Context context) {
     super(context);
     this.context = context;
     mapScaleDetector = new ScaleGestureDetector(context, new MapScaleListener());
     Log.d("init", "Starting");
     DisplayMetrics displayMetrics = new DisplayMetrics();
     ((Activity) getContext()).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-    game = Utils.loadGame(gameName);
+    game = GameUtils.getGame();
     SystemTile.init(context.getAssets());
     Log.d("init", "loaded width="+ game.getGameInfo().getWidth()+" height="+ game.getGameInfo().getHeight());
 
@@ -98,7 +95,7 @@ public class EditView extends View {
     mapY = (backgroundSizeY / 2) - Math.round(viewSizeY * mapScaleFactor / 2);
 
     // Create the toolbar
-    toolbar = new Toolbar(this, game, viewSizeX, viewSizeY, displayMetrics.widthPixels, displayMetrics.heightPixels);
+    toolbar = new Toolbar(this, viewSizeX, viewSizeY, displayMetrics.widthPixels, displayMetrics.heightPixels);
   }
 
   /**
@@ -124,8 +121,8 @@ public class EditView extends View {
         Bitmap bitmap = bgTile.getImg().getBitmap();
         if (bitmap != null) {
           bgCanvas.drawBitmap(bitmap, x, y, null);
-        } else Log.e("editView", "Error in drawBackground, no image for BgTile with name="+bgTile.getName());
-      } else Log.e("editView", "Error in drawBackground, no tile in BgTiles with name="+tile.getName());
+        } else Log.e("editMapView", "Error in drawBackground, no image for BgTile with name="+bgTile.getName());
+      } else Log.e("editMapView", "Error in drawBackground, no tile in BgTiles with name="+tile.getName());
     }
 
     // TODO : Draw the units
@@ -352,10 +349,6 @@ public class EditView extends View {
       Log.d("scale", "mapScaleFactor="+newScaleFactor);
       return true;
     }
-  }
-
-  public Game getGame() {
-    return game;
   }
 
   public Context getContex() {

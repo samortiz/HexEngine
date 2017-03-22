@@ -6,35 +6,32 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.alwaysrejoice.hexengine.util.Utils;
+import com.alwaysrejoice.hexengine.util.GameUtils;
 
-public class EditActivity extends AppCompatActivity implements View.OnTouchListener {
-  EditView editView;
+public class EditMapActivity extends AppCompatActivity implements View.OnTouchListener {
+  EditMapView editMapView;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    Log.d("init", "EditActivity.onCreate");
-
-    // Get the name of the selected game that was passed in with this intent
-    String gameName = getIntent().getStringExtra("GAME_NAME");
+    Log.d("init", "EditMapActivity.onCreate");
 
     // Show the edit screen
-    editView = new EditView(this, gameName);
-    editView.setOnTouchListener(this);
-    setContentView(editView);
+    editMapView = new EditMapView(this);
+    editMapView.setOnTouchListener(this);
+    setContentView(editMapView);
   }
 
   // OnTouchListener methods
   public boolean onTouch(View v, MotionEvent event) {
-    editView.onTouchEvent(event);
+    editMapView.onTouchEvent(event);
     return true;
   }
 
   @Override
   public void onBackPressed() {
     Log.d("edit", "Back pressed");
-    Utils.saveGame(editView.getGame());
+    GameUtils.saveGame();
     // default behavior
     super.onBackPressed();
   }

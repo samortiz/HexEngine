@@ -13,22 +13,22 @@ import com.alwaysrejoice.hexengine.R;
 
 import java.util.List;
 
-public class ChooseFileListAdapter extends BaseAdapter {
+public class BgListAdapter extends BaseAdapter {
 
   private Context context;
-  private List<String>  names;
+  private List<String> name;
 
-  public ChooseFileListAdapter(Context context, List<String> names) {
+  public BgListAdapter(Context context, List<String> name) {
     this.context = context;
-    this.names = names;
+    this.name = name;
   }
 
   public int getCount() {
-    return names.size();
+    return name.size();
   }
 
   public String getItem(int arg0) {
-    return names.get(arg0);
+    return name.get(arg0);
   }
 
   public long getItemId(int position) {
@@ -36,19 +36,16 @@ public class ChooseFileListAdapter extends BaseAdapter {
   }
 
   public void removeItem(int position) {
-    names.remove(position);
+    name.remove(position);
   }
 
   public View getView(int position, View convertView, ViewGroup parent) {
     LayoutInflater inflater = LayoutInflater.from(context);
-    View row = inflater.inflate(R.layout.game_list_row, parent, false);
-    TextView name = (TextView) row.findViewById(R.id.edit_list_row_name);
-    name.setText(names.get(position));
+    View row = inflater.inflate(R.layout.bg_list_row, parent, false);
+    TextView name = (TextView) row.findViewById(R.id.row_name);
+    name.setText(this.name.get(position));
 
-    ImageView editImg = (ImageView) row.findViewById(R.id.edit_list_row_edit);
-    editImg.setTag(position);
-
-    ImageView deleteImg = (ImageView) row.findViewById(R.id.edit_list_row_delete);
+    ImageView deleteImg = (ImageView) row.findViewById(R.id.row_delete);
     deleteImg.setTag(position);
 
     Log.d("choose", "name="+name.getText());

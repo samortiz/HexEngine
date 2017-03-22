@@ -12,8 +12,7 @@ import com.alwaysrejoice.hexengine.dto.Game;
 import com.alwaysrejoice.hexengine.dto.SystemTile;
 import com.alwaysrejoice.hexengine.dto.TileGroup;
 import com.alwaysrejoice.hexengine.dto.TileType;
-import com.alwaysrejoice.hexengine.dto.TileTypeBackup;
-import com.alwaysrejoice.hexengine.util.Utils;
+import com.alwaysrejoice.hexengine.util.GameUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,8 +21,7 @@ public class Toolbar {
   public enum Mode { MOVE, ERASE, DRAW};
   private static final int TOOLBAR_BUTTONS_PER_ROW = 5;
 
-  EditView editView;
-  Game game;
+  EditMapView editMapView;
   Paint paint = new Paint();
 
   // Toolbar Variables
@@ -31,6 +29,8 @@ public class Toolbar {
   private int toolbarHeight;
   private int toolbarX;
   private int toolbarY;
+  // This tileGroups is different from the one in the saved game
+  // because this one has all the system menus as well (which don't get saved in the game)
   private List<TileGroup> tileGroups;
   private Rect toolbarWindow;
   private List<ToolbarButton> toolbarButtons;
@@ -39,14 +39,13 @@ public class Toolbar {
   private ToolbarButton selectedButton = null;
   private boolean selectedButtonChildrenVisible = false;
 
-  // Variables from EditView
+  // Variables from EditMapView
   private int viewSizeX;
   private int viewSizeY;
 
   // Default Constructor
-  public Toolbar(EditView editView, Game game, int viewSizeX, int viewSizeY, int screenWidth, int screenHeight) {
-    this.editView = editView;
-    this.game = game;
+  public Toolbar(EditMapView editMapView, int viewSizeX, int viewSizeY, int screenWidth, int screenHeight) {
+    this.editMapView = editMapView;
     this.viewSizeX = viewSizeX;
     this.viewSizeY = viewSizeY;
     Log.d("toolbar", "Creating toolbar viewSizeX="+viewSizeX+" viewSizeY="+viewSizeY);
@@ -82,14 +81,16 @@ public class Toolbar {
     ArrayList<TileType> systemTiles = new ArrayList();
     systemTiles.add(SystemTile.getTile(SystemTile.NAME.HAND));
     systemTiles.add(SystemTile.getTile(SystemTile.NAME.ERASER));
+    systemTiles.add(SystemTile.getTile(SystemTile.NAME.SETTINGS));
     systemTiles.add(SystemTile.getTile(SystemTile.NAME.SAVE));
     systemTiles.add(SystemTile.getTile(SystemTile.NAME.EXIT));
     TileGroup systemTileGroup = new TileGroup();
     systemTileGroup.setName("system");
     systemTileGroup.setTiles(systemTiles);
     // Load the rest of the game-specific tiles
-    tileGroups = game.getTileGroups();
-    tileGroups.add(0, systemTileGroup);
+    tileGroups = new ArrayList<>();
+    tileGroups.add(systemTileGroup);
+    tileGroups.addAll(GameUtils.getGame().getTileGroups());
 
     // Setup the custom buttons
     for (TileGroup group : tileGroups) {
@@ -266,13 +267,17 @@ public class Toolbar {
         } else if (SystemTile.NAME.ERASER.toString().equals(button.getName())) {
           mode = Mode.ERASE;
           Log.d("toolbar", "eraser mode");
+        } else if (SystemTile.NAME.SETTINGS.toString().equals(button.getName())) {
+          Intent myIntent = new Intent(editMapView.getContext(), SettingsActivity.class);
+          editMapView.getContex().startActivity(myIntent);
+          Log.d("toolbar", "Going to settings");
         } else if (SystemTile.NAME.SAVE.toString().equals(button.getName())) {
-          Utils.saveGame(editView.getGame());
+          GameUtils.saveGame();
           Log.d("toolbar", "Saved game");
         } else if (SystemTile.NAME.EXIT.toString().equals(button.getName())) {
-          Utils.saveGame(editView.getGame());
-          Intent myIntent = new Intent(editView.getContext(), GameList.class);
-          editView.getContex().startActivity(myIntent);
+          GameUtils.saveGame();
+          Intent myIntent = new Intent(editMapView.getContext(), GameListActivity.class);
+          editMapView.getContex().startActivity(myIntent);
           Log.d("toolbar", "exit");
         } else {
           Log.e("toolbar", "Error! Unknown system button "+button.getName());

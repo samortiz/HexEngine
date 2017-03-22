@@ -13,6 +13,10 @@ public class Game {
   private Map<String, UnitTile> unitTiles = new HashMap();
   private List<TileGroup> tileGroups = new ArrayList();
 
+  public String toString() {
+    return gameInfo.getName()+" "+gameInfo.getWidth()+"x"+gameInfo.getHeight();
+  }
+
   public GameInfo getGameInfo() {
     return gameInfo;
   }

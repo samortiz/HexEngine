@@ -18,14 +18,44 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".edit.GameList"
-            android:label="ChooseFile"
+            android:name=".edit.GameListActivity"
+            android:label="GameList"
             android:theme="@style/AppTheme.NoActionBar"
             android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name=".edit.EditActivity"
-            android:label="EditActivity"
+            android:name=".edit.GameEditActivity"
+            android:label="GameEdit"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name=".edit.EditMapActivity"
+            android:label="EditMapActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name=".edit.SettingsActivity"
+            android:label="SettingsActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name=".edit.BgListActivity"
+            android:label="BgListActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name=".edit.BgEditActivity"
+            android:label="BgEditActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name=".edit.ImagePickerActivity"
+            android:label="ImagePickerActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:screenOrientation="portrait" >
         </activity>
@@ -34,6 +64,10 @@
             android:label="MapActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:screenOrientation="portrait" >
-        </activity>
+        </activity><!-- ATTENTION: This was auto-generated to add Google Play services to your project for
+     App Indexing.  See https://g.co/AppIndexing/AndroidStudio for more information. -->
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version"/>
     </application>
 </manifest>

@@ -19,6 +19,7 @@ public class SystemTile implements TileType {
   public static enum NAME {
     HAND ("hand"),
     ERASER ("eraser"),
+    SETTINGS ("settings"),
     SAVE ("save"),
     EXIT ("exit"),
     SELECTED ("selected");

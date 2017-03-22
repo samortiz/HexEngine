@@ -6,15 +6,13 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.alwaysrejoice.hexengine.edit.EditView;
-
 public class MapActivity extends AppCompatActivity implements View.OnTouchListener {
   MapView mapView;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    Log.d("init", "EditActivity.onCreate");
+    Log.d("init", "EditMapActivity.onCreate");
     // Show the edit screen
     mapView = new MapView(this);
     mapView.setOnTouchListener(this);
