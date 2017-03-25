@@ -1,16 +1,21 @@
 package com.alwaysrejoice.hexengine.dto;
 
+import android.graphics.Bitmap;
+
+import java.io.Serializable;
+
 public class BgTile implements TileType {
+
   private String name;
   private String type;
-  private Image img;
+  private Bitmap bitmap;
 
   public BgTile() {}
 
-  public BgTile(String name, String type, Image img) {
+  public BgTile(String name, String type, Bitmap bitmap) {
     this.name = name;
     this.type = type;
-    this.img = img;
+    this.bitmap = bitmap;
   }
 
   public TILE_TYPE getTileType() {
@@ -33,12 +38,28 @@ public class BgTile implements TileType {
     this.type = type;
   }
 
-  public Image getImg() {
-    return img;
+  public Bitmap getBitmap() {
+    return bitmap;
   }
 
-  public void setImg(Image img) {
-    this.img = img;
+  public void setBitmap(Bitmap bitmap) {
+    this.bitmap = bitmap;
+  }
+
+  @Override
+  public String toString() {
+    return "BgTile{" +
+        "name='" + name + '\'' +
+        ", type='" + type + '\'' +
+        '}';
+  }
+
+  @Override
+  public int compareTo(Object o) {
+    if (o == null) {
+      return 0;
+    }
+    return this.getName().compareTo(((TileType)o).getName());
   }
 
 }

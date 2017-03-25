@@ -2,108 +2,109 @@ package com.alwaysrejoice.hexengine.edit;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 
 import com.alwaysrejoice.hexengine.R;
 import com.alwaysrejoice.hexengine.dto.BgTile;
 import com.alwaysrejoice.hexengine.dto.Game;
-import com.alwaysrejoice.hexengine.dto.Image;
-import com.alwaysrejoice.hexengine.util.FileUtils;
 import com.alwaysrejoice.hexengine.util.GameUtils;
-import com.google.android.gms.appindexing.Action;
-import com.google.android.gms.appindexing.AppIndex;
-import com.google.android.gms.appindexing.Thing;
-import com.google.android.gms.common.api.GoogleApiClient;
 
 import java.util.Map;
 
 public class BgEditActivity extends Activity {
-
-  /**
-   * ATTENTION: This was auto-generated to implement the App Indexing API.
-   * See https://g.co/AppIndexing/AndroidStudio for more information.
-   */
-  private GoogleApiClient client;
+  public static final String SELECTED_TILE = "BGEDIT_SELECTED_TILE";
+  BgTile tile; // The tile we are currently editing
+  String origTileName;  // Tile name when the edit screen was first invoked
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     Log.d("bgEdit", "onCreate");
     setContentView(R.layout.bg_edit);
-    // Get the name of the selected game that was passed in with this intent
-    String bgName = getIntent().getStringExtra("BG_NAME");
-    // ATTENTION: This was auto-generated to implement the App Indexing API.
-    // See https://g.co/AppIndexing/AndroidStudio for more information.
-    client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+    Bundle bundle = getIntent().getExtras();
+
+    // Check if we are coming back from an ImagePickerActivity
+    String tileJson = (String) bundle.get(ImagePickerActivity.EXTRA_TILE);
+    if (tileJson != null) {
+      tile = GameUtils.toBgTile(tileJson);
+      setUiFromTile();
+      Log.d("bgEdit", "Tile chosen! " + tile.getName());
+    }
+
+    // Load the file we are editing
+    String tileName = (String) bundle.get(BgEditActivity.SELECTED_TILE);
+    if (tileName != null) {
+      Game game = GameUtils.getGame();
+      tile = game.getBgTiles().get(tileName);
+      setUiFromTile();
+      origTileName = tileName;
+      Log.d("bgEdit", "begin editing selected tile "+tileName);
+    }
+
+    if (tile == null) {
+      tile = new BgTile();
+    }
+
   }
 
   /**
    * Called when the user clicks "Save"
    */
   public void save(View view) {
-    EditText nameInput = (EditText) findViewById(R.id.bg_name);
-    EditText typeInput = (EditText) findViewById(R.id.bg_type);
-    String name = nameInput.getText().toString();
-    String type = typeInput.getText().toString();
-
-    Bitmap bitmap = FileUtils.loadBitmap(name + ".png");
-    Image image = new Image(name + ".png", bitmap);
-
+    loadTileFromUi();
     Game game = GameUtils.getGame();
     Map<String, BgTile> bgTiles = game.getBgTiles();
-    BgTile bgTile = bgTiles.get(name);
-    if (bgTile != null) {
-      Log.i("bgEditActivity", "Name=" + name + " already exists as a bgTile, overwriting");
-      // TODO : Validation error for the user
-    }
-    bgTile = new BgTile(name, type, image);
-    bgTiles.put(name, bgTile);
-    Log.d("bgEdit", "saving bgTile name="+name+" type="+type);
-    // TOOD : Save the game
-
+    bgTiles.remove(origTileName);
+    bgTiles.put(tile.getName(), tile);
+    GameUtils.saveGame();
+    Log.d("bgEdit", "saving bgTile name="+tile.getName()+" type="+tile.getType()+" orig="+origTileName);
+    // Go to the list
     Intent myIntent = new Intent(BgEditActivity.this, BgListActivity.class);
     startActivity(myIntent);
   }
 
+  /**
+   * Called when the user clicks on the bitmap to change it
+   */
+  public void chooseBitmap(View view) {
+    loadTileFromUi();
+    Intent myIntent = new Intent(BgEditActivity.this, ImagePickerActivity.class);
+    myIntent.putExtra(ImagePickerActivity.EXTRA_RETURN, ImagePickerActivity.RETURN_BG);
+    myIntent.putExtra(ImagePickerActivity.EXTRA_TILE, GameUtils.toJson(tile));
+    startActivity(myIntent);
+  }
 
   /**
-   * ATTENTION: This was auto-generated to implement the App Indexing API.
-   * See https://g.co/AppIndexing/AndroidStudio for more information.
+   * Loads the information from the UI input components into the tile
    */
-  public Action getIndexApiAction() {
-    Thing object = new Thing.Builder()
-        .setName("BgEdit Page") // TODO: Define a title for the content shown.
-        // TODO: Make sure this auto-generated URL is correct.
-        .setUrl(Uri.parse("http://[ENTER-YOUR-URL-HERE]"))
-        .build();
-    return new Action.Builder(Action.TYPE_VIEW)
-        .setObject(object)
-        .setActionStatus(Action.STATUS_TYPE_COMPLETED)
-        .build();
+  private void loadTileFromUi() {
+    EditText nameInput = (EditText) findViewById(R.id.bg_name);
+    EditText typeInput = (EditText) findViewById(R.id.bg_type);
+    tile.setName(nameInput.getText().toString());
+    tile.setType(typeInput.getText().toString());
   }
 
-  @Override
-  public void onStart() {
-    super.onStart();
-
-    // ATTENTION: This was auto-generated to implement the App Indexing API.
-    // See https://g.co/AppIndexing/AndroidStudio for more information.
-    client.connect();
-    AppIndex.AppIndexApi.start(client, getIndexApiAction());
+  /**
+   * Updates the UI to match the data in the tile
+   */
+  private void setUiFromTile() {
+    EditText nameInput = (EditText) findViewById(R.id.bg_name);
+    EditText typeInput = (EditText) findViewById(R.id.bg_type);
+    ImageView imgInput = (ImageView) findViewById(R.id.bg_img);
+    nameInput.setText(tile.getName());
+    typeInput.setText(tile.getType());
+    if (tile.getBitmap() != null) {
+      imgInput.setImageBitmap(tile.getBitmap());
+      imgInput.getLayoutParams().height = 200;
+      imgInput.setScaleType(ImageView.ScaleType.FIT_CENTER);
+      imgInput.setAdjustViewBounds(true);
+      imgInput.setCropToPadding(false);
+      imgInput.requestLayout();
+    }
   }
 
-  @Override
-  public void onStop() {
-    super.onStop();
-
-    // ATTENTION: This was auto-generated to implement the App Indexing API.
-    // See https://g.co/AppIndexing/AndroidStudio for more information.
-    AppIndex.AppIndexApi.end(client, getIndexApiAction());
-    client.disconnect();
-  }
 }

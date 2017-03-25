@@ -6,8 +6,11 @@ import android.graphics.BitmapFactory;
 import android.os.Environment;
 import android.util.Log;
 
+import com.alwaysrejoice.hexengine.dto.BgTile;
 import com.alwaysrejoice.hexengine.dto.BitmapGsonAdapter;
 import com.alwaysrejoice.hexengine.dto.Game;
+import com.alwaysrejoice.hexengine.dto.TileType;
+import com.alwaysrejoice.hexengine.dto.UnitTile;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -20,6 +23,11 @@ import java.io.InputStream;
 
 public class GameUtils {
   private static Game game = null;
+
+  // Custom GSON serialize/deserializer
+  // This will allow my DTO to store/load Bitmaps as Base64
+  public static final Gson gson = new GsonBuilder().registerTypeHierarchyAdapter(Bitmap.class, new BitmapGsonAdapter()).create();
+
 
   /**
    * Returns the currently loaded game
@@ -58,12 +66,6 @@ public class GameUtils {
   public static void setGame(Game gameToSet) {
     game = gameToSet;
   }
-
-
-
-  // Custom GSON serialize/deserializer
-  // This will allow my DTO to store/load Bitmaps as Base64
-  public static final Gson gson = new GsonBuilder().registerTypeHierarchyAdapter(Bitmap.class, new BitmapGsonAdapter()).create();
 
   /**
    * Loads a game from a resource file and returns it
@@ -108,6 +110,37 @@ public class GameUtils {
       return gameFile.delete();
     }
     return false;
+  }
+
+
+
+  public static String bgToJson(BgTile tile) {
+    return gson.toJson(tile);
+  }
+
+  public static String unitToJson(UnitTile tile) {
+    return gson.toJson(tile);
+  }
+
+  public static String toJson(TileType tile) {
+    if (tile instanceof BgTile) {
+      Log.d("gameUtils", "toJson BG with name="+tile.getName());
+      return bgToJson((BgTile) tile);
+    } else if (tile instanceof UnitTile) {
+      Log.d("gameUtils", "toJson Unit with name="+tile.getName());
+      return unitToJson((UnitTile) tile);
+    }
+    Log.d("gameUtils", "toJson NULL! tile="+tile);
+    return null;
+  }
+
+
+  public static BgTile toBgTile(String json) {
+    return gson.fromJson(json, BgTile.class);
+  }
+
+  public static UnitTile toUnitTile(String json) {
+    return gson.fromJson(json, UnitTile.class);
   }
 
 }

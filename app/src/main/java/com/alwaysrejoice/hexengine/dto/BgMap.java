@@ -37,4 +37,12 @@ public class BgMap {
     this.name = name;
   }
 
+  @Override
+  public String toString() {
+    return "BgMap{" +
+        "col=" + col +
+        ", row=" + row +
+        ", name='" + name + '\'' +
+        '}';
+  }
 }

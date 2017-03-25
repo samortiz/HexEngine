@@ -12,6 +12,7 @@ import com.alwaysrejoice.hexengine.dto.Game;
 import com.alwaysrejoice.hexengine.dto.SystemTile;
 import com.alwaysrejoice.hexengine.dto.TileGroup;
 import com.alwaysrejoice.hexengine.dto.TileType;
+import com.alwaysrejoice.hexengine.dto.TileTypeLink;
 import com.alwaysrejoice.hexengine.util.GameUtils;
 
 import java.util.ArrayList;
@@ -29,9 +30,8 @@ public class Toolbar {
   private int toolbarHeight;
   private int toolbarX;
   private int toolbarY;
-  // This tileGroups is different from the one in the saved game
-  // because this one has all the system menus as well (which don't get saved in the game)
-  private List<TileGroup> tileGroups;
+  // This contains the system and custom menus
+  private List<List<TileType>> groups;
   private Rect toolbarWindow;
   private List<ToolbarButton> toolbarButtons;
   private Bitmap selectedImg;
@@ -50,7 +50,7 @@ public class Toolbar {
     this.viewSizeY = viewSizeY;
     Log.d("toolbar", "Creating toolbar viewSizeX="+viewSizeX+" viewSizeY="+viewSizeY);
 
-    selectedImg = SystemTile.getTile(SystemTile.NAME.SELECTED).getImg().getBitmap();
+    selectedImg = SystemTile.getTile(SystemTile.NAME.SELECTED).getBitmap();
     paint.setColor(Color.rgb(200, 200, 255));
 
     Log.d("toolbar", "loaded img");
@@ -84,16 +84,22 @@ public class Toolbar {
     systemTiles.add(SystemTile.getTile(SystemTile.NAME.SETTINGS));
     systemTiles.add(SystemTile.getTile(SystemTile.NAME.SAVE));
     systemTiles.add(SystemTile.getTile(SystemTile.NAME.EXIT));
-    TileGroup systemTileGroup = new TileGroup();
-    systemTileGroup.setName("system");
-    systemTileGroup.setTiles(systemTiles);
+
+    Game game = GameUtils.getGame();
     // Load the rest of the game-specific tiles
-    tileGroups = new ArrayList<>();
-    tileGroups.add(systemTileGroup);
-    tileGroups.addAll(GameUtils.getGame().getTileGroups());
+    groups = new ArrayList<>();
+    groups.add(systemTiles);
+    for (TileGroup group : game.getTileGroups()) {
+      List<TileType> thisGroup = new ArrayList();
+      for (TileTypeLink link : group.getTileLinks()) {
+        TileType tile = TileTypeLink.getTile(link, game);
+        thisGroup.add(tile);
+      }
+      groups.add(thisGroup);
+    }
 
     // Setup the custom buttons
-    for (TileGroup group : tileGroups) {
+    for (List<TileType> group : groups) {
       buttonX += buttonWidth;
       if (buttonX >= toolbarWidth) {
         buttonX = 0;
@@ -102,16 +108,16 @@ public class Toolbar {
       ToolbarButton parentButton = null;
 
       // Draw the buttons
-      for (int i=0; i<group.getTiles().size(); i++) {
-        TileType tile = group.getTiles().get(i);
+      for (int i=0; i<group.size(); i++) {
+        TileType tile = group.get(i);
         String name = tile.getName();
-        Bitmap img = tile.getImg().getBitmap();
+        Bitmap img = tile.getBitmap();
         if (i == 0) {
           // It's a parent button
           ToolbarButton newButton = new ToolbarButton(name, tile.getTileType(), img, new Rect(buttonX, buttonY, buttonX+buttonWidth, buttonY+buttonHeight), null);
           toolbarButtons.add(newButton);
           parentButton = newButton;
-          Log.d("toolbar", "Added parent "+newButton.getName()+" of group="+group.getName()+" position="+newButton.getPosition());
+          Log.d("toolbar", "Added parent "+newButton.getName()+" position="+newButton.getPosition());
         } else {
           // It's a child button
           int childLeft = buttonX;

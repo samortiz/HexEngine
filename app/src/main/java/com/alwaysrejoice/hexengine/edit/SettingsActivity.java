@@ -31,8 +31,8 @@ public class SettingsActivity extends Activity {
   }
 
   public void gotoTileGroups(View view) {
-    //Intent myIntent = new Intent(SettingsActivity.this, GameListActivity.class);
-    //startActivity(myIntent);
+    Intent myIntent = new Intent(SettingsActivity.this, TileGroupListActivity.class);
+    startActivity(myIntent);
     Log.d("settings", "goto TileGroups");
   }
 

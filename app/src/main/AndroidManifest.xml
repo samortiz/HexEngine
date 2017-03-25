@@ -54,6 +54,19 @@
             android:screenOrientation="portrait" >
         </activity>
         <activity
+            android:name=".edit.TileGroupListActivity"
+            android:label="BgListActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name=".edit.TileGroupEditActivity"
+            android:label="BgEditActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="stateHidden"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
             android:name=".edit.ImagePickerActivity"
             android:label="ImagePickerActivity"
             android:theme="@style/AppTheme.NoActionBar"

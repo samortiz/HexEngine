@@ -38,4 +38,13 @@ public class GameInfo {
     this.backgroundColor = backgroundColor;
   }
 
+  @Override
+  public String toString() {
+    return "GameInfo{" +
+        "name='" + name + '\'' +
+        ", width=" + width +
+        ", height=" + height +
+        ", backgroundColor=" + backgroundColor +
+        '}';
+  }
 }

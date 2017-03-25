@@ -38,7 +38,7 @@ public class SystemTile implements TileType {
   private static Map<NAME, SystemTile> tiles = null;
 
   private String name;
-  private Image img;
+  private Bitmap bitmap;
 
   /**
    * Loads the system tiles. This should be called before constructing any SystemTiles
@@ -52,7 +52,7 @@ public class SystemTile implements TileType {
         inputStream = assetManager.open(fileName);
         Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
         inputStream.close();
-        tiles.put(name, new SystemTile(name.toString(), new Image(fileName, bitmap)));
+        tiles.put(name, new SystemTile(name.toString(), bitmap));
       } // for
     } catch (Exception e) {
       Log.e("SystemTile", "Error loading system tiles", e);
@@ -66,10 +66,10 @@ public class SystemTile implements TileType {
 
   // ----------------- Instance Methods -------------------------------------
 
-  public SystemTile(String name, Image img) {
+  public SystemTile(String name, Bitmap bitmap) {
     if (tiles == null) throw new RuntimeException("Error! You must call SystemTile.init before creating tiles");
     this.name = name;
-    this.img = img;
+    this.bitmap = bitmap;
   }
 
   public TILE_TYPE getTileType() {
@@ -87,13 +87,28 @@ public class SystemTile implements TileType {
   }
 
   @Override
-  public Image getImg() {
-    return img;
+  public Bitmap getBitmap() {
+    return bitmap;
   }
 
   @Override
-  public void setImg(Image img) {
-    this.img = img;
+  public void setBitmap(Bitmap bitmap) {
+    this.bitmap = bitmap;
   }
 
+  @Override
+  public int compareTo(Object o) {
+    if (o == null) {
+      return 0;
+    }
+    return this.getName().compareTo(((TileType)o).getName());
+  }
+
+  @Override
+  public String toString() {
+    return "SystemTile{" +
+        "name='" + name + '\'' +
+        ", bitmap=" + bitmap +
+        '}';
+  }
 }

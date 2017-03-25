@@ -39,7 +39,7 @@ public class BitmapGsonAdapter implements JsonSerializer<Bitmap>, JsonDeserializ
     }
     if (data == null) return null;
     String json = Base64.encodeToString(data, Base64.NO_WRAP);
-    Log.d("gson", "serialized bitmap to "+json);
+    //Log.d("gson", "serialized bitmap to "+json);
     return new JsonPrimitive(json);
   }
 

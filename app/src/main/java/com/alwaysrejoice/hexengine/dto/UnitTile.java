@@ -1,19 +1,22 @@
 package com.alwaysrejoice.hexengine.dto;
 
+import android.graphics.Bitmap;
+
 public class UnitTile implements TileType {
+
   private String name;
   private String type;
-  private Image img;
+  private Bitmap bitmap;
 
   private int visibleRange;
   private int moveRange;
 
   public UnitTile() {}
 
-  public UnitTile(String name, String type, Image img) {
+  public UnitTile(String name, String type, Bitmap bitmap) {
     this.name = name;
     this.type = type;
-    this.img = img;
+    this.bitmap = bitmap;
   }
 
   public TILE_TYPE getTileType() {
@@ -38,14 +41,12 @@ public class UnitTile implements TileType {
     this.type = type;
   }
 
-  @Override
-  public Image getImg() {
-    return img;
+  public Bitmap getBitmap() {
+    return bitmap;
   }
 
-  @Override
-  public void setImg(Image img) {
-    this.img = img;
+  public void setBitmap(Bitmap bitmap) {
+    this.bitmap = bitmap;
   }
 
   public int getVisibleRange() {
@@ -62,5 +63,25 @@ public class UnitTile implements TileType {
 
   public void setMoveRange(int moveRange) {
     this.moveRange = moveRange;
+  }
+
+
+  @Override
+  public int compareTo(Object o) {
+    if (o == null) {
+      return 0;
+    }
+    return this.getName().compareTo(((TileType)o).getName());
+  }
+
+  @Override
+  public String toString() {
+    return "UnitTile{" +
+        "name='" + name + '\'' +
+        ", type='" + type + '\'' +
+        ", bitmap=" + bitmap +
+        ", visibleRange=" + visibleRange +
+        ", moveRange=" + moveRange +
+        '}';
   }
 }

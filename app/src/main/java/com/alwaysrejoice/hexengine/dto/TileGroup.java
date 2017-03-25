@@ -1,10 +1,18 @@
 package com.alwaysrejoice.hexengine.dto;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class TileGroup {
   private String name;
-  List<TileType> tiles;
+  List<TileTypeLink> tileLinks = new ArrayList<>();
+
+  public TileGroup() {}
+
+  public TileGroup(String name, List<TileTypeLink> tileLinks) {
+    this.name = name;
+    this.tileLinks = tileLinks;
+  }
 
   public String getName() {
     return name;
@@ -14,11 +22,19 @@ public class TileGroup {
     this.name = name;
   }
 
-  public List<TileType> getTiles() {
-    return tiles;
+  public List<TileTypeLink> getTileLinks() {
+    return tileLinks;
   }
 
-  public void setTiles(List<TileType> tiles) {
-    this.tiles = tiles;
+  public void setTileLinks(List<TileTypeLink> tileLinks) {
+    this.tileLinks = tileLinks;
+  }
+
+  @Override
+  public String toString() {
+    return "TileGroup{" +
+        "name='" + name + '\'' +
+        ", tileLinks=" + tileLinks +
+        '}';
   }
 }

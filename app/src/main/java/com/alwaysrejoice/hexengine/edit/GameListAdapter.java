@@ -13,12 +13,12 @@ import com.alwaysrejoice.hexengine.R;
 
 import java.util.List;
 
-public class ChooseFileListAdapter extends BaseAdapter {
+public class GameListAdapter extends BaseAdapter {
 
   private Context context;
   private List<String>  names;
 
-  public ChooseFileListAdapter(Context context, List<String> names) {
+  public GameListAdapter(Context context, List<String> names) {
     this.context = context;
     this.names = names;
   }

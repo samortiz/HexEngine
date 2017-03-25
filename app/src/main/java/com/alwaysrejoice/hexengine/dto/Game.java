@@ -8,14 +8,10 @@ import java.util.Map;
 public class Game {
   private GameInfo gameInfo =  new GameInfo();
   private List<BgMap> bgMaps = new ArrayList();
-  private Map<String, BgTile> bgTiles = new HashMap();
+  private Map<String, BgTile> bgTiles = new HashMap(); // keyed on name
   private List<UnitMap> unitMaps = new ArrayList();
-  private Map<String, UnitTile> unitTiles = new HashMap();
+  private Map<String, UnitTile> unitTiles = new HashMap(); // keyed on name
   private List<TileGroup> tileGroups = new ArrayList();
-
-  public String toString() {
-    return gameInfo.getName()+" "+gameInfo.getWidth()+"x"+gameInfo.getHeight();
-  }
 
   public GameInfo getGameInfo() {
     return gameInfo;
@@ -63,5 +59,17 @@ public class Game {
 
   public void setTileGroups(List<TileGroup> tileGroups) {
     this.tileGroups = tileGroups;
+  }
+
+  @Override
+  public String toString() {
+    return "Game{" +
+        "gameInfo=" + gameInfo +
+        ", bgMaps=" + bgMaps +
+        ", bgTiles=" + bgTiles +
+        ", unitMaps=" + unitMaps +
+        ", unitTiles=" + unitTiles +
+        ", tileGroups=" + tileGroups +
+        '}';
   }
 }

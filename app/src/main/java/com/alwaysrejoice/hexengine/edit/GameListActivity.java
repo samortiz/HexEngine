@@ -21,7 +21,7 @@ import java.util.ArrayList;
  */
 public class GameListActivity extends Activity implements AdapterView.OnItemClickListener {
   ListView gameList;
-  ChooseFileListAdapter adapter;
+  GameListAdapter adapter;
   Game chosenGame = null;
 
   @Override
@@ -40,7 +40,7 @@ public class GameListActivity extends Activity implements AdapterView.OnItemClic
       Log.d("chooseFile", "found file "+file+" gameName="+gameName);
     }
 
-    adapter = new ChooseFileListAdapter(this, games);
+    adapter = new GameListAdapter(this, games);
     gameList.setAdapter(adapter);
     gameList.setOnItemClickListener(this);
   }

@@ -1,7 +1,6 @@
 package com.alwaysrejoice.hexengine.edit;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,26 +10,27 @@ import android.widget.TextView;
 
 import com.alwaysrejoice.hexengine.R;
 import com.alwaysrejoice.hexengine.dto.BgTile;
+import com.alwaysrejoice.hexengine.dto.TileType;
 import com.alwaysrejoice.hexengine.util.GameUtils;
 
 import java.util.List;
 
-public class BgListAdapter extends BaseAdapter {
+public class TileGroupEditAdapter extends BaseAdapter {
 
   private Context context;
-  private List<String> names;
+  private List<TileType> tiles;
 
-  public BgListAdapter(Context context, List<String> names) {
+  public TileGroupEditAdapter(Context context, List<TileType> tiles) {
     this.context = context;
-    this.names = names;
+    this.tiles= tiles;
   }
 
   public int getCount() {
-    return names.size();
+    return tiles.size();
   }
 
-  public String getItem(int arg0) {
-    return names.get(arg0);
+  public TileType getItem(int arg0) {
+    return tiles.get(arg0);
   }
 
   public long getItemId(int position) {
@@ -38,22 +38,17 @@ public class BgListAdapter extends BaseAdapter {
   }
 
   public void removeItem(int position) {
-    names.remove(position);
+    tiles.remove(position);
   }
 
   public View getView(int position, View convertView, ViewGroup parent) {
     LayoutInflater inflater = LayoutInflater.from(context);
-    View row = inflater.inflate(R.layout.bg_list_row, parent, false);
-
-    String tileName = this.names.get(position);
-    BgTile tile = GameUtils.getGame().getBgTiles().get(tileName);
+    View row = inflater.inflate(R.layout.tile_group_edit_row, parent, false);
+    TileType tile = this.tiles.get(position);
     ImageView imageView = (ImageView) row.findViewById(R.id.row_img);
     TextView nameView = (TextView) row.findViewById(R.id.row_name);
-    ImageView deleteImg = (ImageView) row.findViewById(R.id.row_delete);
     imageView.setImageBitmap(tile.getBitmap());
-
-    nameView.setText(tile.getName()+" ("+tile.getType()+")");
-    deleteImg.setTag(position);
+    nameView.setText(tile.getName());
     return (row);
   }
 }

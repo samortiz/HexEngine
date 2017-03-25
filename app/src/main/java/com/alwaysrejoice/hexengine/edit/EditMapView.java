@@ -118,7 +118,7 @@ public class EditMapView extends View {
       int y = bgCenterY + Math.round(HEX_SIZE * SQRT_3 * (tile.getRow() + (tile.getCol() / 2f))) - (TILE_HEIGHT/2);
       BgTile bgTile = game.getBgTiles().get(tile.getName());
       if (bgTile != null) {
-        Bitmap bitmap = bgTile.getImg().getBitmap();
+        Bitmap bitmap = bgTile.getBitmap();
         if (bitmap != null) {
           bgCanvas.drawBitmap(bitmap, x, y, null);
         } else Log.e("editMapView", "Error in drawBackground, no image for BgTile with name="+bgTile.getName());

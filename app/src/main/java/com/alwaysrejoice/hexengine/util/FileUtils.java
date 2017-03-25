@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.os.Environment;
 import android.util.Log;
 
+import com.alwaysrejoice.hexengine.dto.BgTile;
 import com.alwaysrejoice.hexengine.dto.BitmapGsonAdapter;
 import com.alwaysrejoice.hexengine.dto.Game;
 import com.google.gson.Gson;
@@ -21,10 +22,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 public class FileUtils {
-
-  // Custom GSON serialize/deserializer
-  // This will allow my DTO to store/load Bitmaps as Base64
-  public static final Gson gson = new GsonBuilder().registerTypeHierarchyAdapter(Bitmap.class, new BitmapGsonAdapter()).create();
 
   public static final String GAME_DIR = "HexEngine/games";
   public static final String IMAGE_DIR = "HexEngine/images";
@@ -88,13 +85,14 @@ public class FileUtils {
 
   /**
    * Load a bitmap from external storage, not from assets
+   * fileName is the full file name with .png on the end
    */
   public static Bitmap loadBitmap(String fileName) {
     File imgFile = getImageFile(fileName);
     InputStream inputStream = null;
     Bitmap bitmap = null;
     try {
-      Log.d("fileUtil", "loadBitmap fileName="+fileName);
+      //Log.d("fileUtil", "loadBitmap fileName="+fileName);
       inputStream = new FileInputStream(imgFile);
       bitmap = BitmapFactory.decodeStream(inputStream);
     } catch (IOException e) {
@@ -110,21 +108,14 @@ public class FileUtils {
   }
 
   /**
-   * @return the path to the file containing the specified game
+   * @return the File object for the specified image
    */
   public static File getImageFile(String fileName) {
-    File file =  null;
     if (!isExternalStorageWritable()) {
       Log.e("ERROR", "External Storage is not writable");
       return null;
     }
-    try {
-      File dir = new File(Environment.getExternalStorageDirectory(), IMAGE_DIR);
-      file = new File(dir, fileName+".png");
-    } catch (Exception e) {
-      Log.e("GameUtils", "Error creating file for "+fileName, e);
-    }
-    return file;
+    return new File(getImagePathExt(), fileName);
   }
 
 
@@ -165,6 +156,12 @@ public class FileUtils {
   }
 
 
+  /**
+   * Gets the path to the images stored in external storage
+   */
+  public static File getImagePathExt() {
+    return new File(Environment.getExternalStorageDirectory(), IMAGE_DIR);
+  }
 
 
 }

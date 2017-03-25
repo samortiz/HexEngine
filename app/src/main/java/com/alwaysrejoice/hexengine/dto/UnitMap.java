@@ -37,4 +37,12 @@ public class UnitMap {
     this.name = name;
   }
 
+  @Override
+  public String toString() {
+    return "UnitMap{" +
+        "col=" + col +
+        ", row=" + row +
+        ", name='" + name + '\'' +
+        '}';
+  }
 }
