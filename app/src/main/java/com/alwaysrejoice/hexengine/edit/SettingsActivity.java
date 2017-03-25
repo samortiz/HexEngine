@@ -36,6 +36,12 @@ public class SettingsActivity extends Activity {
     Log.d("settings", "goto TileGroups");
   }
 
+  public void clear(View view) {
+    //Intent myIntent = new Intent(SettingsActivity.this, EditMapActivity.class);
+    //startActivity(myIntent);
+    Log.d("settings", "goto Clear");
+  }
+
   public void gotoEditMap(View view) {
     Intent myIntent = new Intent(SettingsActivity.this, EditMapActivity.class);
     startActivity(myIntent);

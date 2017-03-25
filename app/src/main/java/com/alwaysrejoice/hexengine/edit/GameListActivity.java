@@ -106,5 +106,20 @@ public class GameListActivity extends Activity implements AdapterView.OnItemClic
     Log.d("gameList", "newGame");
   }
 
+  /**
+   * Called when the user clicks on the copy icon on a row
+   */
+  public void copyGame(View view) {
+    int position = (int) view.getTag();
+    String gameName = gameList.getItemAtPosition(position).toString();
+    Game sourceGame = GameUtils.getGame(gameName); // save this as the currently loaded game
+    String newName = "Copy of "+sourceGame.getGameInfo().getName();
+    sourceGame.getGameInfo().setName(newName); //Changing the name will save it as a new file
+    GameUtils.saveGame(sourceGame);
+    this.chosenGame = null;
+    adapter.addItem(position+1, newName);
+    adapter.notifyDataSetChanged();
+    Log.d("gameList", "Copy gameName="+gameName+" position="+position);
+  }
 
 }

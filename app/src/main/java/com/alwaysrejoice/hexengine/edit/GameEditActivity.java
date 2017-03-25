@@ -32,7 +32,7 @@ public class GameEditActivity extends Activity {
       nameInput.setText(game.getGameInfo().getName());
       widthInput.setText(Integer.toString(game.getGameInfo().getWidth()));
       heightInput.setText(Integer.toString(game.getGameInfo().getHeight()));
-      TextView title = (TextView) findViewById(R.id.edit_game_title);
+      TextView title = (TextView) findViewById(R.id.title);
       title.setText("Edit Game");
     }
   }

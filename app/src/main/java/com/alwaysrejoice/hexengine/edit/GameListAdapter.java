@@ -39,16 +39,23 @@ public class GameListAdapter extends BaseAdapter {
     names.remove(position);
   }
 
+  public void addItem(int position, String name) {
+    names.add(position, name);
+  }
+
   public View getView(int position, View convertView, ViewGroup parent) {
     LayoutInflater inflater = LayoutInflater.from(context);
     View row = inflater.inflate(R.layout.game_list_row, parent, false);
-    TextView name = (TextView) row.findViewById(R.id.edit_list_row_name);
+    TextView name = (TextView) row.findViewById(R.id.game_list_row_name);
     name.setText(names.get(position));
 
-    ImageView editImg = (ImageView) row.findViewById(R.id.edit_list_row_edit);
+    ImageView editImg = (ImageView) row.findViewById(R.id.game_list_row_edit);
     editImg.setTag(position);
 
-    ImageView deleteImg = (ImageView) row.findViewById(R.id.edit_list_row_delete);
+    ImageView copyImg = (ImageView) row.findViewById(R.id.game_list_row_copy);
+    copyImg.setTag(position);
+
+    ImageView deleteImg = (ImageView) row.findViewById(R.id.game_list_row_delete);
     deleteImg.setTag(position);
 
     Log.d("choose", "name="+name.getText());

@@ -6,18 +6,28 @@ Units
  - Unit ImagePicker connection
  - Add Units to TileGroup editing
  - Add units to map drawing (no sweep)
+ - Update map when unit name changed or deleted
+ - update TileLink when unit name changed or delete 
 
-TileLink maintain when edit or delete bg 
+BG Editor
+ - update TileLink when name changed or delete bg 
+ - Update map when bg deleted or name changed
+ - Trim whitespace from name
+ - BG edit screen save button moves up with keyboard
+
+Clear Screen
+ - Clear Map (removes bg and units from map)
+ - Clear Units (clears map of units)
+ - Clear BG (clears map of BG and units)
 
 Map Editor
  - Warped starting view with irregular board size (should use min size)
  - Boundary checks for tile placement
  - zoom on border causes warp
  - Toobar popup on right border with >1 column
+ - Border on popup (especially for second row)
 
 Game 
- - Setup default game
  - Copy default game from assets 
- - Copy game feature
- - Validate game edit input
+ - Validate unique game name
 
