@@ -1,0 +1,23 @@
+TODO 
+
+Units
+ - Unit List
+ - Unit Edit
+ - Unit ImagePicker connection
+ - Add Units to TileGroup editing
+ - Add units to map drawing (no sweep)
+
+TileLink maintain when edit or delete bg 
+
+Map Editor
+ - Warped starting view with irregular board size (should use min size)
+ - Boundary checks for tile placement
+ - zoom on border causes warp
+ - Toobar popup on right border with >1 column
+
+Game 
+ - Setup default game
+ - Copy default game from assets 
+ - Copy game feature
+ - Validate game edit input
+
