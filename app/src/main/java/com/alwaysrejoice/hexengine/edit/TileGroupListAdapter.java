@@ -12,6 +12,8 @@ import android.widget.TextView;
 import com.alwaysrejoice.hexengine.R;
 import com.alwaysrejoice.hexengine.dto.TileGroup;
 import com.alwaysrejoice.hexengine.dto.TileType;
+import com.alwaysrejoice.hexengine.dto.TileTypeLink;
+import com.alwaysrejoice.hexengine.util.GameUtils;
 
 import java.util.List;
 
@@ -55,6 +57,12 @@ public class TileGroupListAdapter extends BaseAdapter {
   }
 
   public Bitmap getFirstImg(TileGroup tileGroup) {
+    if ((tileGroup != null) &&
+        (tileGroup.getTileLinks() != null) &&
+        (tileGroup.getTileLinks().size() > 0)) {
+      TileType tile = TileTypeLink.getTile(tileGroup.getTileLinks().get(0), GameUtils.getGame());
+      return tile.getBitmap();
+    }
     return null;
   }
 

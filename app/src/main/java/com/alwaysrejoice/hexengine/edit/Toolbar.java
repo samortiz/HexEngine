@@ -23,7 +23,8 @@ public class Toolbar {
   private static final int TOOLBAR_BUTTONS_PER_ROW = 5;
 
   EditMapView editMapView;
-  Paint paint = new Paint();
+  Paint fillPaint = new Paint();
+  Paint borderPaint = new Paint();
 
   // Toolbar Variables
   private int toolbarWidth;
@@ -51,7 +52,10 @@ public class Toolbar {
     Log.d("toolbar", "Creating toolbar viewSizeX="+viewSizeX+" viewSizeY="+viewSizeY);
 
     selectedImg = SystemTile.getTile(SystemTile.NAME.SELECTED).getBitmap();
-    paint.setColor(Color.rgb(200, 200, 255));
+    fillPaint.setColor(Color.rgb(200, 200, 255));
+    borderPaint.setColor(Color.BLACK);
+    borderPaint.setStyle(Paint.Style.STROKE);
+    borderPaint.setStrokeWidth(4);
 
     Log.d("toolbar", "loaded img");
     // Setup the toolbar
@@ -166,7 +170,8 @@ public class Toolbar {
    * Draws the toolbar on the canvas
    */
   public void drawToolbar(Canvas canvas) {
-    canvas.drawRect(toolbarWindow, paint);
+    // Background of the entire toolbar area
+    canvas.drawRect(toolbarWindow, fillPaint);
     // First level of buttons (across)
     for (ToolbarButton button : toolbarButtons) {
       drawButton(button, canvas);
@@ -179,7 +184,9 @@ public class Toolbar {
       if (button == selectedButton) {
         canvas.drawBitmap(selectedImg, null, button.getPosition(), null);
         if (selectedButtonChildrenVisible) {
-          canvas.drawRect(button.getPopupPosition(), paint);
+          // Background of the popup window
+          canvas.drawRect(button.getPopupPosition(), fillPaint);
+          canvas.drawRect(button.getPopupPosition(), borderPaint);
           // Second-level buttons (up)
           for (ToolbarButton childButton : button.getChildren()) {
             drawButton(childButton, canvas);
@@ -230,7 +237,7 @@ public class Toolbar {
     if (!handledEvent) {
       selectedButtonChildrenVisible = false;
     }
-    Log.d("toolbar", "detector handledEvent="+handledEvent);
+    //Log.d("toolbar", "detector handledEvent="+handledEvent);
     return handledEvent;
   }
 
@@ -274,16 +281,19 @@ public class Toolbar {
           mode = Mode.ERASE;
           Log.d("toolbar", "eraser mode");
         } else if (SystemTile.NAME.SETTINGS.toString().equals(button.getName())) {
+          GameUtils.saveGame();
           Intent myIntent = new Intent(editMapView.getContext(), SettingsActivity.class);
-          editMapView.getContex().startActivity(myIntent);
+          editMapView.getContext().startActivity(myIntent);
           Log.d("toolbar", "Going to settings");
         } else if (SystemTile.NAME.SAVE.toString().equals(button.getName())) {
           GameUtils.saveGame();
           Log.d("toolbar", "Saved game");
+          mode = Mode.MOVE;
+          selectedButton = toolbarButtons.get(0); // First button is the HAND for move mode
         } else if (SystemTile.NAME.EXIT.toString().equals(button.getName())) {
           GameUtils.saveGame();
           Intent myIntent = new Intent(editMapView.getContext(), GameListActivity.class);
-          editMapView.getContex().startActivity(myIntent);
+          editMapView.getContext().startActivity(myIntent);
           Log.d("toolbar", "exit");
         } else {
           Log.e("toolbar", "Error! Unknown system button "+button.getName());
@@ -303,11 +313,8 @@ public class Toolbar {
     return mode;
   }
 
-  public String getToolbarButtonSelectedName() {
-    if (selectedButton != null) {
-      return selectedButton.getName();
-    }
-    return null;
+  public ToolbarButton getSelectedToolbarButton() {
+    return selectedButton;
   }
 
 }

@@ -11,48 +11,48 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.alwaysrejoice.hexengine.R;
-import com.alwaysrejoice.hexengine.dto.BgMap;
-import com.alwaysrejoice.hexengine.dto.BgTile;
 import com.alwaysrejoice.hexengine.dto.Game;
 import com.alwaysrejoice.hexengine.dto.TileGroup;
 import com.alwaysrejoice.hexengine.dto.TileType;
 import com.alwaysrejoice.hexengine.dto.TileTypeLink;
+import com.alwaysrejoice.hexengine.dto.UnitMap;
+import com.alwaysrejoice.hexengine.dto.UnitTile;
 import com.alwaysrejoice.hexengine.util.GameUtils;
 
 import java.util.Map;
 
-public class BgEditActivity extends Activity {
-  public static final String SELECTED_TILE = "BGEDIT_SELECTED_TILE";
-  BgTile tile; // The tile we are currently editing
+public class UnitEditActivity extends Activity {
+  public static final String SELECTED_UNIT = "UNIT_EDIT_SELECTED_TILE";
+  UnitTile tile; // The tile we are currently editing
   String origTileName = "";  // Tile name when the edit screen was first invoked
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    Log.d("bgEdit", "onCreate");
-    setContentView(R.layout.bg_edit);
+    Log.d("unitEdit", "onCreate");
+    setContentView(R.layout.unit_edit);
     Bundle bundle = getIntent().getExtras();
 
     // Check if we are coming back from an ImagePickerActivity
     String tileJson = (String) bundle.get(ImagePickerActivity.EXTRA_TILE);
     if (tileJson != null) {
-      tile = GameUtils.toBgTile(tileJson);
+      tile = GameUtils.toUnitTile(tileJson);
       setUiFromTile();
-      Log.d("bgEdit", "Tile chosen! " + tile.getName());
+      Log.d("unitEdit", "Tile chosen! " + tile.getName());
     }
 
     // Load the file we are editing
-    String tileName = (String) bundle.get(BgEditActivity.SELECTED_TILE);
+    String tileName = (String) bundle.get(UnitEditActivity.SELECTED_UNIT);
     if ((tileName != null) && !"".equals(tileName)) {
       Game game = GameUtils.getGame();
-      tile = game.getBgTiles().get(tileName);
+      tile = game.getUnitTiles().get(tileName);
       setUiFromTile();
       origTileName = tileName;
-      Log.d("bgEdit", "begin editing selected tile "+tileName);
+      Log.d("unitEdit", "begin editing selected tile "+tileName);
     }
 
     if (tile == null) {
-      tile = new BgTile();
+      tile = new UnitTile();
     }
 
   }
@@ -63,7 +63,7 @@ public class BgEditActivity extends Activity {
   public void save(View view) {
     loadTileFromUi();
     Game game = GameUtils.getGame();
-    Map<String, BgTile> bgTiles = game.getBgTiles();
+    Map<String, UnitTile> unitTiles = game.getUnitTiles();
 
     if ("".equals(tile.getName())) {
       showError("You must enter a name.");
@@ -72,27 +72,27 @@ public class BgEditActivity extends Activity {
 
     // If name is changing update all the links
     if (!tile.getName().equals(origTileName)) {
-      for (BgMap bgMap : game.getBgMaps()) {
-        if (origTileName.equals(bgMap.getName())) {
-          bgMap.setName(tile.getName());
+      for (UnitMap unitMap : game.getUnitMaps()) {
+        if (origTileName.equals(unitMap.getName())) {
+          unitMap.setName(tile.getName());
         }
       } //for
       for (TileGroup group : game.getTileGroups()) {
         for (TileTypeLink link : group.getTileLinks()) {
           if ( origTileName.equals(link.getName()) &&
-              (link.getTileType() == TileType.TILE_TYPE.BACKGROUND)) {
+              (link.getTileType() == TileType.TILE_TYPE.UNIT)) {
             link.setName(tile.getName());
           }
         }
       } // for
     }
 
-    bgTiles.remove(origTileName);
-    bgTiles.put(tile.getName(), tile);
+    unitTiles.remove(origTileName);
+    unitTiles.put(tile.getName(), tile);
     GameUtils.saveGame();
-    Log.d("bgEdit", "saving bgTile name="+tile.getName()+" type="+tile.getType()+" orig="+origTileName);
+    Log.d("unitEdit", "saving UnitTile name="+tile.getName()+" type="+tile.getType()+" orig="+origTileName);
     // Go to the list
-    Intent myIntent = new Intent(BgEditActivity.this, BgListActivity.class);
+    Intent myIntent = new Intent(UnitEditActivity.this, UnitListActivity.class);
     startActivity(myIntent);
   }
 
@@ -101,8 +101,8 @@ public class BgEditActivity extends Activity {
    */
   public void chooseBitmap(View view) {
     loadTileFromUi();
-    Intent myIntent = new Intent(BgEditActivity.this, ImagePickerActivity.class);
-    myIntent.putExtra(ImagePickerActivity.EXTRA_RETURN, ImagePickerActivity.RETURN_BG);
+    Intent myIntent = new Intent(UnitEditActivity.this, ImagePickerActivity.class);
+    myIntent.putExtra(ImagePickerActivity.EXTRA_RETURN, ImagePickerActivity.RETURN_UNIT);
     myIntent.putExtra(ImagePickerActivity.EXTRA_TILE, GameUtils.toJson(tile));
     startActivity(myIntent);
   }
@@ -111,8 +111,8 @@ public class BgEditActivity extends Activity {
    * Loads the information from the UI input components into the tile
    */
   private void loadTileFromUi() {
-    EditText nameInput = (EditText) findViewById(R.id.bg_name);
-    EditText typeInput = (EditText) findViewById(R.id.bg_type);
+    EditText nameInput = (EditText) findViewById(R.id.unit_name);
+    EditText typeInput = (EditText) findViewById(R.id.unit_type);
     tile.setName(nameInput.getText().toString().trim());
     tile.setType(typeInput.getText().toString().trim());
   }
@@ -121,9 +121,9 @@ public class BgEditActivity extends Activity {
    * Updates the UI to match the data in the tile
    */
   private void setUiFromTile() {
-    EditText nameInput = (EditText) findViewById(R.id.bg_name);
-    EditText typeInput = (EditText) findViewById(R.id.bg_type);
-    ImageView imgInput = (ImageView) findViewById(R.id.bg_img);
+    EditText nameInput = (EditText) findViewById(R.id.unit_name);
+    EditText typeInput = (EditText) findViewById(R.id.unit_type);
+    ImageView imgInput = (ImageView) findViewById(R.id.unit_img);
     nameInput.setText(tile.getName());
     typeInput.setText(tile.getType());
     if (tile.getBitmap() != null) {

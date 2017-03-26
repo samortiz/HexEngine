@@ -7,7 +7,6 @@ public class UnitTile implements TileType {
   private String name;
   private String type;
   private Bitmap bitmap;
-
   private int visibleRange;
   private int moveRange;
 

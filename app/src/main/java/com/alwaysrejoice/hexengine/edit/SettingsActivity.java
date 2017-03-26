@@ -9,7 +9,7 @@ import android.view.View;
 import com.alwaysrejoice.hexengine.R;
 
 /**
- * Seetings Screen
+ * Settings Screen
  */
 public class SettingsActivity extends Activity {
 
@@ -21,13 +21,13 @@ public class SettingsActivity extends Activity {
   public void gotoBgList(View view) {
     Intent myIntent = new Intent(SettingsActivity.this, BgListActivity.class);
     startActivity(myIntent);
-    Log.d("settings", "goto BG");
+    Log.d("settings", "goto BG List");
   }
 
   public void gotoUnitList(View view) {
-    //Intent myIntent = new Intent(SettingsActivity.this, GameListActivity.class);
-    //startActivity(myIntent);
-    Log.d("settings", "goto BG");
+    Intent myIntent = new Intent(SettingsActivity.this, UnitListActivity.class);
+    startActivity(myIntent);
+    Log.d("settings", "goto Unit List");
   }
 
   public void gotoTileGroups(View view) {
@@ -37,8 +37,8 @@ public class SettingsActivity extends Activity {
   }
 
   public void clear(View view) {
-    //Intent myIntent = new Intent(SettingsActivity.this, EditMapActivity.class);
-    //startActivity(myIntent);
+    Intent myIntent = new Intent(SettingsActivity.this, ClearActivity.class);
+    startActivity(myIntent);
     Log.d("settings", "goto Clear");
   }
 

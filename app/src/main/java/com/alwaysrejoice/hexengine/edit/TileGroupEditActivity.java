@@ -1,12 +1,10 @@
 package com.alwaysrejoice.hexengine.edit;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -17,6 +15,7 @@ import com.alwaysrejoice.hexengine.dto.Game;
 import com.alwaysrejoice.hexengine.dto.TileGroup;
 import com.alwaysrejoice.hexengine.dto.TileType;
 import com.alwaysrejoice.hexengine.dto.TileTypeLink;
+import com.alwaysrejoice.hexengine.dto.UnitTile;
 import com.alwaysrejoice.hexengine.util.GameUtils;
 
 import java.util.ArrayList;
@@ -93,6 +92,12 @@ public class TileGroupEditActivity extends Activity {
       if (!selectedTiles.contains(bgTile)) {
         allTiles.add(bgTile);
       }
+    } // for bg
+    for (String tileName : game.getUnitTiles().keySet()) {
+      UnitTile unitTile = game.getUnitTiles().get(tileName);
+      if (!selectedTiles.contains(unitTile)) {
+        allTiles.add(unitTile);
+      }
     }
     Collections.sort(allTiles);
     allAdapter = new TileGroupEditAdapter(this, allTiles);
@@ -107,7 +112,6 @@ public class TileGroupEditActivity extends Activity {
       }
     };
     allTilesView.setOnItemClickListener(allGroupsClickListener);
-
   }
 
   /**

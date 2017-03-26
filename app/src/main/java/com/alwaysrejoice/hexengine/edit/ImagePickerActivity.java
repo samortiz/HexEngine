@@ -97,12 +97,14 @@ public class ImagePickerActivity extends Activity {
           if (RETURN_BG.equals(returnLoc)) {
             myIntent = new Intent(ImagePickerActivity.this, BgEditActivity.class);
           } else if (RETURN_UNIT.equals(returnLoc)) {
-            //myIntent = new Intent(ImagePickerActivity.this, UnitEditActivity.class);
+            myIntent = new Intent(ImagePickerActivity.this, UnitEditActivity.class);
           }
           if (myIntent != null) {
             Log.d("imagePicker", "returning tile="+tile);
             myIntent.putExtra("IMAGE_PICKER_TILE", GameUtils.toJson(tile));
             startActivity(myIntent);
+          } else {
+            Log.e("imagePicker", "unknown returnLoc="+returnLoc);
           }
         } // onClick
       });

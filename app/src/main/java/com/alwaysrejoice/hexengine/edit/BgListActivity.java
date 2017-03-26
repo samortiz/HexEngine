@@ -106,7 +106,7 @@ public class BgListActivity extends Activity implements AdapterView.OnItemClickL
   public void createNewBg(View view) {
     Log.d("bgList", "Create New");
     Intent myIntent = new Intent(BgListActivity.this, BgEditActivity.class);
-    myIntent.putExtra("BG_NAME", "");
+    myIntent.putExtra(BgEditActivity.SELECTED_TILE, "");
     startActivity(myIntent);
   }
 
