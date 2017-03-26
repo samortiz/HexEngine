@@ -1,9 +1,6 @@
 package com.alwaysrejoice.hexengine.util;
 
-import android.content.res.AssetManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.Environment;
 import android.util.Log;
 
 import com.alwaysrejoice.hexengine.dto.BgTile;
@@ -34,7 +31,7 @@ public class GameUtils {
    * If there is no game loaded this will be null
    */
   public static Game getGame() {
-    Log.d("game", "returning current game "+game);
+    //Log.d("game", "returning current game "+game);
     return game;
   }
 
@@ -47,7 +44,7 @@ public class GameUtils {
       Log.d("game", "loading " +gameName);
       game = GameUtils.loadGame(gameName);
     }
-    Log.d("game", "returning game "+game);
+    //Log.d("game", "returning game "+game);
     return game;
   }
 
@@ -60,7 +57,7 @@ public class GameUtils {
     if (game != null) {
       GameUtils.saveGame(game);
     }
-    Log.d("game", "saving default game "+game);
+    Log.d("game", "saving current game "+game);
   }
 
   public static void setGame(Game gameToSet) {

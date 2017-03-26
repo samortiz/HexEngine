@@ -24,7 +24,7 @@ import java.util.Map;
 public class BgEditActivity extends Activity {
   public static final String SELECTED_TILE = "BGEDIT_SELECTED_TILE";
   BgTile tile; // The tile we are currently editing
-  String origTileName;  // Tile name when the edit screen was first invoked
+  String origTileName = "";  // Tile name when the edit screen was first invoked
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {

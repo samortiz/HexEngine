@@ -23,4 +23,4 @@ Map Editor
 
 Game 
  - Copy default game from assets 
-
+ - Remove out-of-bounds tiles from map when resizing to smaller size
