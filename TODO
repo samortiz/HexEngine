@@ -9,12 +9,6 @@ Units
  - Update map when unit name changed or deleted
  - update TileLink when unit name changed or delete 
 
-BG Editor
- - update TileLink when name changed or delete bg 
- - Update map when bg deleted or name changed
- - Trim whitespace from name
- - BG edit screen save button moves up with keyboard
-
 Clear Screen
  - Clear Map (removes bg and units from map)
  - Clear Units (clears map of units)
@@ -29,5 +23,4 @@ Map Editor
 
 Game 
  - Copy default game from assets 
- - Validate unique game name
 

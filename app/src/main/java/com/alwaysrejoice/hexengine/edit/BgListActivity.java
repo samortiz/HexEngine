@@ -9,8 +9,12 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.alwaysrejoice.hexengine.R;
+import com.alwaysrejoice.hexengine.dto.BgMap;
 import com.alwaysrejoice.hexengine.dto.BgTile;
 import com.alwaysrejoice.hexengine.dto.Game;
+import com.alwaysrejoice.hexengine.dto.TileGroup;
+import com.alwaysrejoice.hexengine.dto.TileType;
+import com.alwaysrejoice.hexengine.dto.TileTypeLink;
 import com.alwaysrejoice.hexengine.util.GameUtils;
 
 import java.util.ArrayList;
@@ -61,6 +65,25 @@ public class BgListActivity extends Activity implements AdapterView.OnItemClickL
     String tileName = list.getItemAtPosition(position).toString();
     Map<String, BgTile> bgTiles = GameUtils.getGame().getBgTiles();
     bgTiles.remove(tileName);
+    Game game = GameUtils.getGame();
+
+    // delete all the links pointing to this bgTile
+    for (int i=game.getBgMaps().size()-1; i>=0; i--) {
+      BgMap bgMap = game.getBgMaps().get(i);
+      if (tileName.equals(bgMap.getName())) {
+        game.getBgMaps().remove(i);
+      }
+    } //for
+    for (TileGroup group : game.getTileGroups()) {
+      for (int i = group.getTileLinks().size()-1; i>=0; i--) {
+        TileTypeLink link = group.getTileLinks().get(i);
+        if (tileName.equals(link.getName()) &&
+            (link.getTileType() == TileType.TILE_TYPE.BACKGROUND)) {
+          group.getTileLinks().remove(i);
+        }
+      }
+    } // for
+
     GameUtils.saveGame();
     adapter.removeItem(position);
     Collections.sort(tileNames, String.CASE_INSENSITIVE_ORDER);

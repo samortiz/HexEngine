@@ -6,6 +6,12 @@ import java.util.List;
 import java.util.Map;
 
 public class Game {
+  public static final int MAX_GAME_WIDTH = 100;
+  public static final int MAX_GAME_HEIGHT = 100;
+  public static final int MIN_GAME_WIDTH = 10;
+  public static final int MIN_GAME_HEIGHT = 10;
+
+
   private GameInfo gameInfo =  new GameInfo();
   private List<BgMap> bgMaps = new ArrayList();
   private Map<String, BgTile> bgTiles = new HashMap(); // keyed on name
