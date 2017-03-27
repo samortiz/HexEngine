@@ -7,5 +7,4 @@ Map Editor
  - Toobar popup on right border with >1 column
 
 Game 
- - Copy default game from assets 
  - Remove out-of-bounds tiles from map when resizing to smaller size
