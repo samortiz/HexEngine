@@ -6,31 +6,26 @@ import android.graphics.BitmapFactory;
 import android.os.Environment;
 import android.util.Log;
 
-import com.alwaysrejoice.hexengine.dto.BgTile;
-import com.alwaysrejoice.hexengine.dto.BitmapGsonAdapter;
-import com.alwaysrejoice.hexengine.dto.Game;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
-import org.apache.commons.io.IOUtils;
-
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 
 public class FileUtils {
 
-  public static final String GAME_DIR = "HexEngine/games";
-  public static final String IMAGE_DIR = "HexEngine/images";
+  public static final String ROOT_DIR = "HexEngine";
+  public static final String GAME_DIR = ROOT_DIR+"/games";
+  public static final String IMAGE_DIR = ROOT_DIR+"/images";
 
   /**
    * @return  Path to the game storage location in external storage
    */
-  public static File getGamePath() {
-    return new File(Environment.getExternalStorageDirectory(), GAME_DIR);
+  public static File getExtPath(String path) {
+    if (!isExternalStorageWritable()) {
+      Log.e("ERROR", "External Storage is not writable");
+      return null;
+    }
+    return new File(Environment.getExternalStorageDirectory(), path);
   }
 
   /**
@@ -43,7 +38,7 @@ public class FileUtils {
       return null;
     }
     try {
-      File gameDir = getGamePath();
+      File gameDir = getExtPath(GAME_DIR);
       file = new File(gameDir, gameName+".json");
     } catch (Exception e) {
       Log.e("GameUtils", "Error creating file for "+gameName, e);
@@ -88,7 +83,7 @@ public class FileUtils {
    * fileName is the full file name with .png on the end
    */
   public static Bitmap loadBitmap(String fileName) {
-    File imgFile = getImageFile(fileName);
+    File imgFile = new File(getExtPath(IMAGE_DIR), fileName);
     InputStream inputStream = null;
     Bitmap bitmap = null;
     try {
@@ -108,32 +103,20 @@ public class FileUtils {
   }
 
   /**
-   * @return the File object for the specified image
-   */
-  public static File getImageFile(String fileName) {
-    if (!isExternalStorageWritable()) {
-      Log.e("ERROR", "External Storage is not writable");
-      return null;
-    }
-    return new File(getImagePathExt(), fileName);
-  }
-
-
-  /**
    * Creates and sets up the external storage as necessary.
    * This is only run the first time, but we need to check it just in case.
    */
   public static void initDisk(AssetManager assetManager) {
-    File imgDir = new File(Environment.getExternalStorageDirectory(), IMAGE_DIR);
+    File imgDir = getExtPath(IMAGE_DIR);
     if (!imgDir.exists()) {
       imgDir.mkdirs();
-      copyFilesFromAssetsToStorage(assetManager, "images/template");
+      copyFilesFromAssetsToStorage(assetManager, "images/template", IMAGE_DIR);
     }
 
-    File gameDir = getGamePath();
+    File gameDir = getExtPath(GAME_DIR);
     if (!gameDir.exists()) {
       gameDir.mkdirs();
-      // TODO : Copy template games
+      copyFilesFromAssetsToStorage(assetManager, "games", GAME_DIR);
     }
   }
 
@@ -141,27 +124,40 @@ public class FileUtils {
    * This will only run the copy if
    * Copies the template image files from assets to the external storage folder
    */
-  public static void copyFilesFromAssetsToStorage(AssetManager assetManager, String filePath) {
+  public static void copyFilesFromAssetsToStorage(AssetManager assetManager, String assetPath, String extPath) {
     try {
-      String[] fileNames = assetManager.list(filePath);
+      String[] fileNames = assetManager.list(assetPath);
       for (String fileName: fileNames) {
-        InputStream in = assetManager.open(filePath+"/" + fileName);
-        org.apache.commons.io.FileUtils.copyInputStreamToFile(in, getImageFile(fileName));
+        InputStream in = assetManager.open(assetPath+"/" + fileName);
+        org.apache.commons.io.FileUtils.copyInputStreamToFile(in, new File(getExtPath(extPath), fileName));
         in.close();
-        Log.d("fileUtils", "copied file=" + fileName+ " from assets to external storage");
+        Log.d("fileUtils", "copied file=" + fileName+ " from assets/"+assetPath+" to external storage "+extPath);
       }
     } catch (IOException e) {
       Log.e("fileUtils", "Error copying files from assets to storage", e);
     }
   }
 
-
   /**
-   * Gets the path to the images stored in external storage
+   * Cleanup all the storage (probably useful just for debug/testing purposes)
    */
-  public static File getImagePathExt() {
-    return new File(Environment.getExternalStorageDirectory(), IMAGE_DIR);
+  public static void deleteExtFiles() {
+    deleteDir(IMAGE_DIR);
+    deleteDir(GAME_DIR);
+    deleteDir(ROOT_DIR);
   }
 
+  /**
+   * Deletes the contents of an external folder (non-recursively.. only one level!)
+   */
+  public static void deleteDir(String path) {
+    File dir = FileUtils.getExtPath(path);
+    for (String fileName : dir.list()) {
+      File file = new File(dir, fileName);
+      file.delete();
+      Log.d("Deleting", "deleting "+path+"/"+fileName);
+    };
+    dir.delete();
+  }
 
 }

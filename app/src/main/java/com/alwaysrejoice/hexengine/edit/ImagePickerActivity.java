@@ -68,7 +68,7 @@ public class ImagePickerActivity extends Activity {
     int imageSize = screenWidth / imagesPerRow;
 
     // Go through all the images files in external storage
-    File imageDir = FileUtils.getImagePathExt();
+    File imageDir = FileUtils.getExtPath(FileUtils.IMAGE_DIR);
     String[] imageFiles = imageDir.list();
     TableRow row = null;
     int rowNum = 0;

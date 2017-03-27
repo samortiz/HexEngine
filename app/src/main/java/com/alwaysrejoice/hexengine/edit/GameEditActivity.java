@@ -70,7 +70,7 @@ public class GameEditActivity extends Activity {
     // Validate that a file with the new name does not already exist
     String origGameName = game.getGameInfo().getName();
     if (!gameName.equals(origGameName)) {
-      String[] files = FileUtils.getGamePath().list();
+      String[] files = FileUtils.getExtPath(FileUtils.GAME_DIR).list();
       for (String file : files) {
         String existingFileName = file.substring(0, file.length() - 5); // remove .json
         if (gameName.equals(existingFileName)) {

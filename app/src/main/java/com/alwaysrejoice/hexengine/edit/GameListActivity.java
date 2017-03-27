@@ -31,7 +31,7 @@ public class GameListActivity extends Activity implements AdapterView.OnItemClic
     setContentView(R.layout.game_list);
 
     gameList = (ListView) findViewById(R.id.edit_list_view);
-    String[] files = FileUtils.getGamePath().list();
+    String[] files = FileUtils.getExtPath(FileUtils.GAME_DIR).list();
     if (files == null) files = new String[0];
     ArrayList<String> games = new ArrayList<String>();
     for (String file : files) {

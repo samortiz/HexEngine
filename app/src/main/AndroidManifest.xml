@@ -21,14 +21,12 @@
     <activity
         android:name=".edit.GameListActivity"
         android:label="GameList"
-        android:screenOrientation="portrait"
-        android:theme="@style/AppTheme.NoActionBar">
+        android:screenOrientation="portrait">
     </activity>
     <activity
         android:name=".edit.GameEditActivity"
         android:label="GameEdit"
-        android:screenOrientation="portrait"
-        android:theme="@style/AppTheme.NoActionBar">
+        android:screenOrientation="portrait">
     </activity>
     <activity
         android:name=".edit.EditMapActivity"
@@ -39,68 +37,54 @@
     <activity
         android:name=".edit.SettingsActivity"
         android:label="SettingsActivity"
-        android:screenOrientation="portrait"
-        android:theme="@style/AppTheme.NoActionBar">
+        android:screenOrientation="portrait">
     </activity>
     <activity
         android:name=".edit.ClearActivity"
         android:label="SettingsActivity"
-        android:screenOrientation="portrait"
-        android:theme="@style/AppTheme.NoActionBar">
+        android:screenOrientation="portrait">
     </activity>
     <activity
         android:name=".edit.BgListActivity"
         android:label="BgListActivity"
-        android:screenOrientation="portrait"
-        android:theme="@style/AppTheme.NoActionBar">
+        android:screenOrientation="portrait">
     </activity>
     <activity
         android:name=".edit.BgEditActivity"
         android:label="BgEditActivity"
-        android:screenOrientation="portrait"
-        android:theme="@style/AppTheme.NoActionBar">
+        android:screenOrientation="portrait">
     </activity>
     <activity
         android:name=".edit.UnitListActivity"
         android:label="UnitListActivity"
-        android:screenOrientation="portrait"
-        android:theme="@style/AppTheme.NoActionBar">
+        android:screenOrientation="portrait">
     </activity>
     <activity
         android:name=".edit.UnitEditActivity"
         android:label="BgEditActivity"
         android:screenOrientation="portrait"
-        android:theme="@style/AppTheme.NoActionBar"
         android:windowSoftInputMode="stateHidden">
     </activity>
     <activity
         android:name=".edit.TileGroupListActivity"
         android:label="BgListActivity"
-        android:screenOrientation="portrait"
-        android:theme="@style/AppTheme.NoActionBar">
+        android:screenOrientation="portrait">
     </activity>
     <activity
         android:name=".edit.TileGroupEditActivity"
         android:label="BgEditActivity"
         android:screenOrientation="portrait"
-        android:theme="@style/AppTheme.NoActionBar"
         android:windowSoftInputMode="stateHidden">
     </activity>
     <activity
         android:name=".edit.ImagePickerActivity"
         android:label="ImagePickerActivity"
-        android:screenOrientation="portrait"
-        android:theme="@style/AppTheme.NoActionBar">
+        android:screenOrientation="portrait">
     </activity>
     <activity
         android:name=".play.MapActivity"
         android:label="MapActivity"
-        android:screenOrientation="portrait"
-        android:theme="@style/AppTheme.NoActionBar">
-    </activity><!-- ATTENTION: This was auto-generated to add Google Play services to your project for
-     App Indexing.  See https://g.co/AppIndexing/AndroidStudio for more information. -->
-    <meta-data
-        android:name="com.google.android.gms.version"
-        android:value="@integer/google_play_services_version"/>
+        android:screenOrientation="portrait">
+    </activity>
   </application>
 </manifest>
