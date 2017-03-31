@@ -8,3 +8,18 @@ Map Editor
 
 Game 
  - Remove out-of-bounds tiles from map when resizing to smaller size
+
+Unit Editor
+ - Add fields
+
+Ability Editor
+ 
+Mod Editor
+ - Update mod links in abilities when updating mod name or deleting mod
+
+Sync (Write and Load)
+ - Sync Mods to disk
+ - Sync Attributes to disk
+ - Sync Units to disk 
+ - Sync BG to disk
+

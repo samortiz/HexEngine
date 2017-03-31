@@ -16,6 +16,7 @@ public class FileUtils {
   public static final String ROOT_DIR = "HexEngine";
   public static final String GAME_DIR = ROOT_DIR+"/games";
   public static final String IMAGE_DIR = ROOT_DIR+"/images";
+  public static final String MOD_DIR = ROOT_DIR+"/mods";
 
   /**
    * @return  Path to the game storage location in external storage

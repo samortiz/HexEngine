@@ -6,6 +6,7 @@ import android.util.Log;
 import com.alwaysrejoice.hexengine.dto.BgTile;
 import com.alwaysrejoice.hexengine.dto.BitmapGsonAdapter;
 import com.alwaysrejoice.hexengine.dto.Game;
+import com.alwaysrejoice.hexengine.dto.Mod;
 import com.alwaysrejoice.hexengine.dto.TileType;
 import com.alwaysrejoice.hexengine.dto.UnitTile;
 import com.google.gson.Gson;
@@ -17,6 +18,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+
+import static com.alwaysrejoice.hexengine.util.FileUtils.MOD_DIR;
 
 public class GameUtils {
   private static Game game = null;
@@ -138,6 +141,27 @@ public class GameUtils {
 
   public static UnitTile toUnitTile(String json) {
     return gson.fromJson(json, UnitTile.class);
+  }
+
+  /**
+   * Loads a mod from the mod storage directory
+   * @param fileName name of mod file in MOD_DIR
+   */
+  public static Mod loadMod(String fileName) {
+    InputStream inputStream = null;
+    Mod mod = null;
+    try {
+      File file = new File(FileUtils.getExtPath(MOD_DIR), fileName);
+      inputStream = new FileInputStream(file);
+      String jsonMod = IOUtils.toString(inputStream, "UTF-8");
+      inputStream.close();
+      mod = gson.fromJson(jsonMod, Mod.class);
+    } catch (IOException e) {
+      Log.e("IO Error", "Error in loadMod loading "+fileName, e);
+      if (inputStream != null) try { inputStream.close(); } catch (IOException e1) { e.printStackTrace();}
+    }
+    Log.d("GameUtils", "Loaded mod "+mod.getName()+" from file "+fileName);
+    return mod;
   }
 
 }

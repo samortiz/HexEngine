@@ -1,14 +1,14 @@
 package com.alwaysrejoice.hexengine.edit;
 
+import android.app.Activity;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
 import com.alwaysrejoice.hexengine.util.GameUtils;
 
-public class EditMapActivity extends AppCompatActivity implements View.OnTouchListener {
+public class EditMapActivity extends Activity implements View.OnTouchListener {
   EditMapView editMapView;
 
   @Override

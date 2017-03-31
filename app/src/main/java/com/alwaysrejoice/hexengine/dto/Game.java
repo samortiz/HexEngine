@@ -18,6 +18,7 @@ public class Game {
   private List<UnitMap> unitMaps = new ArrayList();
   private Map<String, UnitTile> unitTiles = new HashMap(); // keyed on name
   private List<TileGroup> tileGroups = new ArrayList();
+  private Map<String, Mod> mods = new HashMap(); // keyed on name
 
   public GameInfo getGameInfo() {
     return gameInfo;
@@ -65,6 +66,14 @@ public class Game {
 
   public void setTileGroups(List<TileGroup> tileGroups) {
     this.tileGroups = tileGroups;
+  }
+
+  public Map<String, Mod> getMods() {
+    return mods;
+  }
+
+  public void setMods(Map<String, Mod> mods) {
+    this.mods = mods;
   }
 
   @Override
