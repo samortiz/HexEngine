@@ -3,14 +3,16 @@ package com.alwaysrejoice.hexengine.util;
 import android.graphics.Bitmap;
 import android.util.Log;
 
+import com.alwaysrejoice.hexengine.dto.Action;
 import com.alwaysrejoice.hexengine.dto.BgTile;
 import com.alwaysrejoice.hexengine.dto.BitmapGsonAdapter;
+import com.alwaysrejoice.hexengine.dto.Effect;
 import com.alwaysrejoice.hexengine.dto.Game;
 import com.alwaysrejoice.hexengine.dto.Mod;
-import com.alwaysrejoice.hexengine.dto.TileType;
 import com.alwaysrejoice.hexengine.dto.UnitTile;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 
 import org.apache.commons.io.IOUtils;
 
@@ -18,6 +20,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 
 import static com.alwaysrejoice.hexengine.util.FileUtils.MOD_DIR;
 
@@ -112,28 +115,9 @@ public class GameUtils {
     return false;
   }
 
-
-
-  public static String bgToJson(BgTile tile) {
-    return gson.toJson(tile);
+  public static String toJson(Object obj) {
+    return gson.toJson(obj);
   }
-
-  public static String unitToJson(UnitTile tile) {
-    return gson.toJson(tile);
-  }
-
-  public static String toJson(TileType tile) {
-    if (tile instanceof BgTile) {
-      Log.d("gameUtils", "toJson BG with name="+tile.getName());
-      return bgToJson((BgTile) tile);
-    } else if (tile instanceof UnitTile) {
-      Log.d("gameUtils", "toJson Unit with name="+tile.getName());
-      return unitToJson((UnitTile) tile);
-    }
-    Log.d("gameUtils", "toJson NULL! tile="+tile);
-    return null;
-  }
-
 
   public static BgTile toBgTile(String json) {
     return gson.fromJson(json, BgTile.class);
@@ -141,6 +125,18 @@ public class GameUtils {
 
   public static UnitTile toUnitTile(String json) {
     return gson.fromJson(json, UnitTile.class);
+  }
+
+  public static Effect toEffectTile(String json) {
+    return gson.fromJson(json, Effect.class);
+  }
+
+  public static ArrayList<Action> jsonToActionList(String json) {
+    return gson.fromJson(json, new TypeToken<ArrayList<Action>>(){}.getType());
+  }
+
+  public static Action toAction(String json) {
+    return gson.fromJson(json, Action.class);
   }
 
   /**

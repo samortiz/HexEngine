@@ -2,14 +2,12 @@ package com.alwaysrejoice.hexengine.dto;
 
 import android.graphics.Bitmap;
 
-import java.io.Serializable;
-
 /**
  * All the things that can be put into a TileGroup
  * These are items in the popup popup menu
  */
 public interface TileType extends Comparable {
-  public static enum TILE_TYPE {BACKGROUND, UNIT, SYSTEM};
+  public static enum TILE_TYPE {BACKGROUND, UNIT, SYSTEM, EFFECT};
 
   public TILE_TYPE getTileType();
 

@@ -18,7 +18,9 @@ import com.alwaysrejoice.hexengine.dto.TileType;
 import com.alwaysrejoice.hexengine.util.FileUtils;
 import com.alwaysrejoice.hexengine.util.GameUtils;
 
-import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Displays and handles events for the image picker screen
@@ -30,6 +32,7 @@ public class ImagePickerActivity extends Activity {
 
   public static final String RETURN_BG = "BG";
   public static final String RETURN_UNIT = "UNIT";
+  public static final String RETURN_EFFECT = "EFFECT";
 
   ListView list;
 
@@ -53,6 +56,8 @@ public class ImagePickerActivity extends Activity {
       tempTile = GameUtils.toBgTile(tileJson);
     } else if (RETURN_UNIT.equals(returnLoc)) {
       tempTile = GameUtils.toUnitTile(tileJson);
+    } else if (RETURN_EFFECT.equals(returnLoc)) {
+      tempTile = GameUtils.toEffectTile(tileJson);
     } else {
       Log.e("imagePicker", "Error! Unknown returnLoc="+returnLoc);
     }
@@ -67,15 +72,23 @@ public class ImagePickerActivity extends Activity {
     int imagesPerRow = 4;
     int imageSize = screenWidth / imagesPerRow;
 
+
     // Go through all the images files in external storage
-    File imageDir = FileUtils.getExtPath(FileUtils.IMAGE_DIR);
-    String[] imageFiles = imageDir.list();
+    String extDir = null;
+    if (RETURN_BG.equals(returnLoc)) {
+      extDir = FileUtils.IMAGE_BACKGROUND_DIR;
+    } else if (RETURN_UNIT.equals(returnLoc)) {
+      extDir = FileUtils.IMAGE_UNITS_DIR;
+    } else if (RETURN_EFFECT.equals(returnLoc)) {
+      extDir = FileUtils.IMAGE_EFFECTS_DIR;
+    }
+    List<String> fileNames = new ArrayList<>();
+    fileNames.addAll(Arrays.asList(FileUtils.getExtPath(extDir).list()));
     TableRow row = null;
     int rowNum = 0;
-    for (int i = 0; i < imageFiles.length; i++) {
-      final String imageFileName = imageFiles[i];
-      final Bitmap bitmap = FileUtils.loadBitmap(imageFileName);
-
+    for (int i = 0; i < fileNames.size(); i++) {
+      final String imageFileName = fileNames.get(i);
+      final Bitmap bitmap = FileUtils.loadBitmap(extDir, imageFileName);
       // New row (first iteration should be a new row)
       if ((i % imagesPerRow) == 0) {
         row = new TableRow(this);
@@ -98,6 +111,8 @@ public class ImagePickerActivity extends Activity {
             myIntent = new Intent(ImagePickerActivity.this, BgEditActivity.class);
           } else if (RETURN_UNIT.equals(returnLoc)) {
             myIntent = new Intent(ImagePickerActivity.this, UnitEditActivity.class);
+          } else if (RETURN_EFFECT.equals(returnLoc)) {
+            myIntent = new Intent(ImagePickerActivity.this, EffectEditActivity.class);
           }
           if (myIntent != null) {
             Log.d("imagePicker", "returning tile="+tile);

@@ -15,7 +15,9 @@ public class FileUtils {
 
   public static final String ROOT_DIR = "HexEngine";
   public static final String GAME_DIR = ROOT_DIR+"/games";
-  public static final String IMAGE_DIR = ROOT_DIR+"/images";
+  public static final String IMAGE_BACKGROUND_DIR = ROOT_DIR+"/images/background";
+  public static final String IMAGE_UNITS_DIR = ROOT_DIR+"/images/units";
+  public static final String IMAGE_EFFECTS_DIR = ROOT_DIR+"/images/effects";
   public static final String MOD_DIR = ROOT_DIR+"/mods";
 
   /**
@@ -82,9 +84,10 @@ public class FileUtils {
   /**
    * Load a bitmap from external storage, not from assets
    * fileName is the full file name with .png on the end
+   * @param extDir : Path in external files (use FileUtils.*_DIR constants)
    */
-  public static Bitmap loadBitmap(String fileName) {
-    File imgFile = new File(getExtPath(IMAGE_DIR), fileName);
+  public static Bitmap loadBitmap(String extDir, String fileName) {
+    File imgFile = new File(getExtPath(extDir), fileName);
     InputStream inputStream = null;
     Bitmap bitmap = null;
     try {
@@ -108,16 +111,19 @@ public class FileUtils {
    * This is only run the first time, but we need to check it just in case.
    */
   public static void initDisk(AssetManager assetManager) {
-    File imgDir = getExtPath(IMAGE_DIR);
-    if (!imgDir.exists()) {
-      imgDir.mkdirs();
-      copyFilesFromAssetsToStorage(assetManager, "images/template", IMAGE_DIR);
-    }
+    //deleteExtFiles(); // DEBUG
+    initDir(assetManager, "images/background", IMAGE_BACKGROUND_DIR);
+    initDir(assetManager, "images/units", IMAGE_UNITS_DIR);
+    initDir(assetManager, "images/effects", IMAGE_EFFECTS_DIR);
+    initDir(assetManager, "games", GAME_DIR);
+  }
 
-    File gameDir = getExtPath(GAME_DIR);
-    if (!gameDir.exists()) {
-      gameDir.mkdirs();
-      copyFilesFromAssetsToStorage(assetManager, "games", GAME_DIR);
+  // Copies files from the specified assets folder to the external storage directory
+  public static void initDir(AssetManager assetManager, String assetDir, String extPath) {
+    File dir = getExtPath(extPath);
+    if (!dir.exists()) {
+      dir.mkdirs();
+      copyFilesFromAssetsToStorage(assetManager, assetDir, extPath);
     }
   }
 
@@ -143,7 +149,9 @@ public class FileUtils {
    * Cleanup all the storage (probably useful just for debug/testing purposes)
    */
   public static void deleteExtFiles() {
-    deleteDir(IMAGE_DIR);
+    deleteDir(IMAGE_BACKGROUND_DIR);
+    deleteDir(IMAGE_UNITS_DIR);
+    deleteDir(IMAGE_EFFECTS_DIR);
     deleteDir(GAME_DIR);
     deleteDir(ROOT_DIR);
   }

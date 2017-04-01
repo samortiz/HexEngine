@@ -36,6 +36,12 @@ public class SettingsActivity extends Activity {
     Log.d("settings", "goto Mod List");
   }
 
+  public void gotoEffectsList(View view) {
+    Intent myIntent = new Intent(SettingsActivity.this, EffectListActivity.class);
+    startActivity(myIntent);
+    Log.d("settings", "goto Effect List");
+  }
+
   public void gotoTileGroups(View view) {
     Intent myIntent = new Intent(SettingsActivity.this, TileGroupListActivity.class);
     startActivity(myIntent);

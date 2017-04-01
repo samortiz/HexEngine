@@ -5,6 +5,7 @@ Map Editor
  - Boundary checks for tile placement
  - zoom on border causes warp
  - Toobar popup on right border with >1 column
+ - Clear background behind buttons (units have transparent backgrounds)
 
 Game 
  - Remove out-of-bounds tiles from map when resizing to smaller size

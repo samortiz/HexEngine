@@ -27,7 +27,7 @@ public class ClearActivity extends Activity {
     Game game = GameUtils.getGame();
     game.setUnitMaps(new ArrayList());
     GameUtils.saveGame();
-    showMessage("All units have been removed from the map");
+    showMessage("All actions have been removed from the map");
   }
 
   public void clearMapBg(View view) {
