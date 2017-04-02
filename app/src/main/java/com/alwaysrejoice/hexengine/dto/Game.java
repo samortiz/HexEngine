@@ -20,6 +20,7 @@ public class Game {
   private List<TileGroup> tileGroups = new ArrayList();
   private Map<String, Mod> mods = new HashMap(); // keyed on name
   private Map<String, Effect> effects = new HashMap(); // keyed on name
+  private List<String> damageTypes = new ArrayList<>();
 
   public GameInfo getGameInfo() {
     return gameInfo;
@@ -85,6 +86,14 @@ public class Game {
     this.effects = effects;
   }
 
+  public List<String> getDamageTypes() {
+    return damageTypes;
+  }
+
+  public void setDamageTypes(List<String> damageTypes) {
+    this.damageTypes = damageTypes;
+  }
+
   @Override
   public String toString() {
     return "Game{" +
@@ -94,6 +103,9 @@ public class Game {
         ", unitMaps=" + unitMaps +
         ", unitTiles=" + unitTiles +
         ", tileGroups=" + tileGroups +
+        ", mods=" + mods +
+        ", effects=" + effects +
+        ", damageTypes=" + damageTypes +
         '}';
   }
 }

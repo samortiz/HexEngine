@@ -9,6 +9,7 @@ import android.text.InputType;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -21,20 +22,28 @@ import android.widget.TextView;
 
 import com.alwaysrejoice.hexengine.R;
 import com.alwaysrejoice.hexengine.dto.Action;
+import com.alwaysrejoice.hexengine.dto.Damage;
 import com.alwaysrejoice.hexengine.dto.Mod;
 import com.alwaysrejoice.hexengine.dto.ModParam;
 import com.alwaysrejoice.hexengine.dto.ModParamValue;
 import com.alwaysrejoice.hexengine.util.GameUtils;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class ActionEditActivity extends Activity {
   // in - the currently selected action index (in actionList)
   public static final String SELECTED_ACTION_INDEX = "SELECTED_ACTION_INDEX";
+  private static final DecimalFormat decimalFormat = new DecimalFormat("0", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+  {
+    decimalFormat.setMaximumFractionDigits(10);
+  }
 
   // NOTE : This method will also receive and return these
   // ActionListActivity extras : RETURN_LOC CALLING_OBJ ACTION_LIST
@@ -97,11 +106,12 @@ public class ActionEditActivity extends Activity {
     ArrayAdapter<String> typeAdapter = (ArrayAdapter<String>)typeSpinner.getAdapter();
     String modName = typeAdapter.getItem(typeSpinner.getSelectedItemPosition());
     Mod mod = GameUtils.getGame().getMods().get(modName);
-
+    LayoutInflater inflator = LayoutInflater.from(getBaseContext());
     TableLayout inputTable = (TableLayout) findViewById(R.id.input_table);
     TableRow modNameRow = (TableRow) findViewById(R.id.mod_name_row);
     TableLayout.LayoutParams tableParams = (TableLayout.LayoutParams) modNameRow.getLayoutParams();
     TableRow.LayoutParams rowParams = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT);
+    List<String> damageTypes = GameUtils.getGame().getDamageTypes();
 
     // Clear the added rows (leave the first row with the spinner)
     inputViews.clear();
@@ -142,32 +152,48 @@ public class ActionEditActivity extends Activity {
         editText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 24);
         editText.setHint(var);
         String valueStr = "";
-        if (value.getValue() != null) {
-          valueStr = value.getValue().toString();
-        }
-        editText.setText(valueStr);
         if (ModParam.TYPE.String == paramType) {
           editText.setInputType(InputType.TYPE_CLASS_TEXT);
+          valueStr = value.getValueString();
         } else if (ModParam.TYPE.Number == paramType) {
           editText.setInputType(InputType.TYPE_CLASS_NUMBER|InputType.TYPE_NUMBER_FLAG_DECIMAL);
+          valueStr = doubleToString(value.getValueDouble());
         } else if (ModParam.TYPE.Integer == paramType) {
           editText.setInputType(InputType.TYPE_CLASS_NUMBER);
+          valueStr = intToString(value.getValueInt());
         }
+        editText.setText(valueStr);
         inputViews.put(var, editText);
         tableRow.addView(editText);
 
       } else if (ModParam.TYPE.Boolean == paramType) {
         CheckBox checkbox = new CheckBox(typeSpinner.getContext());
         checkbox.setLayoutParams(rowParams);// TableRow is the parent view
-        if (value.getValue() != null) {
-          checkbox.setChecked((Boolean) value.getValue());
-        }
+        checkbox.setChecked(value.getValueBoolean());
         inputViews.put(var, checkbox);
         tableRow.addView(checkbox);
 
       } else if (ModParam.TYPE.Damage == paramType) {
-        // TODO Layout damage
-        Log.d("actionEdit", "damage");
+        Damage dmg = value.getValueDamage();
+        View damageView = inflator.inflate(R.layout.action_damage_row, null);
+        Spinner damageTypeSpinner = (Spinner) damageView.findViewById(R.id.damage_type_spinner);
+        ArrayAdapter<String> dmgAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, damageTypes);
+        dmgAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        damageTypeSpinner.setAdapter(dmgAdapter);
+        int selectedDamageTypeIndex = dmgAdapter.getPosition(dmg.getType());
+        if (selectedDamageTypeIndex < 0) {
+          selectedDamageTypeIndex = 0;
+        }
+        damageTypeSpinner.setSelection(selectedDamageTypeIndex);
+        EditText countInput = (EditText) damageView.findViewById(R.id.count_input);
+        countInput.setText(intToString(dmg.getCount()));
+        EditText sizeInput = (EditText) damageView.findViewById(R.id.size_input);
+        sizeInput.setText(intToString(dmg.getSize()));
+        EditText bonusInput = (EditText) damageView.findViewById(R.id.bonus_input);
+        bonusInput.setText(doubleToString(dmg.getBonus()));
+
+        inputViews.put(var, damageView);
+        tableRow.addView(damageView);
       }
     }
 
@@ -177,6 +203,22 @@ public class ActionEditActivity extends Activity {
   private int toPixel(int unit, float size) {
     DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
     return (int)TypedValue.applyDimension(unit, size, metrics);
+  }
+
+  /**
+   * Converts an int to a String translating 0 as ""
+   */
+  private String intToString(int num) {
+    if (num == 0) return "";
+    return Integer.toString(num);
+  }
+
+  /**
+   * Converts a double to a String translating 0 as ""
+   */
+  private String doubleToString(double num) {
+    if (num == 0.0) return "";
+    return decimalFormat.format(num);
   }
 
   /**
@@ -194,24 +236,35 @@ public class ActionEditActivity extends Activity {
       ModParamValue paramValue = values.get(var);
       View inputView = inputViews.get(var);
       if (inputView != null) {
-        Object value = null;
-        if ((ModParam.TYPE.String == paramValue.getType()) ||
-            (ModParam.TYPE.Number == paramValue.getType()) ||
-            (ModParam.TYPE.Integer == paramValue.getType())) {
-          value = ((EditText) inputView).getText().toString().trim();
+        if (ModParam.TYPE.String == paramValue.getType()) {
+          String value = ((EditText) inputView).getText().toString().trim();
+          paramValue.setValueString(value);
+        } else if (ModParam.TYPE.Number == paramValue.getType()) {
+          String value = ((EditText) inputView).getText().toString().trim();
+          if ("".equals(value)) value = "0";
+          paramValue.setValueDouble(Double.parseDouble(value));
+        } else if (ModParam.TYPE.Integer == paramValue.getType()) {
+          String value = ((EditText) inputView).getText().toString().trim();
+          if ("".equals(value)) value = "0";
+          paramValue.setValueInt(Integer.parseInt(value));
         } else if (ModParam.TYPE.Boolean == paramValue.getType()) {
-          value = new Boolean(((CheckBox)inputView).isChecked());
+          paramValue.setValueBoolean(((CheckBox)inputView).isChecked());
         } else if (ModParam.TYPE.Damage == paramValue.getType()) {
-
-          Log.d("", "TODO Save damage");
-
+          EditText count = (EditText) inputView.findViewById(R.id.count_input);
+          EditText size = (EditText) inputView.findViewById(R.id.size_input);
+          EditText bonus = (EditText) inputView.findViewById(R.id.bonus_input);
+          Spinner dmgTypeSpinner = (Spinner) inputView.findViewById(R.id.damage_type_spinner);
+          ArrayAdapter<String> dmgAdapter = (ArrayAdapter<String>)dmgTypeSpinner.getAdapter();
+          Damage dmg = (Damage) paramValue.getValueDamage();
+          dmg.setCount(Integer.parseInt(count.getText().toString()));
+          dmg.setSize(Integer.parseInt(size.getText().toString()));
+          dmg.setBonus((Double.parseDouble(bonus.getText().toString())));
+          dmg.setType(dmgAdapter.getItem(dmgTypeSpinner.getSelectedItemPosition()));
         } else {
-          Log.d("actionEdit", "Unknown type :"+paramValue.getType());
+          Log.e("actionEdit", "Unknown type :"+paramValue.getType());
         }
-        paramValue.setValue(value);
       } else {
-        paramValue.setValue(null);
-        Log.d("actionEdit", "InputView is null var="+var);
+        Log.e("actionEdit", "Error! Cannot save, because inputView is null! var="+var);
       }
     } // for
 
@@ -219,7 +272,8 @@ public class ActionEditActivity extends Activity {
       showError("You must choose a mod.");
       return;
     }
-    Log.d("actionEdit", "Done with Action modName="+action.getModName());
+    Log.d("actionEdit", "Saved Action "+action);
+    Log.d("", "actionList = "+actionList);
 
     // Go to the action list (with all the required data to restore it's state passed)
     Intent myIntent = new Intent(ActionEditActivity.this, ActionListActivity.class);

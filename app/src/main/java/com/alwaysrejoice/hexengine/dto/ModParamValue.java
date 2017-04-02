@@ -4,7 +4,12 @@ public class ModParamValue {
 
   private String var;
   private ModParam.TYPE type;
-  private Object value; // can be String, Integer, Double, Boolean, Damage etc..
+
+  private int valueInt = 0;
+  private double valueDouble = 0.0;
+  private String valueString = "";
+  private boolean valueBoolean = false;
+  private Damage valueDamage = new Damage();
 
   public ModParamValue() {}
 
@@ -12,17 +17,6 @@ public class ModParamValue {
   public ModParamValue(String var, ModParam.TYPE type) {
     this.var = var;
     this.type = type;
-    if (type == ModParam.TYPE.String) {
-      this.value = "";
-    } else if (type == ModParam.TYPE.Number) {
-      this.value = null;
-    } else if (type == ModParam.TYPE.Integer) {
-      this.value = null;
-    } else if (type == ModParam.TYPE.Boolean) {
-      this.value = new Boolean(false);
-    } else if (type == ModParam.TYPE.Damage) {
-      this.value = new Damage();
-    }
   }
 
   public String getVar() {
@@ -41,12 +35,44 @@ public class ModParamValue {
     this.type = type;
   }
 
-  public Object getValue() {
-    return value;
+  public int getValueInt() {
+    return valueInt;
   }
 
-  public void setValue(Object value) {
-    this.value = value;
+  public void setValueInt(int valueInt) {
+    this.valueInt = valueInt;
+  }
+
+  public double getValueDouble() {
+    return valueDouble;
+  }
+
+  public void setValueDouble(double valueDouble) {
+    this.valueDouble = valueDouble;
+  }
+
+  public String getValueString() {
+    return valueString;
+  }
+
+  public void setValueString(String valueString) {
+    this.valueString = valueString;
+  }
+
+  public boolean getValueBoolean() {
+    return valueBoolean;
+  }
+
+  public void setValueBoolean(boolean valueBoolean) {
+    this.valueBoolean = valueBoolean;
+  }
+
+  public Damage getValueDamage() {
+    return valueDamage;
+  }
+
+  public void setValueDamage(Damage valueDamage) {
+    this.valueDamage = valueDamage;
   }
 
   @Override
@@ -54,7 +80,11 @@ public class ModParamValue {
     return "ModParamValue{" +
         "var='" + var + '\'' +
         ", type=" + type +
-        ", value=" + value +
+        ", valueInt=" + valueInt +
+        ", valueDouble=" + valueDouble +
+        ", valueString='" + valueString + '\'' +
+        ", valueBoolean=" + valueBoolean +
+        ", valueDamage=" + valueDamage +
         '}';
   }
 }
