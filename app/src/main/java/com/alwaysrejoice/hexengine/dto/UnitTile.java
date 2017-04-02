@@ -2,19 +2,31 @@ package com.alwaysrejoice.hexengine.dto;
 
 import android.graphics.Bitmap;
 
+import java.util.List;
+import java.util.Map;
+
 public class UnitTile implements TileType {
 
   private String name;
-  private String type;
   private Bitmap bitmap;
-  private int visibleRange;
+  private String team;
+  private double hpMax;
+  private double actionMax;
+  private Map<String, Boolean> attributes;
   private int moveRange;
+  private List<String> moveRestrict;
+  private int sightRange;
+  private List<String> sightRestrict;
+  List<Ability> abilities;
+  List<Damage> defence;
+  private List<Effect> effects;
+  private Map<String, String> storage;
 
-  public UnitTile() {}
+  public UnitTile() {
+  }
 
-  public UnitTile(String name, String type, Bitmap bitmap) {
+  public UnitTile(String name, Bitmap bitmap) {
     this.name = name;
-    this.type = type;
     this.bitmap = bitmap;
   }
 
@@ -22,22 +34,12 @@ public class UnitTile implements TileType {
     return TILE_TYPE.UNIT;
   }
 
-  @Override
   public String getName() {
     return name;
   }
 
-  @Override
   public void setName(String name) {
     this.name = name;
-  }
-
-  public String getType() {
-    return type;
-  }
-
-  public void setType(String type) {
-    this.type = type;
   }
 
   public Bitmap getBitmap() {
@@ -48,12 +50,36 @@ public class UnitTile implements TileType {
     this.bitmap = bitmap;
   }
 
-  public int getVisibleRange() {
-    return visibleRange;
+  public String getTeam() {
+    return team;
   }
 
-  public void setVisibleRange(int visibleRange) {
-    this.visibleRange = visibleRange;
+  public void setTeam(String team) {
+    this.team = team;
+  }
+
+  public double getHpMax() {
+    return hpMax;
+  }
+
+  public void setHpMax(double hpMax) {
+    this.hpMax = hpMax;
+  }
+
+  public double getActionMax() {
+    return actionMax;
+  }
+
+  public void setActionMax(double actionMax) {
+    this.actionMax = actionMax;
+  }
+
+  public Map<String, Boolean> getAttributes() {
+    return attributes;
+  }
+
+  public void setAttributes(Map<String, Boolean> attributes) {
+    this.attributes = attributes;
   }
 
   public int getMoveRange() {
@@ -64,23 +90,87 @@ public class UnitTile implements TileType {
     this.moveRange = moveRange;
   }
 
+  public List<String> getMoveRestrict() {
+    return moveRestrict;
+  }
+
+  public void setMoveRestrict(List<String> moveRestrict) {
+    this.moveRestrict = moveRestrict;
+  }
+
+  public int getSightRange() {
+    return sightRange;
+  }
+
+  public void setSightRange(int sightRange) {
+    this.sightRange = sightRange;
+  }
+
+  public List<String> getSightRestrict() {
+    return sightRestrict;
+  }
+
+  public void setSightRestrict(List<String> sightRestrict) {
+    this.sightRestrict = sightRestrict;
+  }
+
+  public List<Ability> getAbilities() {
+    return abilities;
+  }
+
+  public void setAbilities(List<Ability> abilities) {
+    this.abilities = abilities;
+  }
+
+  public List<Damage> getDefence() {
+    return defence;
+  }
+
+  public void setDefence(List<Damage> defence) {
+    this.defence = defence;
+  }
+
+  public List<Effect> getEffects() {
+    return effects;
+  }
+
+  public void setEffects(List<Effect> effects) {
+    this.effects = effects;
+  }
+
+  public Map<String, String> getStorage() {
+    return storage;
+  }
+
+  public void setStorage(Map<String, String> storage) {
+    this.storage = storage;
+  }
 
   @Override
   public int compareTo(Object o) {
     if (o == null) {
       return 0;
     }
-    return this.getName().compareTo(((TileType)o).getName());
+    return this.getName().compareTo(((TileType) o).getName());
   }
 
   @Override
   public String toString() {
     return "UnitTile{" +
         "name='" + name + '\'' +
-        ", type='" + type + '\'' +
         ", bitmap=" + bitmap +
-        ", visibleRange=" + visibleRange +
+        ", team='" + team + '\'' +
+        ", hpMax=" + hpMax +
+        ", actionMax=" + actionMax +
+        ", attributes=" + attributes +
         ", moveRange=" + moveRange +
+        ", moveRestrict=" + moveRestrict +
+        ", sightRange=" + sightRange +
+        ", sightRestrict=" + sightRestrict +
+        ", abilities=" + abilities +
+        ", defence=" + defence +
+        ", effects=" + effects +
+        ", storage=" + storage +
         '}';
   }
 }

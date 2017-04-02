@@ -12,22 +12,22 @@ import com.alwaysrejoice.hexengine.R;
 
 import java.util.List;
 
-public class DamageListAdapter extends BaseAdapter {
+public class ListStringAdapter extends BaseAdapter {
 
   private Context context;
-  private List<String> damageTypes;
+  private List<String> types;
 
-  public DamageListAdapter(Context context, List<String> damageTypes) {
+  public ListStringAdapter(Context context, List<String> types) {
     this.context = context;
-    this.damageTypes = damageTypes;
+    this.types = types;
   }
 
   public int getCount() {
-    return damageTypes.size();
+    return types.size();
   }
 
   public String getItem(int arg0) {
-    return damageTypes.get(arg0);
+    return types.get(arg0);
   }
 
   public long getItemId(int position) {
@@ -35,16 +35,16 @@ public class DamageListAdapter extends BaseAdapter {
   }
 
   public void removeItem(int position) {
-    damageTypes.remove(position);
+    types.remove(position);
   }
 
   public View getView(int position, View convertView, ViewGroup parent) {
     LayoutInflater inflater = LayoutInflater.from(context);
-    View row = inflater.inflate(R.layout.damage_list_row, parent, false);
-    String damageType = this.damageTypes.get(position);
+    View row = inflater.inflate(R.layout.list_string_row, parent, false);
+    String type = this.types.get(position);
     TextView nameView = (TextView) row.findViewById(R.id.row_name);
     ImageView deleteImg = (ImageView) row.findViewById(R.id.row_delete);
-    nameView.setText(damageType);
+    nameView.setText(type);
     deleteImg.setTag(position);
     return (row);
   }

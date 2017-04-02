@@ -90,7 +90,7 @@ public class UnitEditActivity extends Activity {
     unitTiles.remove(origTileName);
     unitTiles.put(tile.getName(), tile);
     GameUtils.saveGame();
-    Log.d("unitEdit", "saving UnitTile name="+tile.getName()+" type="+tile.getType()+" orig="+origTileName);
+    Log.d("unitEdit", "saving UnitTile name="+tile.getName()+" orig="+origTileName);
     // Go to the list
     Intent myIntent = new Intent(UnitEditActivity.this, UnitListActivity.class);
     startActivity(myIntent);
@@ -112,9 +112,7 @@ public class UnitEditActivity extends Activity {
    */
   private void loadTileFromUi() {
     EditText nameInput = (EditText) findViewById(R.id.unit_name);
-    EditText typeInput = (EditText) findViewById(R.id.unit_type);
     tile.setName(nameInput.getText().toString().trim());
-    tile.setType(typeInput.getText().toString().trim());
   }
 
   /**
@@ -122,10 +120,8 @@ public class UnitEditActivity extends Activity {
    */
   private void setUiFromTile() {
     EditText nameInput = (EditText) findViewById(R.id.unit_name);
-    EditText typeInput = (EditText) findViewById(R.id.unit_type);
     ImageView imgInput = (ImageView) findViewById(R.id.unit_img);
     nameInput.setText(tile.getName());
-    typeInput.setText(tile.getType());
     if (tile.getBitmap() != null) {
       imgInput.setImageBitmap(tile.getBitmap());
       imgInput.getLayoutParams().height = 200;

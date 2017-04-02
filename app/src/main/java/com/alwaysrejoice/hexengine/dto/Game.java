@@ -20,7 +20,12 @@ public class Game {
   private List<TileGroup> tileGroups = new ArrayList();
   private Map<String, Mod> mods = new HashMap(); // keyed on name
   private Map<String, Effect> effects = new HashMap(); // keyed on name
+
+  // Lists of Strings
+  private List<String> teams = new ArrayList<>();
+  private List<String> bgTypes = new ArrayList<>();
   private List<String> damageTypes = new ArrayList<>();
+  private List<String> attr = new ArrayList<>();
 
   public GameInfo getGameInfo() {
     return gameInfo;
@@ -86,6 +91,22 @@ public class Game {
     this.effects = effects;
   }
 
+  public List<String> getTeams() {
+    return teams;
+  }
+
+  public void setTeams(List<String> teams) {
+    this.teams = teams;
+  }
+
+  public List<String> getBgTypes() {
+    return bgTypes;
+  }
+
+  public void setBgTypes(List<String> bgTypes) {
+    this.bgTypes = bgTypes;
+  }
+
   public List<String> getDamageTypes() {
     return damageTypes;
   }
@@ -94,7 +115,14 @@ public class Game {
     this.damageTypes = damageTypes;
   }
 
-  @Override
+  public List<String> getAttr() {
+    return attr;
+  }
+
+  public void setAttr(List<String> attr) {
+    this.attr = attr;
+  }
+
   public String toString() {
     return "Game{" +
         "gameInfo=" + gameInfo +
@@ -105,7 +133,10 @@ public class Game {
         ", tileGroups=" + tileGroups +
         ", mods=" + mods +
         ", effects=" + effects +
+        ", teams=" + teams +
+        ", bgTypes=" + bgTypes +
         ", damageTypes=" + damageTypes +
+        ", attr=" + attr +
         '}';
   }
 }

@@ -42,10 +42,10 @@ public class SettingsActivity extends Activity {
     Log.d("settings", "goto Effect List");
   }
 
-  public void gotoDamageList(View view) {
-    Intent myIntent = new Intent(SettingsActivity.this, DamageListActivity.class);
+  public void gotoListEditor(View view) {
+    Intent myIntent = new Intent(SettingsActivity.this, ListEditorActivity.class);
     startActivity(myIntent);
-    Log.d("settings", "goto Damage List");
+    Log.d("settings", "goto List Editor");
   }
 
   public void gotoTileGroups(View view) {

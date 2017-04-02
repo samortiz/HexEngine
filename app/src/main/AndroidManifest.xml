@@ -104,7 +104,27 @@
         android:windowSoftInputMode="stateHidden">
     </activity>
     <activity
-        android:name=".edit.DamageListActivity"
+        android:name=".edit.ListEditorActivity"
+        android:label="UnitListActivity"
+        android:screenOrientation="portrait">
+    </activity>
+    <activity
+        android:name=".edit.ListDamageActivity"
+        android:label="UnitListActivity"
+        android:screenOrientation="portrait">
+    </activity>
+    <activity
+        android:name=".edit.ListTeamActivity"
+        android:label="UnitListActivity"
+        android:screenOrientation="portrait">
+    </activity>
+    <activity
+        android:name=".edit.ListBgTypeActivity"
+        android:label="UnitListActivity"
+        android:screenOrientation="portrait">
+    </activity>
+    <activity
+        android:name=".edit.ListAttrActivity"
         android:label="UnitListActivity"
         android:screenOrientation="portrait">
     </activity>

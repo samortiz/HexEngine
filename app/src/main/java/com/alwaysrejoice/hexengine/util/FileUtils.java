@@ -161,12 +161,14 @@ public class FileUtils {
    */
   public static void deleteDir(String path) {
     File dir = FileUtils.getExtPath(path);
-    for (String fileName : dir.list()) {
-      File file = new File(dir, fileName);
-      file.delete();
-      Log.d("Deleting", "deleting "+path+"/"+fileName);
-    };
-    dir.delete();
+    if (dir.exists()) {
+      for (String fileName : dir.list()) {
+        File file = new File(dir, fileName);
+        file.delete();
+        Log.d("Deleting", "deleting " + path + "/" + fileName);
+      } // for
+      dir.delete();
+    }
   }
 
 }
