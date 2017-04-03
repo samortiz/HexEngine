@@ -7,16 +7,23 @@ Map Editor
  - Toobar popup on right border with >1 column
  - Clear background behind buttons (units have transparent backgrounds)
 
+Misc : 
+ - Change to use ID instead of name as key in Map (also do bgTile)
+ - Bg edit needs spinner on type
+ - List editors should not be empty (causes error with emtpy spinner)
+   prevent removing the last item
+
 Game 
  - Remove out-of-bounds tiles from map when resizing to smaller size
 
 Unit Editor
- - Change to use ID instead of name as key in Map (also do bgTile)
  - Edit Abilities
  - Edit Effects (chooser)
  - Edit Storage 
 
 Ability Editor
+ - Global editor from settings
+ - Unit specific editor (chooser)
  
 Mod Editor
  - Update mod links in abilities when updating mod name or deleting mod
