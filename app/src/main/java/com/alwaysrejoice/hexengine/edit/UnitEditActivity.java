@@ -6,8 +6,10 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.alwaysrejoice.hexengine.R;
@@ -17,14 +19,21 @@ import com.alwaysrejoice.hexengine.dto.TileType;
 import com.alwaysrejoice.hexengine.dto.TileTypeLink;
 import com.alwaysrejoice.hexengine.dto.UnitMap;
 import com.alwaysrejoice.hexengine.dto.UnitTile;
+import com.alwaysrejoice.hexengine.util.DialogMultiSelect;
+import com.alwaysrejoice.hexengine.util.DialogMultiSelectListener;
 import com.alwaysrejoice.hexengine.util.GameUtils;
+import com.alwaysrejoice.hexengine.util.Utils;
 
 import java.util.Map;
 
 public class UnitEditActivity extends Activity {
-  public static final String SELECTED_UNIT = "UNIT_EDIT_SELECTED_TILE";
-  UnitTile tile; // The tile we are currently editing
-  String origTileName = "";  // Tile name when the edit screen was first invoked
+  public static final String SELECTED_UNIT_NAME = "SELECTED_UNIT_NAME";
+  UnitTile unit; // The unit we are currently editing
+  String origUnitName = "";  // name when the edit screen was first invoked
+
+  DialogMultiSelect attrDialog;
+  DialogMultiSelect moveRestrictDialog;
+  DialogMultiSelect sightRestrictDialog;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -32,65 +41,75 @@ public class UnitEditActivity extends Activity {
     Log.d("unitEdit", "onCreate");
     setContentView(R.layout.unit_edit);
     Bundle bundle = getIntent().getExtras();
+    Game game = GameUtils.getGame();
 
     // Check if we are coming back from an ImagePickerActivity
-    String tileJson = (String) bundle.get(ImagePickerActivity.EXTRA_TILE);
-    if (tileJson != null) {
-      tile = GameUtils.toUnitTile(tileJson);
-      setUiFromTile();
-      Log.d("unitEdit", "Tile chosen! " + tile.getName());
+    String unitJson = (String) bundle.get(ImagePickerActivity.EXTRA_TILE);
+    if (unitJson != null) {
+      unit = GameUtils.jsonToUnitTile(unitJson);
+      Log.d("unitEdit", "Tile chosen! " + unit.getName());
     }
 
     // Load the file we are editing
-    String tileName = (String) bundle.get(UnitEditActivity.SELECTED_UNIT);
-    if ((tileName != null) && !"".equals(tileName)) {
-      Game game = GameUtils.getGame();
-      tile = game.getUnitTiles().get(tileName);
-      setUiFromTile();
-      origTileName = tileName;
-      Log.d("unitEdit", "begin editing selected tile "+tileName);
+    String unitName = (String) bundle.get(UnitEditActivity.SELECTED_UNIT_NAME);
+    if ((unitName != null) && !"".equals(unitName)) {
+      unit = game.getUnitTiles().get(unitName);
+      origUnitName = unitName;
+      Log.d("unitEdit", "begin editing selected unit "+unitName);
     }
 
-    if (tile == null) {
-      tile = new UnitTile();
+    if (unit == null) {
+      unit = new UnitTile();
+      origUnitName = "";
     }
 
+    Spinner teamSpinner = (Spinner) findViewById(R.id.team_spinner);
+    ArrayAdapter<String> teamAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, game.getTeams());
+    teamAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+    teamSpinner.setAdapter(teamAdapter);
+
+    attrDialog = new DialogMultiSelect(this, "Attributes", game.getAttr(), unit.getAttr());
+    moveRestrictDialog = new DialogMultiSelect(this, "Move Restrictions", game.getBgTypes(), unit.getMoveRestrict());
+    sightRestrictDialog = new DialogMultiSelect(this, "Sight Restrictions", game.getBgTypes(), unit.getSightRestrict());
+
+    // Load the UI with the unit data
+    setUiFromUnit();
   }
 
   /**
    * Called when the user clicks "Save"
    */
   public void save(View view) {
-    loadTileFromUi();
+    loadUnitFromUi();
     Game game = GameUtils.getGame();
     Map<String, UnitTile> unitTiles = game.getUnitTiles();
 
-    if ("".equals(tile.getName())) {
+    if ("".equals(unit.getName())) {
       showError("You must enter a name.");
       return;
     }
 
     // If name is changing update all the links
-    if (!tile.getName().equals(origTileName)) {
+    if (!unit.getName().equals(origUnitName)) {
       for (UnitMap unitMap : game.getUnitMaps()) {
-        if (origTileName.equals(unitMap.getName())) {
-          unitMap.setName(tile.getName());
+        if (origUnitName.equals(unitMap.getName())) {
+          unitMap.setName(unit.getName());
         }
       } //for
       for (TileGroup group : game.getTileGroups()) {
         for (TileTypeLink link : group.getTileLinks()) {
-          if ( origTileName.equals(link.getName()) &&
+          if ( origUnitName.equals(link.getName()) &&
               (link.getTileType() == TileType.TILE_TYPE.UNIT)) {
-            link.setName(tile.getName());
+            link.setName(unit.getName());
           }
         }
       } // for
     }
 
-    unitTiles.remove(origTileName);
-    unitTiles.put(tile.getName(), tile);
+    unitTiles.remove(origUnitName);
+    unitTiles.put(unit.getName(), unit);
     GameUtils.saveGame();
-    Log.d("unitEdit", "saving UnitTile name="+tile.getName()+" orig="+origTileName);
+    Log.d("unitEdit", "saving UnitTile name="+unit.getName()+" orig="+origUnitName);
     // Go to the list
     Intent myIntent = new Intent(UnitEditActivity.this, UnitListActivity.class);
     startActivity(myIntent);
@@ -100,42 +119,166 @@ public class UnitEditActivity extends Activity {
    * Called when the user clicks on the bitmap to change it
    */
   public void chooseBitmap(View view) {
-    loadTileFromUi();
+    loadUnitFromUi();
     Intent myIntent = new Intent(UnitEditActivity.this, ImagePickerActivity.class);
     myIntent.putExtra(ImagePickerActivity.EXTRA_RETURN, ImagePickerActivity.RETURN_UNIT);
-    myIntent.putExtra(ImagePickerActivity.EXTRA_TILE, GameUtils.toJson(tile));
+    myIntent.putExtra(ImagePickerActivity.EXTRA_TILE, GameUtils.toJson(unit));
     startActivity(myIntent);
   }
 
   /**
-   * Loads the information from the UI input components into the tile
+   * Loads the information from the UI input components into the unit
+   *  NOTE : bitmap is already taken care of by the ImagePicker code
    */
-  private void loadTileFromUi() {
+  private void loadUnitFromUi() {
     EditText nameInput = (EditText) findViewById(R.id.unit_name);
-    tile.setName(nameInput.getText().toString().trim());
+    unit.setName(nameInput.getText().toString().trim());
+
+    Spinner teamSpinner = (Spinner) findViewById(R.id.team_spinner);
+    ArrayAdapter<String> typeAdapter = (ArrayAdapter<String>)teamSpinner.getAdapter();
+    String team = typeAdapter.getItem(teamSpinner.getSelectedItemPosition());
+    unit.setTeam(team);
+
+    EditText hpInput = (EditText) findViewById(R.id.hp_input);
+    unit.setHpMax(Utils.stringToDouble(hpInput.getText().toString().trim()));
+
+    EditText actionInput = (EditText) findViewById(R.id.action_input);
+    unit.setActionMax(Utils.stringToDouble(actionInput.getText().toString().trim()));
+
+    // Attr is set in the unit by DialogMultiSelect
+
+    EditText moveRangeInput = (EditText) findViewById(R.id.move_range_input);
+    unit.setMoveRange(Utils.stringToInt(moveRangeInput.getText().toString().trim()));
+    // MoveRestrict is set by the dialog
+
+    EditText sightRangeInput = (EditText) findViewById(R.id.sight_range_input);
+    unit.setSightRange(Utils.stringToInt(sightRangeInput.getText().toString().trim()));
+    // SightRestrict is set by the dialog
+
   }
 
   /**
-   * Updates the UI to match the data in the tile
+   * Updates the UI to match the data in the unit
    */
-  private void setUiFromTile() {
-    EditText nameInput = (EditText) findViewById(R.id.unit_name);
+  private void setUiFromUnit() {
     ImageView imgInput = (ImageView) findViewById(R.id.unit_img);
-    nameInput.setText(tile.getName());
-    if (tile.getBitmap() != null) {
-      imgInput.setImageBitmap(tile.getBitmap());
+    if (unit.getBitmap() != null) {
+      imgInput.setImageBitmap(unit.getBitmap());
       imgInput.getLayoutParams().height = 200;
       imgInput.setScaleType(ImageView.ScaleType.FIT_CENTER);
       imgInput.setAdjustViewBounds(true);
       imgInput.setCropToPadding(false);
       imgInput.requestLayout();
     }
+
+    EditText nameInput = (EditText) findViewById(R.id.unit_name);
+    nameInput.setText(unit.getName());
+
+    Spinner teamSpinner = (Spinner) findViewById(R.id.team_spinner);
+    ArrayAdapter<String> teamAdapter = (ArrayAdapter<String>)teamSpinner.getAdapter();
+    int selectedTeamIndex = Math.max(0, teamAdapter.getPosition(unit.getTeam()));
+    teamSpinner.setSelection(selectedTeamIndex);
+
+    EditText hpInput = (EditText) findViewById(R.id.hp_input);
+    hpInput.setText(Utils.doubleToString(unit.getHpMax()));
+
+    EditText actionInput = (EditText) findViewById(R.id.action_input);
+    actionInput.setText(Utils.doubleToString(unit.getActionMax()));
+
+    TextView attrText = (TextView) findViewById(R.id.selected_attr);
+    attrText.setText(Utils.toCSV(unit.getAttr()));
+
+    EditText moveRangeInput = (EditText) findViewById(R.id.move_range_input);
+    moveRangeInput.setText(Utils.intToString(unit.getMoveRange()));
+
+    TextView moveRestrictText = (TextView) findViewById(R.id.move_restrict);
+    moveRestrictText.setText(Utils.toCSV(unit.getMoveRestrict()));
+
+    EditText sightRangeInput = (EditText) findViewById(R.id.sight_range_input);
+    sightRangeInput.setText(Utils.intToString(unit.getSightRange()));
+
+    TextView sightRestrictText = (TextView) findViewById(R.id.sight_restrict);
+    sightRestrictText.setText(Utils.toCSV(unit.getSightRestrict()));
+
+    TextView defenceText = (TextView) findViewById(R.id.defence);
+    defenceText.setText(Utils.damageToCSV(unit.getDefence()));
+
   }
 
   public void showError(String errorMsg) {
     TextView errView = (TextView) findViewById(R.id.error_message);
     errView.setText(errorMsg);
     errView.setTextColor(Color.RED);
+  }
+
+
+  /**
+   * Called when the user clicks on the edit icon by attributes
+   * this will show the multi-select dialog for attributes
+   */
+  public void chooseAttr(View view) {
+    attrDialog.showDialog(new DialogMultiSelectListener() {
+      @Override
+      public void onOK() {
+        TextView textView = (TextView) findViewById(R.id.selected_attr);
+        textView.setText(Utils.toCSV(unit.getAttr()));
+      }
+    });
+  }
+
+  /**
+   * Called when the user clicks on the pencil to edit the move restrictions
+   */
+  public void chooseMoveRestrict(View view) {
+    moveRestrictDialog.showDialog(new DialogMultiSelectListener() {
+      @Override
+      public void onOK() {
+        TextView textView = (TextView) findViewById(R.id.move_restrict);
+        textView.setText(Utils.toCSV(unit.getMoveRestrict()));
+      }
+    });
+  }
+
+  /**
+   * Called when the user clicks on the pencil to edit the move restrictions
+   */
+  public void chooseSightRestrict(View view) {
+    sightRestrictDialog.showDialog(new DialogMultiSelectListener() {
+      @Override
+      public void onOK() {
+        TextView textView = (TextView) findViewById(R.id.sight_restrict);
+        textView.setText(Utils.toCSV(unit.getSightRestrict()));
+      }
+    });
+  }
+
+  public void editAbilities(View view) {
+    // TODO
+    Log.d("unitEdit", "Edit abilities");
+  }
+
+  /**
+   * Goes to the edit defence view
+   *  - Saves unit in the game
+   *  - The defence editor will load the unit, modify it and save it
+   *  - Then the defence editor will reload the unit edit screen
+   */
+  public void editDefence(View view) {
+    save(view);
+    Intent myIntent = new Intent(UnitEditActivity.this, DefenceListActivity.class);
+    myIntent.putExtra(DefenceListActivity.SELECTED_UNIT_NAME, unit.getName());
+    startActivity(myIntent);
+    Log.d("unitEdit", "goto defence list");
+  }
+
+  public void editEffects(View view) {
+    // TODO
+    Log.d("unitEdit", "Edit effects");
+  }
+
+  public void editStorage(View view) {
+    // TODO
+    Log.d("unitEdit", "Edit storage");
   }
 
 }

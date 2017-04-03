@@ -1,5 +1,7 @@
 package com.alwaysrejoice.hexengine.dto;
 
+import com.alwaysrejoice.hexengine.util.Utils;
+
 public class Damage {
 
   private String type = "";
@@ -47,5 +49,20 @@ public class Damage {
         ", size=" + size +
         ", bonus=" + bonus +
         '}';
+  }
+
+  /**
+   * Formatted display string for this damage
+   */
+  public String getDisplayText() {
+    StringBuffer str = new StringBuffer();
+    if ((count != 0) && (size != 0)) {
+      str.append(count+" D "+size);
+    };
+    if (bonus > 0) {
+      str.append(" + "+ Utils.doubleToString(bonus));
+    }
+    str.append(" of "+type);
+    return str.toString();
   }
 }

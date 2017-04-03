@@ -20,133 +20,116 @@
     </activity>
     <activity
         android:name=".edit.GameListActivity"
-        android:label="GameList"
         android:screenOrientation="portrait">
     </activity>
     <activity
         android:name=".edit.GameEditActivity"
-        android:label="GameEdit"
         android:screenOrientation="portrait">
     </activity>
     <activity
         android:name=".edit.EditMapActivity"
-        android:label="EditMapActivity"
         android:screenOrientation="portrait">
     </activity>
     <activity
         android:name=".edit.SettingsActivity"
-        android:label="SettingsActivity"
         android:screenOrientation="portrait">
     </activity>
     <activity
         android:name=".edit.ClearActivity"
-        android:label="SettingsActivity"
         android:screenOrientation="portrait">
     </activity>
     <activity
         android:name=".edit.BgListActivity"
-        android:label="BgListActivity"
         android:screenOrientation="portrait">
     </activity>
     <activity
         android:name=".edit.BgEditActivity"
-        android:label="BgEditActivity"
         android:screenOrientation="portrait">
     </activity>
     <activity
         android:name=".edit.UnitListActivity"
-        android:label="UnitListActivity"
         android:screenOrientation="portrait">
     </activity>
     <activity
         android:name=".edit.UnitEditActivity"
-        android:label="BgEditActivity"
         android:screenOrientation="portrait"
         android:windowSoftInputMode="stateHidden">
     </activity>
     <activity
         android:name=".edit.ModListActivity"
-        android:label="UnitListActivity"
         android:screenOrientation="portrait">
     </activity>
     <activity
         android:name=".edit.ModEditActivity"
-        android:label="BgEditActivity"
         android:screenOrientation="portrait"
         android:windowSoftInputMode="stateHidden">
     </activity>
     <activity
         android:name=".edit.ModParamEditActivity"
-        android:label="BgEditActivity"
         android:screenOrientation="portrait"
         android:windowSoftInputMode="stateHidden">
     </activity>
     <activity
         android:name=".edit.EffectListActivity"
-        android:label="UnitListActivity"
         android:screenOrientation="portrait">
     </activity>
     <activity
         android:name=".edit.EffectEditActivity"
-        android:label="BgEditActivity"
         android:screenOrientation="portrait"
         android:windowSoftInputMode="stateHidden">
     </activity>
     <activity
         android:name=".edit.ActionListActivity"
-        android:label="UnitListActivity"
         android:screenOrientation="portrait">
     </activity>
     <activity
         android:name=".edit.ActionEditActivity"
-        android:label="BgEditActivity"
         android:screenOrientation="portrait"
         android:windowSoftInputMode="stateHidden">
     </activity>
     <activity
         android:name=".edit.ListEditorActivity"
-        android:label="UnitListActivity"
         android:screenOrientation="portrait">
     </activity>
     <activity
         android:name=".edit.ListDamageActivity"
-        android:label="UnitListActivity"
         android:screenOrientation="portrait">
     </activity>
     <activity
         android:name=".edit.ListTeamActivity"
-        android:label="UnitListActivity"
         android:screenOrientation="portrait">
     </activity>
     <activity
         android:name=".edit.ListBgTypeActivity"
-        android:label="UnitListActivity"
+        android:screenOrientation="portrait">
+    </activity>
+    <activity
+        android:name=".edit.DefenceListActivity"
+        android:screenOrientation="portrait">
+    </activity>
+    <activity
+        android:name=".edit.DefenceEditActivity"
         android:screenOrientation="portrait">
     </activity>
     <activity
         android:name=".edit.ListAttrActivity"
-        android:label="UnitListActivity"
         android:screenOrientation="portrait">
     </activity>
     <activity
         android:name=".edit.TileGroupListActivity"
-        android:label="BgListActivity"
         android:screenOrientation="portrait">
     </activity>
     <activity
         android:name=".edit.TileGroupEditActivity"
-        android:label="BgEditActivity"
         android:screenOrientation="portrait"
         android:windowSoftInputMode="stateHidden">
     </activity>
     <activity
         android:name=".edit.ImagePickerActivity"
-        android:label="ImagePickerActivity"
         android:screenOrientation="portrait">
     </activity>
     <activity
         android:name=".play.MapActivity"
-        android:label="MapActivity"
         android:screenOrientation="portrait">
     </activity>
   </application>

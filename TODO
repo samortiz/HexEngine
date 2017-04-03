@@ -11,7 +11,10 @@ Game
  - Remove out-of-bounds tiles from map when resizing to smaller size
 
 Unit Editor
- - Add fields
+ - Change to use ID instead of name as key in Map (also do bgTile)
+ - Edit Abilities
+ - Edit Effects (chooser)
+ - Edit Storage 
 
 Ability Editor
  

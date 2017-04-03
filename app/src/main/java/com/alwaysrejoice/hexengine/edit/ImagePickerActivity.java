@@ -53,11 +53,11 @@ public class ImagePickerActivity extends Activity {
     String tileJson = getIntent().getExtras().getString(EXTRA_TILE);
     TileType tempTile = null;
     if (RETURN_BG.equals(returnLoc)) {
-      tempTile = GameUtils.toBgTile(tileJson);
+      tempTile = GameUtils.jsonToBgTile(tileJson);
     } else if (RETURN_UNIT.equals(returnLoc)) {
-      tempTile = GameUtils.toUnitTile(tileJson);
+      tempTile = GameUtils.jsonToUnitTile(tileJson);
     } else if (RETURN_EFFECT.equals(returnLoc)) {
-      tempTile = GameUtils.toEffectTile(tileJson);
+      tempTile = GameUtils.jsonToEffectTile(tileJson);
     } else {
       Log.e("imagePicker", "Error! Unknown returnLoc="+returnLoc);
     }

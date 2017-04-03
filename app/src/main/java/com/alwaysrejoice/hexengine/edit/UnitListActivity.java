@@ -54,7 +54,7 @@ public class UnitListActivity extends Activity implements AdapterView.OnItemClic
     Log.d("unitList", "onItemClick ");
     UnitTile unit = (UnitTile) arg0.getItemAtPosition(position);
     Intent myIntent = new Intent(UnitListActivity.this, UnitEditActivity.class);
-    myIntent.putExtra(UnitEditActivity.SELECTED_UNIT, unit.getName());
+    myIntent.putExtra(UnitEditActivity.SELECTED_UNIT_NAME, unit.getName());
     startActivity(myIntent);
   }
 
@@ -107,7 +107,7 @@ public class UnitListActivity extends Activity implements AdapterView.OnItemClic
   public void create(View view) {
     Log.d("unitList", "Create New");
     Intent myIntent = new Intent(UnitListActivity.this, UnitEditActivity.class);
-    myIntent.putExtra(UnitEditActivity.SELECTED_UNIT, "");
+    myIntent.putExtra(UnitEditActivity.SELECTED_UNIT_NAME, "");
     startActivity(myIntent);
   }
 

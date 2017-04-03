@@ -36,7 +36,7 @@ public class BgEditActivity extends Activity {
     // Check if we are coming back from an ImagePickerActivity
     String tileJson = (String) bundle.get(ImagePickerActivity.EXTRA_TILE);
     if (tileJson != null) {
-      tile = GameUtils.toBgTile(tileJson);
+      tile = GameUtils.jsonToBgTile(tileJson);
       setUiFromTile();
       Log.d("bgEdit", "Tile chosen! " + tile.getName());
     }

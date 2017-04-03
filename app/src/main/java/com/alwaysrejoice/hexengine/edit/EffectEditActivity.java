@@ -39,7 +39,7 @@ public class EffectEditActivity extends Activity {
       effectJson = (String) bundle.get(ActionListActivity.CALLING_OBJ);
     }
     if (effectJson != null) {
-      effect = GameUtils.toEffectTile(effectJson);
+      effect = GameUtils.jsonToEffectTile(effectJson);
       Log.d("effectEdit", "Tile chosen! " + effect.getName());
     }
 

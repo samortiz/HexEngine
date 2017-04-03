@@ -2,6 +2,8 @@ package com.alwaysrejoice.hexengine.dto;
 
 import android.graphics.Bitmap;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -12,15 +14,15 @@ public class UnitTile implements TileType {
   private String team;
   private double hpMax;
   private double actionMax;
-  private Map<String, Boolean> attributes;
+  private List<String> attr = new ArrayList<>();
   private int moveRange;
-  private List<String> moveRestrict;
+  private List<String> moveRestrict = new ArrayList<>();
   private int sightRange;
-  private List<String> sightRestrict;
-  List<Ability> abilities;
-  List<Damage> defence;
-  private List<Effect> effects;
-  private Map<String, String> storage;
+  private List<String> sightRestrict = new ArrayList<>();
+  List<Ability> abilities = new ArrayList<>();
+  List<Damage> defence = new ArrayList<>();
+  private List<Effect> effects = new ArrayList<>();
+  private Map<String, String> storage = new HashMap<>();
 
   public UnitTile() {
   }
@@ -74,12 +76,12 @@ public class UnitTile implements TileType {
     this.actionMax = actionMax;
   }
 
-  public Map<String, Boolean> getAttributes() {
-    return attributes;
+  public List<String> getAttr() {
+    return attr;
   }
 
-  public void setAttributes(Map<String, Boolean> attributes) {
-    this.attributes = attributes;
+  public void setAttr(List<String> attr) {
+    this.attr = attr;
   }
 
   public int getMoveRange() {
@@ -162,7 +164,7 @@ public class UnitTile implements TileType {
         ", team='" + team + '\'' +
         ", hpMax=" + hpMax +
         ", actionMax=" + actionMax +
-        ", attributes=" + attributes +
+        ", attr=" + attr +
         ", moveRange=" + moveRange +
         ", moveRestrict=" + moveRestrict +
         ", sightRange=" + sightRange +

@@ -6,6 +6,7 @@ import android.util.Log;
 import com.alwaysrejoice.hexengine.dto.Action;
 import com.alwaysrejoice.hexengine.dto.BgTile;
 import com.alwaysrejoice.hexengine.dto.BitmapGsonAdapter;
+import com.alwaysrejoice.hexengine.dto.Damage;
 import com.alwaysrejoice.hexengine.dto.Effect;
 import com.alwaysrejoice.hexengine.dto.Game;
 import com.alwaysrejoice.hexengine.dto.Mod;
@@ -119,15 +120,15 @@ public class GameUtils {
     return gson.toJson(obj);
   }
 
-  public static BgTile toBgTile(String json) {
+  public static BgTile jsonToBgTile(String json) {
     return gson.fromJson(json, BgTile.class);
   }
 
-  public static UnitTile toUnitTile(String json) {
+  public static UnitTile jsonToUnitTile(String json) {
     return gson.fromJson(json, UnitTile.class);
   }
 
-  public static Effect toEffectTile(String json) {
+  public static Effect jsonToEffectTile(String json) {
     return gson.fromJson(json, Effect.class);
   }
 
@@ -135,8 +136,12 @@ public class GameUtils {
     return gson.fromJson(json, new TypeToken<ArrayList<Action>>(){}.getType());
   }
 
-  public static Action toAction(String json) {
+  public static Action jsonToAction(String json) {
     return gson.fromJson(json, Action.class);
+  }
+
+  public static Damage jsonToDamage(String json) {
+    return gson.fromJson(json, Damage.class);
   }
 
   /**

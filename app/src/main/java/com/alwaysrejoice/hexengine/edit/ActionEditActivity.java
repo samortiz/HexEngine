@@ -2,11 +2,9 @@ package com.alwaysrejoice.hexengine.edit;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.InputType;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -27,23 +25,20 @@ import com.alwaysrejoice.hexengine.dto.Mod;
 import com.alwaysrejoice.hexengine.dto.ModParam;
 import com.alwaysrejoice.hexengine.dto.ModParamValue;
 import com.alwaysrejoice.hexengine.util.GameUtils;
+import com.alwaysrejoice.hexengine.util.Utils;
 
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
+
+import static com.alwaysrejoice.hexengine.util.Utils.doubleToString;
+import static com.alwaysrejoice.hexengine.util.Utils.intToString;
 
 public class ActionEditActivity extends Activity {
   // in - the currently selected action index (in actionList)
   public static final String SELECTED_ACTION_INDEX = "SELECTED_ACTION_INDEX";
-  private static final DecimalFormat decimalFormat = new DecimalFormat("0", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
-  {
-    decimalFormat.setMaximumFractionDigits(10);
-  }
 
   // NOTE : This method will also receive and return these
   // ActionListActivity extras : RETURN_LOC CALLING_OBJ ACTION_LIST
@@ -119,7 +114,7 @@ public class ActionEditActivity extends Activity {
     if (addedRowCount > 1) {
       inputTable.removeViews(1, addedRowCount-1);
     }
-    int sp5 = toPixel(TypedValue.COMPLEX_UNIT_SP, 5);
+    int sp5 = Utils.toPixel(TypedValue.COMPLEX_UNIT_SP, 5);
     Map<String, ModParamValue> values = action.getValues();
 
     // Add rows for the params
@@ -200,27 +195,6 @@ public class ActionEditActivity extends Activity {
     Log.d("actionEdit", "Updating the layout");
   }
 
-  private int toPixel(int unit, float size) {
-    DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
-    return (int)TypedValue.applyDimension(unit, size, metrics);
-  }
-
-  /**
-   * Converts an int to a String translating 0 as ""
-   */
-  private String intToString(int num) {
-    if (num == 0) return "";
-    return Integer.toString(num);
-  }
-
-  /**
-   * Converts a double to a String translating 0 as ""
-   */
-  private String doubleToString(double num) {
-    if (num == 0.0) return "";
-    return decimalFormat.format(num);
-  }
-
   /**
    * Called when the user clicks "Save"
    */
@@ -241,12 +215,10 @@ public class ActionEditActivity extends Activity {
           paramValue.setValueString(value);
         } else if (ModParam.TYPE.Number == paramValue.getType()) {
           String value = ((EditText) inputView).getText().toString().trim();
-          if ("".equals(value)) value = "0";
-          paramValue.setValueDouble(Double.parseDouble(value));
+          paramValue.setValueDouble(Utils.stringToDouble(value));
         } else if (ModParam.TYPE.Integer == paramValue.getType()) {
           String value = ((EditText) inputView).getText().toString().trim();
-          if ("".equals(value)) value = "0";
-          paramValue.setValueInt(Integer.parseInt(value));
+          paramValue.setValueInt(Utils.stringToInt(value));
         } else if (ModParam.TYPE.Boolean == paramValue.getType()) {
           paramValue.setValueBoolean(((CheckBox)inputView).isChecked());
         } else if (ModParam.TYPE.Damage == paramValue.getType()) {
@@ -256,9 +228,9 @@ public class ActionEditActivity extends Activity {
           Spinner dmgTypeSpinner = (Spinner) inputView.findViewById(R.id.damage_type_spinner);
           ArrayAdapter<String> dmgAdapter = (ArrayAdapter<String>)dmgTypeSpinner.getAdapter();
           Damage dmg = (Damage) paramValue.getValueDamage();
-          dmg.setCount(Integer.parseInt(count.getText().toString()));
-          dmg.setSize(Integer.parseInt(size.getText().toString()));
-          dmg.setBonus((Double.parseDouble(bonus.getText().toString())));
+          dmg.setCount(Utils.stringToInt(count.getText().toString()));
+          dmg.setSize(Utils.stringToInt(size.getText().toString()));
+          dmg.setBonus(Utils.stringToDouble(bonus.getText().toString()));
           dmg.setType(dmgAdapter.getItem(dmgTypeSpinner.getSelectedItemPosition()));
         } else {
           Log.e("actionEdit", "Unknown type :"+paramValue.getType());
