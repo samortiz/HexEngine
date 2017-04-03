@@ -9,9 +9,7 @@ Map Editor
 
 Misc : 
  - Change to use ID instead of name as key in Map (also do bgTile)
- - Bg edit needs spinner on type
- - List editors should not be empty (causes error with emtpy spinner)
-   prevent removing the last item
+ - Mod, BgTile, UnitTile, 
 
 Game 
  - Remove out-of-bounds tiles from map when resizing to smaller size
@@ -27,6 +25,7 @@ Ability Editor
  
 Mod Editor
  - Update mod links in abilities when updating mod name or deleting mod
+ - In list prevent deleting the last item
 
 Sync (Write and Load)
  - Sync Mods to disk

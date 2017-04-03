@@ -16,6 +16,7 @@ import com.alwaysrejoice.hexengine.dto.Damage;
 import com.alwaysrejoice.hexengine.util.GameUtils;
 import com.alwaysrejoice.hexengine.util.Utils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class DefenceEditActivity extends Activity {
@@ -40,8 +41,10 @@ public class DefenceEditActivity extends Activity {
       damage = new Damage();
     }
 
-    List<String> damageTypes = GameUtils.getGame().getDamageTypes();
+    List<String> systemDamageTypes = GameUtils.getGame().getDamageTypes();
+    List<String> damageTypes = new ArrayList<>(systemDamageTypes.size());
     damageTypes.add(0, "All"); // Special type for defence only
+    damageTypes.addAll(systemDamageTypes);
 
     // Setup the UI
     LayoutInflater inflator = LayoutInflater.from(getBaseContext());

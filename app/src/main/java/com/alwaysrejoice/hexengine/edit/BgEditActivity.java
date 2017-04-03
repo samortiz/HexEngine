@@ -6,8 +6,10 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.alwaysrejoice.hexengine.R;
@@ -19,6 +21,7 @@ import com.alwaysrejoice.hexengine.dto.TileType;
 import com.alwaysrejoice.hexengine.dto.TileTypeLink;
 import com.alwaysrejoice.hexengine.util.GameUtils;
 
+import java.util.List;
 import java.util.Map;
 
 public class BgEditActivity extends Activity {
@@ -32,6 +35,12 @@ public class BgEditActivity extends Activity {
     Log.d("bgEdit", "onCreate");
     setContentView(R.layout.bg_edit);
     Bundle bundle = getIntent().getExtras();
+
+    List<String> bgTypes = GameUtils.getGame().getBgTypes();
+    Spinner spinner = (Spinner) findViewById(R.id.bg_type_spinner);
+    ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, bgTypes);
+    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+    spinner.setAdapter(adapter);
 
     // Check if we are coming back from an ImagePickerActivity
     String tileJson = (String) bundle.get(ImagePickerActivity.EXTRA_TILE);
@@ -54,7 +63,6 @@ public class BgEditActivity extends Activity {
     if (tile == null) {
       tile = new BgTile();
     }
-
   }
 
   /**
@@ -112,9 +120,12 @@ public class BgEditActivity extends Activity {
    */
   private void loadTileFromUi() {
     EditText nameInput = (EditText) findViewById(R.id.bg_name);
-    EditText typeInput = (EditText) findViewById(R.id.bg_type);
     tile.setName(nameInput.getText().toString().trim());
-    tile.setType(typeInput.getText().toString().trim());
+
+    Spinner typeSpinner = (Spinner) findViewById(R.id.bg_type_spinner);
+    ArrayAdapter<String> typeAdapter = (ArrayAdapter<String>)typeSpinner.getAdapter();
+    String type = typeAdapter.getItem(typeSpinner.getSelectedItemPosition());
+    tile.setType(type);
   }
 
   /**
@@ -122,10 +133,9 @@ public class BgEditActivity extends Activity {
    */
   private void setUiFromTile() {
     EditText nameInput = (EditText) findViewById(R.id.bg_name);
-    EditText typeInput = (EditText) findViewById(R.id.bg_type);
-    ImageView imgInput = (ImageView) findViewById(R.id.bg_img);
     nameInput.setText(tile.getName());
-    typeInput.setText(tile.getType());
+
+    ImageView imgInput = (ImageView) findViewById(R.id.bg_img);
     if (tile.getBitmap() != null) {
       imgInput.setImageBitmap(tile.getBitmap());
       imgInput.getLayoutParams().height = 200;
@@ -134,6 +144,11 @@ public class BgEditActivity extends Activity {
       imgInput.setCropToPadding(false);
       imgInput.requestLayout();
     }
+
+    Spinner typeSpinner = (Spinner) findViewById(R.id.bg_type_spinner);
+    ArrayAdapter<String> typeAdapter = (ArrayAdapter<String>)typeSpinner.getAdapter();
+    int selectedTypeIndex = Math.max(0, typeAdapter.getPosition(tile.getType()));
+    typeSpinner.setSelection(selectedTypeIndex);
   }
 
   public void showError(String errorMsg) {

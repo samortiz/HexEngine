@@ -1,19 +1,14 @@
 package com.alwaysrejoice.hexengine.edit;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -22,12 +17,15 @@ import com.alwaysrejoice.hexengine.dto.Game;
 import com.alwaysrejoice.hexengine.dto.Mod;
 import com.alwaysrejoice.hexengine.dto.ModParam;
 import com.alwaysrejoice.hexengine.util.GameUtils;
+import com.alwaysrejoice.hexengine.util.Utils;
 
 import java.util.Map;
 
-public class ModEditActivity extends Activity implements DialogInterface.OnClickListener {
+import static com.alwaysrejoice.hexengine.util.Utils.setListViewHeight;
+
+public class ModEditActivity extends Activity {
   public static final String SELECTED_MOD = "SELECTED_MOD";
-  public static final String[] TYPES = {"Mod", "Rule", "ModLoc", "RuleLoc"};
+  public static final String[] MOD_TYPES = {"Mod", "Rule", "ModLoc", "RuleLoc"};
 
   Mod mod; // The mod we are currently editing
   String origModName = "";  // name when the edit screen was first invoked
@@ -42,6 +40,11 @@ public class ModEditActivity extends Activity implements DialogInterface.OnClick
     Log.d("modEdit", "onCreate");
     setContentView(R.layout.mod_edit);
     Bundle bundle = getIntent().getExtras();
+
+    Spinner modTypeSpinner = (Spinner) findViewById(R.id.mod_type_spinner);
+    ArrayAdapter<String> modTypeAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, MOD_TYPES);
+    modTypeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+    modTypeSpinner.setAdapter(modTypeAdapter);
 
     // Load the mod we are editing
     String modName = (String) bundle.get(ModEditActivity.SELECTED_MOD);
@@ -62,7 +65,7 @@ public class ModEditActivity extends Activity implements DialogInterface.OnClick
     paramAdapter = new ModParamListAdapter(this, mod.getParams());
     paramList = (ListView) findViewById(R.id.param_list);
     paramList.setAdapter(paramAdapter);
-    setListViewHeight(paramList);
+    Utils.setListViewHeight(paramList);
 
     Spinner typeSpinner = (Spinner) findViewById(R.id.add_param_type);
     ArrayAdapter<String> typeAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, ModParam.getTypesAsString());
@@ -70,44 +73,6 @@ public class ModEditActivity extends Activity implements DialogInterface.OnClick
     typeSpinner.setAdapter(typeAdapter);
 
   }
-
-
-  /**
-   * Method for Setting the Height of the ListView dynamically.
-   * Hack to fix the issue of not showing all the items of the ListView
-   * when placed inside a ScrollView  (by Arshu on StackOverflow)
-   **/
-  public static void setListViewHeight(ListView listView) {
-    ListAdapter listAdapter = listView.getAdapter();
-    if (listAdapter == null) return;
-    int desiredWidth = View.MeasureSpec.makeMeasureSpec(listView.getWidth(), View.MeasureSpec.UNSPECIFIED);
-    int totalHeight = 0;
-    View view = null;
-    for (int i = 0; i < listAdapter.getCount(); i++) {
-      view = listAdapter.getView(i, view, listView);
-      if (i == 0) {
-        view.setLayoutParams(new ViewGroup.LayoutParams(desiredWidth, RelativeLayout.LayoutParams.WRAP_CONTENT));
-      }
-      view.measure(desiredWidth, View.MeasureSpec.UNSPECIFIED);
-      totalHeight += view.getMeasuredHeight();
-    }
-    ViewGroup.LayoutParams params = listView.getLayoutParams();
-    params.height = totalHeight + (listView.getDividerHeight() * (listAdapter.getCount() - 1));
-    listView.setLayoutParams(params);
-  }
-
-
-  /**
-   * Choose Type button is clicked
-   */
-  public void chooseType(View view) {
-    AlertDialog.Builder builder = new AlertDialog.Builder(this);
-    builder.setTitle("Choose Type");
-    builder.setSingleChoiceItems(TYPES, typeSelectedIndex, this);
-    AlertDialog alertDialog = builder.create();
-    alertDialog.show();
-  }
-
 
   /**
    * Called when the user clicks "Save"
@@ -140,7 +105,12 @@ public class ModEditActivity extends Activity implements DialogInterface.OnClick
   private void loadModFromUi() {
     EditText nameInput = (EditText) findViewById(R.id.mod_name);
     mod.setName(nameInput.getText().toString().trim());
-    // For type this is done in the dialogHandler.onClick
+
+    Spinner modTypeSpinner = (Spinner) findViewById(R.id.mod_type_spinner);
+    ArrayAdapter<String> modTypeAdapter = (ArrayAdapter<String>)modTypeSpinner.getAdapter();
+    String modType = modTypeAdapter.getItem(modTypeSpinner.getSelectedItemPosition());
+    mod.setType(modType);
+
     TextView scriptInput = (TextView) findViewById(R.id.mod_script);
     mod.setScript(scriptInput.getText().toString());
   }
@@ -150,20 +120,14 @@ public class ModEditActivity extends Activity implements DialogInterface.OnClick
    */
   private void setUiFromMod() {
     EditText nameInput = (EditText) findViewById(R.id.mod_name);
-    TextView typeText = (TextView) findViewById(R.id.mod_type_text);
-    TextView scriptInput = (TextView) findViewById(R.id.mod_script);
     nameInput.setText(mod.getName());
 
-    // Lookup the type in the list of types
-    typeSelectedIndex = 0;
-    for (int i=0; i<TYPES.length; i++) {
-      if (TYPES[i].equals(mod.getType())) {
-        typeSelectedIndex = i;
-      }
-    } // for
-    mod.setType(TYPES[typeSelectedIndex]); // sets to default if unknown type
-    typeText.setText(mod.getType());
+    Spinner modTypeSpinner = (Spinner) findViewById(R.id.mod_type_spinner);
+    ArrayAdapter<String> modTypeAdapter = (ArrayAdapter<String>)modTypeSpinner.getAdapter();
+    int selectedIndex = Math.max(0, modTypeAdapter.getPosition(mod.getType()));
+    modTypeSpinner.setSelection(selectedIndex);
 
+    TextView scriptInput = (TextView) findViewById(R.id.mod_script);
     scriptInput.setText(mod.getScript());
   }
 
@@ -172,20 +136,6 @@ public class ModEditActivity extends Activity implements DialogInterface.OnClick
     errView.setText(errorMsg);
     errView.setTextColor(Color.RED);
   }
-
-  /**
-   * Called when an item in the type dialog is clicked
-   */
-  @Override
-  public void onClick(DialogInterface dialog, int which) {
-    mod.setType(TYPES[which]);
-    TextView typeText = (TextView) findViewById(R.id.mod_type_text);
-    typeText.setText(TYPES[which]);
-    typeSelectedIndex = which;
-    Log.d("modEditActivity", "Dialog click on type="+TYPES[which]+" typeSelectedIndex="+typeSelectedIndex);
-    dialog.dismiss();
-  }
-
 
   /**
    * When "Add" button is clicked to add a new parameter

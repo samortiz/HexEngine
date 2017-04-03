@@ -22,7 +22,8 @@ public class ActionListActivity extends Activity implements AdapterView.OnItemCl
 
   // IN Return location (which calling class to return to)
   public static final String RETURN_LOC = "ACTION_LIST_RETURN_LOC";
-  public static final String RETURN_LOC_EFFECT = "RETURN_LOC_EFFECT";
+  public static final String RETURN_LOC_EFFECT_ONRUN = "RETURN_LOC_EFFECT_ONRUN";
+  public static final String RETURN_LOC_EFFECT_ONEND = "RETURN_LOC_EFFECT_ONEND";
 
   // IN+OUT calling class object (will be passed back to caller as is)
   public static final String CALLING_OBJ = "ACTION_CALLING_OBJ";
@@ -96,10 +97,12 @@ public class ActionListActivity extends Activity implements AdapterView.OnItemCl
   public void goBack(View view) {
     Log.d("actionList", "goto Settings");
     Intent myIntent = null;
-    if (RETURN_LOC_EFFECT.equals(returnLoc)) {
+    if (RETURN_LOC_EFFECT_ONRUN.equals(returnLoc) ||
+        RETURN_LOC_EFFECT_ONEND.equals(returnLoc)) {
       myIntent = new Intent(ActionListActivity.this, EffectEditActivity.class);
       myIntent.putExtra(CALLING_OBJ, callingObjJson);
       myIntent.putExtra(ACTION_LIST, GameUtils.toJson(actions));
+      myIntent.putExtra(RETURN_LOC, returnLoc);
     } else {
       throw new RuntimeException("Error in ActionListActivity.goBack() Unknown returnLoc="+returnLoc);
     }

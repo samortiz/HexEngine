@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -15,6 +16,7 @@ import com.alwaysrejoice.hexengine.dto.Action;
 import com.alwaysrejoice.hexengine.dto.Effect;
 import com.alwaysrejoice.hexengine.dto.Game;
 import com.alwaysrejoice.hexengine.util.GameUtils;
+import com.alwaysrejoice.hexengine.util.Utils;
 
 import java.util.List;
 import java.util.Map;
@@ -40,7 +42,7 @@ public class EffectEditActivity extends Activity {
     }
     if (effectJson != null) {
       effect = GameUtils.jsonToEffectTile(effectJson);
-      Log.d("effectEdit", "Tile chosen! " + effect.getName());
+      Log.d("effectEdit", "effect loaded:"+effect.getName());
     }
 
     // Load the effect we are editing from the game
@@ -60,7 +62,12 @@ public class EffectEditActivity extends Activity {
     String listActionJson = (String) bundle.get(ActionListActivity.ACTION_LIST);
     if (listActionJson != null) {
       List<Action> actions = GameUtils.jsonToActionList(listActionJson);
-      effect.setOnRun(actions);
+      String returnLoc = (String) bundle.get(ActionListActivity.RETURN_LOC);
+      if (ActionListActivity.RETURN_LOC_EFFECT_ONRUN.equals(returnLoc)) {
+        effect.setOnRun(actions);
+      } else {
+        effect.setOnEnd(actions);
+      }
       Log.d("effectEdit", "found actionList "+actions);
     }
 
@@ -122,9 +129,23 @@ public class EffectEditActivity extends Activity {
     saveData();
     if (!hasError) {
       Intent myIntent = new Intent(EffectEditActivity.this, ActionListActivity.class);
-      myIntent.putExtra(ActionListActivity.RETURN_LOC, ActionListActivity.RETURN_LOC_EFFECT);
+      myIntent.putExtra(ActionListActivity.RETURN_LOC, ActionListActivity.RETURN_LOC_EFFECT_ONRUN);
       myIntent.putExtra(ActionListActivity.CALLING_OBJ, GameUtils.toJson(effect));
       myIntent.putExtra(ActionListActivity.ACTION_LIST, GameUtils.toJson(effect.getOnRun()));
+      startActivity(myIntent);
+    }
+  }
+
+  /**
+   * Called when the user clicks to edit onRun
+   */
+  public void chooseOnEndAction(View view) {
+    saveData();
+    if (!hasError) {
+      Intent myIntent = new Intent(EffectEditActivity.this, ActionListActivity.class);
+      myIntent.putExtra(ActionListActivity.RETURN_LOC, ActionListActivity.RETURN_LOC_EFFECT_ONEND);
+      myIntent.putExtra(ActionListActivity.CALLING_OBJ, GameUtils.toJson(effect));
+      myIntent.putExtra(ActionListActivity.ACTION_LIST, GameUtils.toJson(effect.getOnEnd()));
       startActivity(myIntent);
     }
   }
@@ -135,12 +156,11 @@ public class EffectEditActivity extends Activity {
   private void loadEffectFromUi() {
     EditText nameInput = (EditText) findViewById(R.id.effect_name);
     EditText durationInput = (EditText) findViewById(R.id.effect_duration);
+    CheckBox stackable = (CheckBox) findViewById(R.id.effect_stackable);
+
     effect.setName(nameInput.getText().toString().trim());
-    try {
-      effect.setDuration(Integer.parseInt(durationInput.getText().toString()));
-    } catch (Exception e) {
-      showError(durationInput.getText()+" is not a valid integer.");
-    }
+    effect.setDuration(Utils.stringToInt(durationInput.getText().toString()));
+    effect.setStackable(stackable.isChecked());
   }
 
   /**
@@ -151,7 +171,8 @@ public class EffectEditActivity extends Activity {
     EditText nameInput = (EditText) findViewById(R.id.effect_name);
     EditText durationInput = (EditText) findViewById(R.id.effect_duration);
     TextView onRun = (TextView) findViewById(R.id.effect_onrun);
-
+    TextView onEnd = (TextView) findViewById(R.id.effect_onend);
+    CheckBox stackable = (CheckBox) findViewById(R.id.effect_stackable);
     if (effect.getBitmap() != null) {
       imgInput.setImageBitmap(effect.getBitmap());
       imgInput.getLayoutParams().height = 200;
@@ -162,14 +183,20 @@ public class EffectEditActivity extends Activity {
     }
     nameInput.setText(effect.getName());
     durationInput.setText(Integer.toString(effect.getDuration()));
-    String onRunText = "";
-    if (effect.getOnRun() != null) {
-      for (Action action : effect.getOnRun()) {
-        onRunText += " "+action.getModName();
-      }
-    }
-    onRun.setText(onRunText);
+    onRun.setText(actionsToString(effect.getOnRun()));
+    onEnd.setText(actionsToString(effect.getOnEnd()));
+    stackable.setChecked(effect.isStackable());
+  }
 
+  public String actionsToString(List<Action> actions) {
+    if (actions == null) {
+      return "";
+    }
+    StringBuffer str = new StringBuffer();
+    for (Action action : actions) {
+      str.append(" "+action.getModName());
+    }
+    return str.toString().trim();
   }
 
   public void showError(String errorMsg) {

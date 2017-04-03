@@ -3,6 +3,11 @@ package com.alwaysrejoice.hexengine.util;
 import android.content.res.Resources;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ListAdapter;
+import android.widget.ListView;
+import android.widget.RelativeLayout;
 
 import com.alwaysrejoice.hexengine.dto.Damage;
 
@@ -10,6 +15,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 /**
  * Generic Static Utils
@@ -20,9 +26,12 @@ public class Utils {
     decimalFormat.setMaximumFractionDigits(10);
   }
 
-  public static int toPixel(int unit, float size) {
+  /**
+   * Converts SP to pixels
+   */
+  public static int spToPixel(float size) {
     DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
-    return (int) TypedValue.applyDimension(unit, size, metrics);
+    return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, size, metrics);
   }
 
   /**
@@ -91,6 +100,36 @@ public class Utils {
     return csv.toString();
   }
 
+  /**
+   * Method for Setting the Height of the ListView dynamically.
+   * Hack to fix the issue of not showing all the items of the ListView
+   * when placed inside a ScrollView  (by Arshu on StackOverflow)
+   **/
+  public static void setListViewHeight(ListView listView) {
+    ListAdapter listAdapter = listView.getAdapter();
+    if (listAdapter == null) return;
+    int desiredWidth = View.MeasureSpec.makeMeasureSpec(listView.getWidth(), View.MeasureSpec.UNSPECIFIED);
+    int totalHeight = 0;
+    View view = null;
+    for (int i = 0; i < listAdapter.getCount(); i++) {
+      view = listAdapter.getView(i, view, listView);
+      if (i == 0) {
+        view.setLayoutParams(new ViewGroup.LayoutParams(desiredWidth, RelativeLayout.LayoutParams.WRAP_CONTENT));
+      }
+      view.measure(desiredWidth, View.MeasureSpec.UNSPECIFIED);
+      totalHeight += view.getMeasuredHeight();
+    }
+    ViewGroup.LayoutParams params = listView.getLayoutParams();
+    params.height = totalHeight + (listView.getDividerHeight() * (listAdapter.getCount() - 1));
+    listView.setLayoutParams(params);
+  }
+
+  /**
+   * Generates a globally unique ID, useful for identifying objects without collisions
+   */
+  public static String generateID() {
+    return UUID.randomUUID().toString();
+  }
 
 
 }

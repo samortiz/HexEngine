@@ -114,7 +114,7 @@ public class ActionEditActivity extends Activity {
     if (addedRowCount > 1) {
       inputTable.removeViews(1, addedRowCount-1);
     }
-    int sp5 = Utils.toPixel(TypedValue.COMPLEX_UNIT_SP, 5);
+    int sp5 = Utils.spToPixel(5);
     Map<String, ModParamValue> values = action.getValues();
 
     // Add rows for the params
@@ -201,7 +201,7 @@ public class ActionEditActivity extends Activity {
   public void save(View view) {
     Spinner typeSpinner = (Spinner) findViewById(R.id.mod_name_spinner);
     ArrayAdapter<String> typeAdapter = (ArrayAdapter<String>)typeSpinner.getAdapter();
-    String modName = typeAdapter.getItem(typeSpinner.getSelectedItemPosition());
+    String modName = typeAdapter.getItem(Math.max(0, typeSpinner.getSelectedItemPosition()));
     action.setModName(modName);
 
     // Load the selected param values

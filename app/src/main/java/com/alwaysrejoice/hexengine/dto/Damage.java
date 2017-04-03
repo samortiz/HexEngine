@@ -59,8 +59,11 @@ public class Damage {
     if ((count != 0) && (size != 0)) {
       str.append(count+" D "+size);
     };
-    if (bonus > 0) {
-      str.append(" + "+ Utils.doubleToString(bonus));
+    if (bonus != 0.0) {
+      if (bonus > 0) {
+        str.append(" +");
+      }
+      str.append(" "+Utils.doubleToString(bonus));
     }
     str.append(" of "+type);
     return str.toString();
