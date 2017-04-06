@@ -10,6 +10,7 @@ public class Mod implements Comparable {
   public static final String TYPE_MOD_LOC="modloc";
   public static final String TYPE_RULE_LOCK="ruleloc";
 
+  private String id;
   private String name;
   private String type;
   private List<ModParam> params = new ArrayList();
@@ -17,11 +18,24 @@ public class Mod implements Comparable {
 
   public Mod() {}
 
-  public Mod(String name, String type, List<ModParam> params, String script) {
+  public Mod(String id) {
+    this.id = id;
+  }
+
+  public Mod(String id, String name, String type, List<ModParam> params, String script) {
+    this.id = id;
     this.name = name;
     this.type = type;
     this.params = params;
     this.script = script;
+  }
+
+  public String getId() {
+    return id;
+  }
+
+  public void setId(String id) {
+    this.id = id;
   }
 
   public String getName() {
@@ -57,18 +71,19 @@ public class Mod implements Comparable {
   }
 
   @Override
-  public int compareTo(Object o) {
-    return this.getName().toLowerCase().compareTo(((Mod)o).getName().toLowerCase());
-  }
-
-  @Override
   public String toString() {
     return "Mod{" +
-        "name='" + name + '\'' +
+        "id='" + id + '\'' +
+        ", name='" + name + '\'' +
         ", type='" + type + '\'' +
         ", params=" + params +
         ", script='" + script + '\'' +
         '}';
+  }
+
+  @Override
+  public int compareTo(Object o) {
+    return this.getName().toLowerCase().compareTo(((Mod)o).getName().toLowerCase());
   }
 
 }

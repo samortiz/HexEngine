@@ -20,7 +20,7 @@ import java.util.List;
  * Displays and handles events for the list of games screen
  */
 public class DefenceListActivity extends Activity implements AdapterView.OnItemClickListener {
-  public static final String SELECTED_UNIT_NAME = "DEFENCE_SELECTED_UNIT_NAME";
+  public static final String SELECTED_UNIT_ID = "DEFENCE_SELECTED_UNIT_ID";
   ListView list;
   DefenceListAdapter adapter;
   List<Damage> damages;
@@ -34,9 +34,9 @@ public class DefenceListActivity extends Activity implements AdapterView.OnItemC
     Game game = GameUtils.getGame();
 
     // Load the unit from the game
-    String unitName = (String) bundle.get(SELECTED_UNIT_NAME);
-    unit = game.getUnitTiles().get(unitName);
-    if (unit == null) throw new IllegalArgumentException("You must pass the DefenceListActivity.SELECTED_UNIT_NAME");
+    String unitId = (String) bundle.get(SELECTED_UNIT_ID);
+    unit = game.getUnitTiles().get(unitId);
+    if (unit == null) throw new IllegalArgumentException("You must pass the DefenceListActivity.SELECTED_UNIT_ID");
 
     list = (ListView) findViewById(R.id.defence_list_view);
     damages = unit.getDefence();
@@ -51,7 +51,7 @@ public class DefenceListActivity extends Activity implements AdapterView.OnItemC
   public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
     Log.d("unitList", "onItemClick ");
     Intent myIntent = new Intent(DefenceListActivity.this, DefenceEditActivity.class);
-    myIntent.putExtra(DefenceEditActivity.SELECTED_UNIT_NAME, unit.getName());
+    myIntent.putExtra(DefenceEditActivity.SELECTED_UNIT_ID, unit.getId());
     myIntent.putExtra(DefenceEditActivity.SELECTED_DAMAGE_INDEX, Integer.toString(position));
     startActivity(myIntent);
   }
@@ -73,7 +73,7 @@ public class DefenceListActivity extends Activity implements AdapterView.OnItemC
   public void save(View view) {
     // The game is already saved, we just need to go to the Unit editor
     Intent myIntent = new Intent(DefenceListActivity.this, UnitEditActivity.class);
-    myIntent.putExtra(UnitEditActivity.SELECTED_UNIT_NAME, unit.getName());
+    myIntent.putExtra(UnitEditActivity.SELECTED_UNIT_ID, unit.getId());
     startActivity(myIntent);
   }
 
@@ -82,7 +82,7 @@ public class DefenceListActivity extends Activity implements AdapterView.OnItemC
    */
   public void create(View view) {
     Intent myIntent = new Intent(DefenceListActivity.this, DefenceEditActivity.class);
-    myIntent.putExtra(DefenceEditActivity.SELECTED_UNIT_NAME, unit.getName());
+    myIntent.putExtra(DefenceEditActivity.SELECTED_UNIT_ID, unit.getId());
     myIntent.putExtra(DefenceEditActivity.SELECTED_DAMAGE_INDEX, "-1");
     startActivity(myIntent);
   }

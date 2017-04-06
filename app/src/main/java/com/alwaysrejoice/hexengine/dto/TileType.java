@@ -11,6 +11,8 @@ public interface TileType extends Comparable {
 
   public TILE_TYPE getTileType();
 
+  public String getId();
+
   public String getName();
   public void setName(String name);
 

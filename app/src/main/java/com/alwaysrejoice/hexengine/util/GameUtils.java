@@ -22,6 +22,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Map;
 
 import static com.alwaysrejoice.hexengine.util.FileUtils.MOD_DIR;
 
@@ -163,6 +164,35 @@ public class GameUtils {
     }
     Log.d("GameUtils", "Loaded mod "+mod.getName()+" from file "+fileName);
     return mod;
+  }
+
+  /**
+   * Looks up a mod by it's name instead of id
+   */
+  public static Mod getModByName(String modName) {
+    Map<String, Mod> allMods = getGame().getMods();
+    for (Mod mod : allMods.values()) {
+      if (modName.equals(mod.getName())) {
+        return mod;
+      }
+    }// for
+    return null;
+  }
+
+  public static String getModIdByName(String modName) {
+    Mod mod = getModByName(modName);
+    if (mod == null) {
+      return "";
+    }
+    return mod.getId();
+  }
+
+  public static String getModNameFromId(String modId) {
+    Mod mod = getGame().getMods().get(modId);
+    if (mod == null) {
+      return "";
+    }
+    return mod.getName();
   }
 
 }

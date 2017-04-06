@@ -22,9 +22,8 @@ import java.util.List;
 import java.util.Map;
 
 public class EffectEditActivity extends Activity {
-  public static final String SELECTED_EFFECT = "SELECTED_EFFECT";
+  public static final String SELECTED_EFFECT_ID = "SELECTED_EFFECT_ID";
   Effect effect; // The effect we are currently editing (Is the Effect)
-  String origName = "";  // name when the edit screen was first invoked
   boolean hasError = false;
 
   @Override
@@ -46,16 +45,15 @@ public class EffectEditActivity extends Activity {
     }
 
     // Load the effect we are editing from the game
-    String effectName = (String) bundle.get(EffectEditActivity.SELECTED_EFFECT);
-    if ((effectName != null) && !"".equals(effectName)) {
+    String effectId = (String) bundle.get(EffectEditActivity.SELECTED_EFFECT_ID);
+    if ((effectId != null) && !"".equals(effectId)) {
       Game game = GameUtils.getGame();
-      effect = game.getEffects().get(effectName);
-      origName = effectName;
-      Log.d("effectEdit", "begin editing selected effect "+effectName);
+      effect = game.getEffects().get(effectId);
+      Log.d("effectEdit", "begin editing selected effect "+effect.getName());
     }
 
     if (effect == null) {
-      effect = new Effect();
+      effect = new Effect(Utils.generateUniqueId());
     }
 
     // Check if we have a List<Action> returned from ActionListActivity
@@ -97,16 +95,14 @@ public class EffectEditActivity extends Activity {
 
     if ("".equals(effect.getName())) {
       showError("You must enter a name.");
-      hasError = true;
     }
 
-    // TODO: If name is changing update all the links
-    if (!hasError) {
-      effectTiles.remove(origName);
-      effectTiles.put(effect.getName(), effect);
-      GameUtils.saveGame();
-      Log.d("effectEdit", "saving Effect name=" + effect.getName() + " orig=" + origName);
+    if (hasError) {
+      return;
     }
+    effectTiles.put(effect.getId(), effect);
+    GameUtils.saveGame();
+    Log.d("effectEdit", "saving Effect name=" + effect.getName());
   }
 
   /**
@@ -182,7 +178,7 @@ public class EffectEditActivity extends Activity {
       imgInput.requestLayout();
     }
     nameInput.setText(effect.getName());
-    durationInput.setText(Integer.toString(effect.getDuration()));
+    durationInput.setText(Utils.intToString(effect.getDuration()));
     onRun.setText(actionsToString(effect.getOnRun()));
     onEnd.setText(actionsToString(effect.getOnEnd()));
     stackable.setChecked(effect.isStackable());
@@ -194,7 +190,7 @@ public class EffectEditActivity extends Activity {
     }
     StringBuffer str = new StringBuffer();
     for (Action action : actions) {
-      str.append(" "+action.getModName());
+      str.append(" "+GameUtils.getModNameFromId(action.getModId()));
     }
     return str.toString().trim();
   }

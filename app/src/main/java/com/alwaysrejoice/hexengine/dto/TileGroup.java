@@ -4,14 +4,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TileGroup {
-  private String name;
+  private String id;
+  private String name = "";
   List<TileTypeLink> tileLinks = new ArrayList<>();
 
   public TileGroup() {}
 
-  public TileGroup(String name, List<TileTypeLink> tileLinks) {
+  public TileGroup(String id) {
+    this.id = id;
+  }
+
+  public TileGroup(String id, String name, List<TileTypeLink> tileLinks) {
+    this.id = id;
     this.name = name;
     this.tileLinks = tileLinks;
+  }
+
+  public String getId() {
+    return id;
+  }
+
+  public void setId(String id) {
+    this.id = id;
   }
 
   public String getName() {
@@ -33,7 +47,8 @@ public class TileGroup {
   @Override
   public String toString() {
     return "TileGroup{" +
-        "name='" + name + '\'' +
+        "id='" + id + '\'' +
+        ", name='" + name + '\'' +
         ", tileLinks=" + tileLinks +
         '}';
   }

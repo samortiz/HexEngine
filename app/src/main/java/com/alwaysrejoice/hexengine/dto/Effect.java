@@ -7,6 +7,7 @@ import java.util.List;
 
 public class Effect implements TileType, Comparable {
 
+  private String id;
   private String name;
   private Bitmap bitmap;
   private int duration = 0;
@@ -16,9 +17,21 @@ public class Effect implements TileType, Comparable {
 
   public Effect() {}
 
+  public Effect(String id) {
+    this.id = id;
+  }
+
   @Override
   public TILE_TYPE getTileType() {
     return TILE_TYPE.EFFECT;
+  }
+
+  public String getId() {
+    return id;
+  }
+
+  public void setId(String id) {
+    this.id = id;
   }
 
   public String getName() {
@@ -78,7 +91,8 @@ public class Effect implements TileType, Comparable {
   @Override
   public String toString() {
     return "Effect{" +
-        "name='" + name + '\'' +
+        "id='" + id + '\'' +
+        ", name='" + name + '\'' +
         ", bitmap=" + bitmap +
         ", duration=" + duration +
         ", onRun=" + onRun +

@@ -88,7 +88,7 @@ public class ActionListActivity extends Activity implements AdapterView.OnItemCl
     Action action = (Action) list.getItemAtPosition(position);
     adapter.removeItem(position);
     adapter.notifyDataSetChanged();
-    Log.d("actionList", "deleted "+action.getModName());
+    Log.d("actionList", "deleted "+action.getModId());
   }
 
   /**

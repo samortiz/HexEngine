@@ -3,14 +3,14 @@ package com.alwaysrejoice.hexengine.dto;
 public class BgMap {
   private int col;
   private int row;
-  private String name;
+  private String id;
 
   public BgMap() {}
 
-  public BgMap(int col, int row, String name) {
+  public BgMap(int col, int row, String id) {
     this.col = col;
     this.row = row;
-    this.name = name;
+    this.id = id;
   }
 
   public int getCol() {
@@ -29,12 +29,12 @@ public class BgMap {
     this.row = row;
   }
 
-  public String getName() {
-    return name;
+  public String getId() {
+    return id;
   }
 
-  public void setName(String name) {
-    this.name = name;
+  public void setId(String id) {
+    this.id = id;
   }
 
   @Override
@@ -42,7 +42,7 @@ public class BgMap {
     return "BgMap{" +
         "col=" + col +
         ", row=" + row +
-        ", name='" + name + '\'' +
+        ", id='" + id + '\'' +
         '}';
   }
 }

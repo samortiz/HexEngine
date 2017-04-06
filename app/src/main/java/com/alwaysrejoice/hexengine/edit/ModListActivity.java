@@ -15,6 +15,7 @@ import com.alwaysrejoice.hexengine.util.GameUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -23,7 +24,7 @@ import java.util.Map;
 public class ModListActivity extends Activity implements AdapterView.OnItemClickListener {
   ListView list;
   ModListAdapter adapter;
-  ArrayList<Mod> mods = new ArrayList<Mod>();
+  List<Mod> mods = new ArrayList<Mod>();
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +47,7 @@ public class ModListActivity extends Activity implements AdapterView.OnItemClick
   public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
     Mod mod = (Mod) arg0.getItemAtPosition(position);
     Intent myIntent = new Intent(ModListActivity.this, ModEditActivity.class);
-    myIntent.putExtra(ModEditActivity.SELECTED_MOD, mod.getName());
+    myIntent.putExtra(ModEditActivity.SELECTED_MOD_ID, mod.getId());
     startActivity(myIntent);
   }
 
@@ -60,7 +61,7 @@ public class ModListActivity extends Activity implements AdapterView.OnItemClick
 
     // Remove from the game
     Map<String, Mod> modMap = game.getMods();
-    modMap.remove(mod.getName());
+    modMap.remove(mod.getId());
 
     // TODO : Clear all matching mod links in the game
 
@@ -87,7 +88,7 @@ public class ModListActivity extends Activity implements AdapterView.OnItemClick
   public void create(View view) {
     Log.d("modList", "Create New");
     Intent myIntent = new Intent(ModListActivity.this, ModEditActivity.class);
-    myIntent.putExtra(ModEditActivity.SELECTED_MOD, "");
+    myIntent.putExtra(ModEditActivity.SELECTED_MOD_ID, "");
     startActivity(myIntent);
   }
 

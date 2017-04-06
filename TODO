@@ -7,10 +7,6 @@ Map Editor
  - Toobar popup on right border with >1 column
  - Clear background behind buttons (units have transparent backgrounds)
 
-Misc : 
- - Change to use ID instead of name as key in Map (also do bgTile)
- - Mod, BgTile, UnitTile, 
-
 Game 
  - Remove out-of-bounds tiles from map when resizing to smaller size
 
@@ -24,8 +20,8 @@ Ability Editor
  - Unit specific editor (chooser)
  
 Mod Editor
- - Update mod links in abilities when updating mod name or deleting mod
- - In list prevent deleting the last item
+ - Update mod links in abilities when deleting mod
+ - In list prevent deleting the last item (or it causes the spinner to crash)
 
 Sync (Write and Load)
  - Sync Mods to disk

@@ -61,7 +61,9 @@ public class TileGroupListAdapter extends BaseAdapter {
         (tileGroup.getTileLinks() != null) &&
         (tileGroup.getTileLinks().size() > 0)) {
       TileType tile = TileTypeLink.getTile(tileGroup.getTileLinks().get(0), GameUtils.getGame());
-      return tile.getBitmap();
+      if (tile != null) {
+        return tile.getBitmap();
+      }
     }
     return null;
   }

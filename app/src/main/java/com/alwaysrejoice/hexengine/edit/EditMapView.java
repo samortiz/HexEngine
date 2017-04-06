@@ -119,19 +119,19 @@ public class EditMapView extends View {
     for (BgMap tile : game.getBgMaps()) {
       int x = bgCenterX + Math.round(HEX_SIZE * 1.5f  * tile.getCol()) - (TILE_WIDTH / 2);
       int y = bgCenterY + Math.round(HEX_SIZE * SQRT_3 * (tile.getRow() + (tile.getCol() / 2f))) - (TILE_HEIGHT/2);
-      BgTile bgTile = game.getBgTiles().get(tile.getName());
+      BgTile bgTile = game.getBgTiles().get(tile.getId());
       if (bgTile != null) {
         Bitmap bitmap = bgTile.getBitmap();
         if (bitmap != null) {
           bgCanvas.drawBitmap(bitmap, x, y, null);
         } else Log.e("editMapView", "Error in drawBackground, no image for BgTile with name="+bgTile.getName());
-      } else Log.e("editMapView", "Error in drawBackground, no tile in BgTiles with name="+tile.getName());
+      } else Log.e("editMapView", "Error in drawBackground, no tile in BgTiles with id="+tile.getId());
     } // for
 
     for (UnitMap unitMap : game.getUnitMaps()) {
       int x = bgCenterX + Math.round(HEX_SIZE * 1.5f  * unitMap.getCol()) - (TILE_WIDTH / 2);
       int y = bgCenterY + Math.round(HEX_SIZE * SQRT_3 * (unitMap.getRow() + (unitMap.getCol() / 2f))) - (TILE_HEIGHT/2);
-      UnitTile tile = game.getUnitTiles().get(unitMap.getName());
+      UnitTile tile = game.getUnitTiles().get(unitMap.getId());
       if (tile != null) {
         Bitmap bitmap = tile.getBitmap();
         if (bitmap != null) {

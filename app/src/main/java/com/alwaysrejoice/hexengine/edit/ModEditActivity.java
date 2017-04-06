@@ -24,11 +24,10 @@ import java.util.Map;
 import static com.alwaysrejoice.hexengine.util.Utils.setListViewHeight;
 
 public class ModEditActivity extends Activity {
-  public static final String SELECTED_MOD = "SELECTED_MOD";
+  public static final String SELECTED_MOD_ID = "SELECTED_MOD_ID";
   public static final String[] MOD_TYPES = {"Mod", "Rule", "ModLoc", "RuleLoc"};
 
   Mod mod; // The mod we are currently editing
-  String origModName = "";  // name when the edit screen was first invoked
   int typeSelectedIndex = 0; // which type is currently selected
 
   ListView paramList;
@@ -47,17 +46,16 @@ public class ModEditActivity extends Activity {
     modTypeSpinner.setAdapter(modTypeAdapter);
 
     // Load the mod we are editing
-    String modName = (String) bundle.get(ModEditActivity.SELECTED_MOD);
-    if ((modName != null) && !"".equals(modName)) {
+    String modId = (String) bundle.get(ModEditActivity.SELECTED_MOD_ID);
+    if ((modId != null) && !"".equals(modId)) {
       Game game = GameUtils.getGame();
-      mod = game.getMods().get(modName);
+      mod = game.getMods().get(modId);
       setUiFromMod();
-      origModName = modName;
-      Log.d("modEdit", "begin editing selected mod "+modName);
+      Log.d("modEdit", "begin editing selected mod "+mod.getName());
     }
 
     if (mod == null) {
-      mod = new Mod();
+      mod = new Mod(Utils.generateUniqueId());
       typeSelectedIndex = 0;
     }
 
@@ -90,10 +88,9 @@ public class ModEditActivity extends Activity {
     // TODO: If name is changing update all the links
 
     // Update the mod in the game
-    modMap.remove(origModName);
-    modMap.put(mod.getName(), mod);
+    modMap.put(mod.getId(), mod);
     GameUtils.saveGame();
-    Log.d("modEdit", "saving Mod name="+mod.getName()+" type="+mod.getType()+" orig="+ origModName);
+    Log.d("modEdit", "saving Mod name="+mod.getName()+" type="+mod.getType());
     // Go to the list
     Intent myIntent = new Intent(ModEditActivity.this, ModListActivity.class);
     startActivity(myIntent);
@@ -147,7 +144,7 @@ public class ModEditActivity extends Activity {
     ModParam.TYPE type = ModParam.TYPE.valueOf(typeSpinner.getSelectedItem().toString());
     String var = varText.getText().toString();
     mod.getParams().add(new ModParam(var, type));
-    setListViewHeight(paramList); // recalc list height
+    setListViewHeight(paramList); // recalculate list height
     typeSpinner.setSelection(0);
     varText.setText("");
     paramAdapter.notifyDataSetChanged();
@@ -162,15 +159,6 @@ public class ModEditActivity extends Activity {
     paramAdapter.removeItem(position);
     setListViewHeight(paramList); // recalc list height
     paramAdapter.notifyDataSetChanged();
-  }
-
-  public void editParam(View view) {
-    Intent myIntent = new Intent(ModEditActivity.this, ModParamEditActivity.class);
-    int position = (int) view.getTag();
-    ModParam param = paramAdapter.getItem(position);
-    myIntent.putExtra(ModParamEditActivity.SELECTED_MOD, mod.getName());
-    myIntent.putExtra(ModParamEditActivity.SELECTED_PARAM, param.getVar());
-    startActivity(myIntent);
   }
 
 }

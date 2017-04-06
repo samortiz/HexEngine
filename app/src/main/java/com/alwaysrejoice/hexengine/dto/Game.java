@@ -1,5 +1,7 @@
 package com.alwaysrejoice.hexengine.dto;
 
+import com.alwaysrejoice.hexengine.util.Utils;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,15 +13,14 @@ public class Game {
   public static final int MIN_GAME_WIDTH = 10;
   public static final int MIN_GAME_HEIGHT = 10;
 
-
   private GameInfo gameInfo =  new GameInfo();
   private List<BgMap> bgMaps = new ArrayList();
-  private Map<String, BgTile> bgTiles = new HashMap(); // keyed on name
+  private Map<String, BgTile> bgTiles = new HashMap(); // keyed on id
   private List<UnitMap> unitMaps = new ArrayList();
-  private Map<String, UnitTile> unitTiles = new HashMap(); // keyed on name
+  private Map<String, UnitTile> unitTiles = new HashMap(); // keyed on id
   private List<TileGroup> tileGroups = new ArrayList();
-  private Map<String, Mod> mods = new HashMap(); // keyed on name
-  private Map<String, Effect> effects = new HashMap(); // keyed on name
+  private Map<String, Mod> mods = new HashMap(); // keyed on id
+  private Map<String, Effect> effects = new HashMap(); // keyed on id
 
   // Lists of Strings
   private List<String> teams = new ArrayList<>();
@@ -139,4 +140,24 @@ public class Game {
         ", attr=" + attr +
         '}';
   }
+
+  /**
+   * Creates the basic minimum data required for a game to work
+   */
+  public static void setupNewGame(Game game) {
+    game.setTeams(Utils.makeList("Player", "Computer"));
+    game.setAttr(Utils.makeList("Living", "Flies"));
+    game.setDamageTypes(Utils.makeList("Slash", "Poison"));
+    game.setBgTypes(Utils.makeList("Grass", "Water"));
+
+    ModParam damage = new ModParam("damage", ModParam.TYPE.Damage);
+    List<ModParam> params = new ArrayList<>();
+    params.add(damage);
+    Mod mod = new Mod(Utils.generateUniqueId(), "Damage", Mod.TYPE_MOD, params, "applyDamage(self, target, damage);");
+    Map<String, Mod> modMap = new HashMap();
+    modMap.put(mod.getId(), mod);
+    game.setMods(modMap);
+  }
+
+
 }

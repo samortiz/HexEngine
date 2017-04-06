@@ -9,16 +9,11 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.alwaysrejoice.hexengine.R;
-import com.alwaysrejoice.hexengine.dto.BgTile;
 import com.alwaysrejoice.hexengine.dto.Game;
 import com.alwaysrejoice.hexengine.dto.TileGroup;
-import com.alwaysrejoice.hexengine.dto.TileType;
 import com.alwaysrejoice.hexengine.util.GameUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Displays and handles events for the list of tile groups screen
@@ -47,7 +42,7 @@ public class TileGroupListActivity extends Activity implements AdapterView.OnIte
     Log.d("bgList", "onItemClick ");
     TileGroup tile = (TileGroup) arg0.getItemAtPosition(position);
     Intent myIntent = new Intent(TileGroupListActivity.this, TileGroupEditActivity.class);
-    myIntent.putExtra(TileGroupEditActivity.EXTRA_TILE_GROUP_NAME, tile.getName());
+    myIntent.putExtra(TileGroupEditActivity.EXTRA_TILE_GROUP_ID, tile.getId());
     startActivity(myIntent);
   }
 
@@ -77,7 +72,7 @@ public class TileGroupListActivity extends Activity implements AdapterView.OnIte
   public void newTileGroup(View view) {
     Log.d("tileGroupList", "Create New");
     Intent myIntent = new Intent(TileGroupListActivity.this, TileGroupEditActivity.class);
-    myIntent.putExtra(TileGroupEditActivity.EXTRA_TILE_GROUP_NAME, "");
+    myIntent.putExtra(TileGroupEditActivity.EXTRA_TILE_GROUP_ID, "");
     startActivity(myIntent);
   }
 

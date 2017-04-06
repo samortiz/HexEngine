@@ -77,6 +77,11 @@ public class SystemTile implements TileType {
   }
 
   @Override
+  public String getId() {
+    return name;
+  }
+
+  @Override
   public String getName() {
     return name;
   }

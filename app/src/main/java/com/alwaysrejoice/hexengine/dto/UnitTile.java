@@ -9,6 +9,7 @@ import java.util.Map;
 
 public class UnitTile implements TileType {
 
+  private String id;
   private String name;
   private Bitmap bitmap;
   private String team;
@@ -27,13 +28,26 @@ public class UnitTile implements TileType {
   public UnitTile() {
   }
 
-  public UnitTile(String name, Bitmap bitmap) {
+  public UnitTile(String id) {
+    this.id = id;
+  }
+
+  public UnitTile(String id, String name, Bitmap bitmap) {
+    this.id = id;
     this.name = name;
     this.bitmap = bitmap;
   }
 
   public TILE_TYPE getTileType() {
     return TILE_TYPE.UNIT;
+  }
+
+  public String getId() {
+    return id;
+  }
+
+  public void setId(String id) {
+    this.id = id;
   }
 
   public String getName() {
@@ -159,7 +173,8 @@ public class UnitTile implements TileType {
   @Override
   public String toString() {
     return "UnitTile{" +
-        "name='" + name + '\'' +
+        "id='" + id + '\'' +
+        ", name='" + name + '\'' +
         ", bitmap=" + bitmap +
         ", team='" + team + '\'' +
         ", hpMax=" + hpMax +

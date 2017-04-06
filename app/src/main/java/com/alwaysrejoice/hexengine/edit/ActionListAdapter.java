@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.alwaysrejoice.hexengine.R;
 import com.alwaysrejoice.hexengine.dto.Action;
+import com.alwaysrejoice.hexengine.util.GameUtils;
 
 import java.util.List;
 
@@ -47,7 +48,7 @@ public class ActionListAdapter extends BaseAdapter {
     TextView nameView = (TextView) row.findViewById(R.id.row_name);
     ImageView deleteImg = (ImageView) row.findViewById(R.id.row_delete);
 
-    nameView.setText(action.getModName());
+    nameView.setText(GameUtils.getModNameFromId(action.getModId()));
     deleteImg.setTag(position);
     return (row);
   }

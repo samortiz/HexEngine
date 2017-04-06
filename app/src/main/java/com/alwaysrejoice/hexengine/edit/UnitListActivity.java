@@ -37,8 +37,8 @@ public class UnitListActivity extends Activity implements AdapterView.OnItemClic
 
     list = (ListView) findViewById(R.id.unit_list_view);
     units = new ArrayList<>();
-    for (String unitName : game.getUnitTiles().keySet()) {
-      UnitTile unit = game.getUnitTiles().get(unitName);
+    for (String unitId: game.getUnitTiles().keySet()) {
+      UnitTile unit = game.getUnitTiles().get(unitId);
       units.add(unit);
     }
     Collections.sort(units);
@@ -54,7 +54,7 @@ public class UnitListActivity extends Activity implements AdapterView.OnItemClic
     Log.d("unitList", "onItemClick ");
     UnitTile unit = (UnitTile) arg0.getItemAtPosition(position);
     Intent myIntent = new Intent(UnitListActivity.this, UnitEditActivity.class);
-    myIntent.putExtra(UnitEditActivity.SELECTED_UNIT_NAME, unit.getName());
+    myIntent.putExtra(UnitEditActivity.SELECTED_UNIT_ID, unit.getId());
     startActivity(myIntent);
   }
 
@@ -66,19 +66,19 @@ public class UnitListActivity extends Activity implements AdapterView.OnItemClic
     int position = (int) view.getTag();
     UnitTile unit = (UnitTile) list.getItemAtPosition(position);
     Map<String, UnitTile> unitTiles = game.getUnitTiles();
-    unitTiles.remove(unit.getName());
+    unitTiles.remove(unit.getId());
 
     // delete all the links pointing to this unit
     for (int i=game.getUnitMaps().size()-1; i>=0; i--) {
       UnitMap unitMap = game.getUnitMaps().get(i);
-      if (unit.getName().equals(unitMap.getName())) {
+      if (unit.getId().equals(unitMap.getId())) {
         game.getUnitMaps().remove(i);
       }
     } //for
     for (TileGroup group : game.getTileGroups()) {
       for (int i = group.getTileLinks().size()-1; i>=0; i--) {
         TileTypeLink link = group.getTileLinks().get(i);
-        if (unit.getName().equals(link.getName()) &&
+        if (unit.getId().equals(link.getId()) &&
             (link.getTileType() == TileType.TILE_TYPE.UNIT)) {
           group.getTileLinks().remove(i);
         }
@@ -107,7 +107,7 @@ public class UnitListActivity extends Activity implements AdapterView.OnItemClic
   public void create(View view) {
     Log.d("unitList", "Create New");
     Intent myIntent = new Intent(UnitListActivity.this, UnitEditActivity.class);
-    myIntent.putExtra(UnitEditActivity.SELECTED_UNIT_NAME, "");
+    myIntent.putExtra(UnitEditActivity.SELECTED_UNIT_ID, "");
     startActivity(myIntent);
   }
 

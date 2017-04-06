@@ -9,7 +9,7 @@ import android.util.Log;
 public class TileTypeLink {
 
   public TileType.TILE_TYPE tileType;
-  public String name;
+  public String id;
 
   /**
    * Looks up a tile in the game that matches the link
@@ -18,29 +18,29 @@ public class TileTypeLink {
    */
   public static TileType getTile(TileTypeLink link, Game game) {
     if (TileType.TILE_TYPE.BACKGROUND.equals(link.getTileType())) {
-      for (String tileName : game.getBgTiles().keySet()) {
-        BgTile tile = game.getBgTiles().get(tileName);
-        if (link.getName().equals(tile.getName())) {
+      for (String tileId : game.getBgTiles().keySet()) {
+        BgTile tile = game.getBgTiles().get(tileId);
+        if (link.getId().equals(tile.getId())) {
           return tile;
         }
       } // for
     } else if (TileType.TILE_TYPE.UNIT.equals(link.getTileType())) {
-      for (String tileName : game.getUnitTiles().keySet()) {
-        UnitTile tile = game.getUnitTiles().get(tileName);
-        if (link.getName().equals(tile.getName())) {
+      for (String tileId : game.getUnitTiles().keySet()) {
+        UnitTile tile = game.getUnitTiles().get(tileId);
+        if (link.getId().equals(tile.getId())) {
           return tile;
         }
       } // for
     }
-    Log.e("tileTypeLink", "Error! Could not find tile of type="+link.getTileType()+" with name="+link.getName());
+    Log.e("tileTypeLink", "Error! Could not find tile of type="+link.getTileType()+" with id="+link.getId());
     return null;
   }
 
   public TileTypeLink() {}
 
-  public TileTypeLink(TileType.TILE_TYPE tileType, String name) {
+  public TileTypeLink(TileType.TILE_TYPE tileType, String id) {
     this.tileType = tileType;
-    this.name = name;
+    this.id = id;
   }
 
   public TileType.TILE_TYPE getTileType() {
@@ -51,19 +51,19 @@ public class TileTypeLink {
     this.tileType = tileType;
   }
 
-  public String getName() {
-    return name;
+  public String getId() {
+    return id;
   }
 
-  public void setName(String name) {
-    this.name = name;
+  public void setId(String id) {
+    this.id = id;
   }
 
   @Override
   public String toString() {
     return "TileTypeLink{" +
         "tileType=" + tileType +
-        ", name='" + name + '\'' +
+        ", id='" + id + '\'' +
         '}';
   }
 }

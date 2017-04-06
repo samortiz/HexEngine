@@ -20,10 +20,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DefenceEditActivity extends Activity {
-  public static final String SELECTED_UNIT_NAME = "DEF_EDIT_SELECTED_UNIT_NAME";
+  public static final String SELECTED_UNIT_ID = "DEF_EDIT_SELECTED_UNIT_NAME";
   public static final String SELECTED_DAMAGE_INDEX = "DEF_EDIT_SELECTED_DAMAGE_INDEX";
   Damage damage;
-  String selectedUnitName;
+  String selectedUnitId;
   int selectedDamageIndex;
 
   @Override
@@ -32,14 +32,18 @@ public class DefenceEditActivity extends Activity {
     setContentView(R.layout.defence_edit);
     Bundle bundle = getIntent().getExtras();
 
-    selectedUnitName = (String) bundle.get(SELECTED_UNIT_NAME);
+    selectedUnitId = (String) bundle.get(SELECTED_UNIT_ID);
+    if (selectedUnitId == null) {
+      throw new IllegalArgumentException("You must pass a SELECTED_UNIT_ID to DefenceEditActivity");
+    }
     selectedDamageIndex = Integer.parseInt((String) bundle.get(SELECTED_DAMAGE_INDEX));
 
     if (selectedDamageIndex >= 0) {
-      damage = GameUtils.getGame().getUnitTiles().get(selectedUnitName).getDefence().get(selectedDamageIndex);
+      damage = GameUtils.getGame().getUnitTiles().get(selectedUnitId).getDefence().get(selectedDamageIndex);
     } else {
       damage = new Damage();
     }
+    Log.d("defenceEdit", "selectedUnitId="+selectedUnitId+" damage="+damage);
 
     List<String> systemDamageTypes = GameUtils.getGame().getDamageTypes();
     List<String> damageTypes = new ArrayList<>(systemDamageTypes.size());
@@ -82,7 +86,7 @@ public class DefenceEditActivity extends Activity {
     damage.setType(dmgAdapter.getItem(dmgTypeSpinner.getSelectedItemPosition()));
 
     if (selectedDamageIndex < 0) {
-      GameUtils.getGame().getUnitTiles().get(selectedUnitName).getDefence().add(damage);
+      GameUtils.getGame().getUnitTiles().get(selectedUnitId).getDefence().add(damage);
     }
     // else if the damage is being edited, just calling save is enough (object already exists in the list)
     GameUtils.saveGame();
@@ -90,7 +94,7 @@ public class DefenceEditActivity extends Activity {
     Log.d("damageEdit", "finished editing "+damage);
     // Go to the defence list
     Intent myIntent = new Intent(DefenceEditActivity.this, DefenceListActivity.class);
-    myIntent.putExtra(DefenceListActivity.SELECTED_UNIT_NAME, selectedUnitName);
+    myIntent.putExtra(DefenceListActivity.SELECTED_UNIT_ID, selectedUnitId);
     startActivity(myIntent);
   }
 

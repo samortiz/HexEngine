@@ -1,7 +1,6 @@
 package com.alwaysrejoice.hexengine.edit;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,26 +10,25 @@ import android.widget.TextView;
 
 import com.alwaysrejoice.hexengine.R;
 import com.alwaysrejoice.hexengine.dto.BgTile;
-import com.alwaysrejoice.hexengine.util.GameUtils;
 
 import java.util.List;
 
 public class BgListAdapter extends BaseAdapter {
 
   private Context context;
-  private List<String> names;
+  private List<BgTile> tiles;
 
-  public BgListAdapter(Context context, List<String> names) {
+  public BgListAdapter(Context context, List<BgTile> tiles) {
     this.context = context;
-    this.names = names;
+    this.tiles = tiles;
   }
 
   public int getCount() {
-    return names.size();
+    return tiles.size();
   }
 
-  public String getItem(int arg0) {
-    return names.get(arg0);
+  public BgTile getItem(int arg0) {
+    return tiles.get(arg0);
   }
 
   public long getItemId(int position) {
@@ -38,21 +36,22 @@ public class BgListAdapter extends BaseAdapter {
   }
 
   public void removeItem(int position) {
-    names.remove(position);
+    tiles.remove(position);
   }
 
   public View getView(int position, View convertView, ViewGroup parent) {
+    BgTile tile= this.tiles.get(position);
+
     LayoutInflater inflater = LayoutInflater.from(context);
     View row = inflater.inflate(R.layout.bg_list_row, parent, false);
 
-    String tileName = this.names.get(position);
-    BgTile tile = GameUtils.getGame().getBgTiles().get(tileName);
     ImageView imageView = (ImageView) row.findViewById(R.id.row_img);
-    TextView nameView = (TextView) row.findViewById(R.id.row_name);
-    ImageView deleteImg = (ImageView) row.findViewById(R.id.row_delete);
     imageView.setImageBitmap(tile.getBitmap());
 
+    TextView nameView = (TextView) row.findViewById(R.id.row_name);
     nameView.setText(tile.getName()+" ("+tile.getType()+")");
+
+    ImageView deleteImg = (ImageView) row.findViewById(R.id.row_delete);
     deleteImg.setTag(position);
     return (row);
   }

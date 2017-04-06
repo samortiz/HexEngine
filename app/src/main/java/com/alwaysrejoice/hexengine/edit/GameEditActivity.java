@@ -65,6 +65,7 @@ public class GameEditActivity extends Activity {
     // Creating a new game
     if (game == null) {
       game = new Game();
+      Game.setupNewGame(game);
     }
 
     // Validate that a file with the new name does not already exist

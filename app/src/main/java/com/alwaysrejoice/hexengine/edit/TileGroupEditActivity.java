@@ -17,6 +17,7 @@ import com.alwaysrejoice.hexengine.dto.TileType;
 import com.alwaysrejoice.hexengine.dto.TileTypeLink;
 import com.alwaysrejoice.hexengine.dto.UnitTile;
 import com.alwaysrejoice.hexengine.util.GameUtils;
+import com.alwaysrejoice.hexengine.util.Utils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,7 +27,7 @@ import java.util.List;
  * Displays and handles events for the list of games screen
  */
 public class TileGroupEditActivity extends Activity {
-  public static final String EXTRA_TILE_GROUP_NAME = "TILE_GROUP_NAME";
+  public static final String EXTRA_TILE_GROUP_ID = "TILE_GROUP_ID";
 
   TileGroup tileGroup;
   ListView allTilesView;
@@ -47,9 +48,9 @@ public class TileGroupEditActivity extends Activity {
 
     // Find the name of the tileGroup we are editing (passed as an extra from TileGroupListActivity)
     Bundle bundle = getIntent().getExtras();
-    String groupName = (String) bundle.get(EXTRA_TILE_GROUP_NAME);
+    String groupId = (String) bundle.get(EXTRA_TILE_GROUP_ID);
     for (TileGroup group : game.getTileGroups()) {
-      if (groupName.equals(group.getName())) {
+      if (groupId.equals(group.getId())) {
         tileGroup = group;
         break;
       }
@@ -57,8 +58,7 @@ public class TileGroupEditActivity extends Activity {
 
     // No tilegroup found
     if (tileGroup == null) {
-      tileGroup =  new TileGroup();
-      tileGroup.setName("");
+      tileGroup =  new TileGroup(Utils.generateUniqueId());
       newTileGroup = true;
     }
 
@@ -87,14 +87,14 @@ public class TileGroupEditActivity extends Activity {
     // All tiles in the system
     allTilesView = (ListView) findViewById(R.id.tile_group_edit_all);
     allTiles = new ArrayList<>();
-    for (String name: game.getBgTiles().keySet()) {
-      BgTile bgTile = game.getBgTiles().get(name);
+    for (String id: game.getBgTiles().keySet()) {
+      BgTile bgTile = game.getBgTiles().get(id);
       if (!selectedTiles.contains(bgTile)) {
         allTiles.add(bgTile);
       }
     } // for bg
-    for (String tileName : game.getUnitTiles().keySet()) {
-      UnitTile unitTile = game.getUnitTiles().get(tileName);
+    for (String id : game.getUnitTiles().keySet()) {
+      UnitTile unitTile = game.getUnitTiles().get(id);
       if (!selectedTiles.contains(unitTile)) {
         allTiles.add(unitTile);
       }
@@ -129,7 +129,7 @@ public class TileGroupEditActivity extends Activity {
     }
     List<TileTypeLink> tileLinks = new ArrayList<>();
     for (TileType tile : selectedTiles) {
-      tileLinks.add(new TileTypeLink(tile.getTileType(), tile.getName()));
+      tileLinks.add(new TileTypeLink(tile.getTileType(), tile.getId()));
     }
     tileGroup.setTileLinks(tileLinks);
     tileGroup.setName(tileGroupName);

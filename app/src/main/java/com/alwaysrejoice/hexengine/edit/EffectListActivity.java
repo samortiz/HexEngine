@@ -33,8 +33,8 @@ public class EffectListActivity extends Activity implements AdapterView.OnItemCl
 
     list = (ListView) findViewById(R.id.effect_list_view);
     effects = new ArrayList<>();
-    for (String eff : game.getEffects().keySet()) {
-      Effect effect = game.getEffects().get(eff);
+    for (String id : game.getEffects().keySet()) {
+      Effect effect = game.getEffects().get(id);
       effects.add(effect);
     }
     Collections.sort(effects);
@@ -50,7 +50,7 @@ public class EffectListActivity extends Activity implements AdapterView.OnItemCl
     Effect effect = (Effect) arg0.getItemAtPosition(position);
     Log.d("effectList", "onItemClick effect="+effect);
     Intent myIntent = new Intent(EffectListActivity.this, EffectEditActivity.class);
-    myIntent.putExtra(EffectEditActivity.SELECTED_EFFECT, effect.getName());
+    myIntent.putExtra(EffectEditActivity.SELECTED_EFFECT_ID, effect.getId());
     startActivity(myIntent);
   }
 
@@ -62,13 +62,12 @@ public class EffectListActivity extends Activity implements AdapterView.OnItemCl
     int position = (int) view.getTag();
     Effect effect = (Effect) list.getItemAtPosition(position);
     Map<String, Effect> effectMap = game.getEffects();
-    effectMap.remove(effect.getName());
+    effectMap.remove(effect.getId());
 
     // TODO : Delete all the links pointing to this effect
 
     GameUtils.saveGame();
     adapter.removeItem(position);
-    Collections.sort(effects);
     adapter.notifyDataSetChanged();
     Log.d("effectList", "deleted "+effect.getName());
   }
@@ -88,7 +87,7 @@ public class EffectListActivity extends Activity implements AdapterView.OnItemCl
   public void create(View view) {
     Log.d("effectList", "Create New");
     Intent myIntent = new Intent(EffectListActivity.this, EffectEditActivity.class);
-    myIntent.putExtra(EffectEditActivity.SELECTED_EFFECT, "");
+    myIntent.putExtra(EffectEditActivity.SELECTED_EFFECT_ID, "");
     startActivity(myIntent);
   }
 

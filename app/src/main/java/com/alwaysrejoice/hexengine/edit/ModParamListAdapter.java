@@ -50,8 +50,6 @@ public class ModParamListAdapter extends BaseAdapter {
     ImageView deleteImg = (ImageView) row.findViewById(R.id.row_delete);
     deleteImg.setTag(position);
 
-    ImageView editImg = (ImageView) row.findViewById(R.id.row_edit);
-    editImg.setTag(position);
     return (row);
   }
 }

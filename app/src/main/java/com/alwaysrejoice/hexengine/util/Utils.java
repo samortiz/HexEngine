@@ -1,6 +1,7 @@
 package com.alwaysrejoice.hexengine.util;
 
 import android.content.res.Resources;
+import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.View;
@@ -11,16 +12,20 @@ import android.widget.RelativeLayout;
 
 import com.alwaysrejoice.hexengine.dto.Damage;
 
+import java.nio.ByteBuffer;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.UUID;
+import java.util.Random;
 
 /**
  * Generic Static Utils
  */
 public class Utils {
+  public static final Random random = new Random();
+
   private static final DecimalFormat decimalFormat = new DecimalFormat("0", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
   {
     decimalFormat.setMaximumFractionDigits(10);
@@ -127,9 +132,18 @@ public class Utils {
   /**
    * Generates a globally unique ID, useful for identifying objects without collisions
    */
-  public static String generateID() {
-    return UUID.randomUUID().toString();
+  public static String generateUniqueId() {
+    long randomLong = random.nextLong();
+    ByteBuffer buff = ByteBuffer.allocate(8);
+    buff.putLong(randomLong);
+    return Base64.encodeToString(buff.array(), Base64.NO_PADDING).trim();
   }
 
+  public static List<String> makeList(String a, String b) {
+    List<String> list = new ArrayList<>(2);
+    list.add(a);
+    list.add(b);
+    return list;
+  }
 
 }

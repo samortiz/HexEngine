@@ -27,7 +27,7 @@ import java.util.Map;
 public class BgListActivity extends Activity implements AdapterView.OnItemClickListener {
   ListView list;
   BgListAdapter adapter;
-  ArrayList<String> tileNames;
+  ArrayList<BgTile> tiles;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -36,12 +36,12 @@ public class BgListActivity extends Activity implements AdapterView.OnItemClickL
     Game game = GameUtils.getGame();
 
     list = (ListView) findViewById(R.id.bg_list_view);
-    tileNames = new ArrayList<>();
-    for (String name: game.getBgTiles().keySet()) {
-      tileNames.add(name);
+    tiles = new ArrayList<>();
+    for (String id : game.getBgTiles().keySet()) {
+      tiles.add(game.getBgTiles().get(id));
     }
-    Collections.sort(tileNames, String.CASE_INSENSITIVE_ORDER);
-    adapter = new BgListAdapter(this, tileNames);
+    Collections.sort(tiles);
+    adapter = new BgListAdapter(this, tiles);
     list.setAdapter(adapter);
     list.setOnItemClickListener(this);
   }
@@ -51,9 +51,9 @@ public class BgListActivity extends Activity implements AdapterView.OnItemClickL
    */
   public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
     Log.d("bgList", "onItemClick ");
-    String tileName = (String) arg0.getItemAtPosition(position);
+    BgTile tile = (BgTile) arg0.getItemAtPosition(position);
     Intent myIntent = new Intent(BgListActivity.this, BgEditActivity.class);
-    myIntent.putExtra(BgEditActivity.SELECTED_TILE, tileName);
+    myIntent.putExtra(BgEditActivity.SELECTED_TILE_ID, tile.getId());
     startActivity(myIntent);
   }
 
@@ -61,23 +61,23 @@ public class BgListActivity extends Activity implements AdapterView.OnItemClickL
    * Called when the user clicks "Delete" on a row
    */
   public void deleteBg(View view) {
-    int position = (int) view.getTag();
-    String tileName = list.getItemAtPosition(position).toString();
-    Map<String, BgTile> bgTiles = GameUtils.getGame().getBgTiles();
-    bgTiles.remove(tileName);
     Game game = GameUtils.getGame();
+    int position = (int) view.getTag();
+    BgTile tile = (BgTile) list.getItemAtPosition(position);
+    Map<String, BgTile> bgTiles = game.getBgTiles();
+    bgTiles.remove(tile.getId());
 
     // delete all the links pointing to this bgTile
     for (int i=game.getBgMaps().size()-1; i>=0; i--) {
       BgMap bgMap = game.getBgMaps().get(i);
-      if (tileName.equals(bgMap.getName())) {
+      if (tile.getId().equals(bgMap.getId())) {
         game.getBgMaps().remove(i);
       }
     } //for
     for (TileGroup group : game.getTileGroups()) {
       for (int i = group.getTileLinks().size()-1; i>=0; i--) {
         TileTypeLink link = group.getTileLinks().get(i);
-        if (tileName.equals(link.getName()) &&
+        if (tile.getId().equals(link.getId()) &&
             (link.getTileType() == TileType.TILE_TYPE.BACKGROUND)) {
           group.getTileLinks().remove(i);
         }
@@ -86,9 +86,8 @@ public class BgListActivity extends Activity implements AdapterView.OnItemClickL
 
     GameUtils.saveGame();
     adapter.removeItem(position);
-    Collections.sort(tileNames, String.CASE_INSENSITIVE_ORDER);
     adapter.notifyDataSetChanged();
-    Log.d("bgList", "deleted "+tileName);
+    Log.d("bgList", "deleted "+tile.getName());
   }
 
   /**
@@ -106,7 +105,7 @@ public class BgListActivity extends Activity implements AdapterView.OnItemClickL
   public void createNewBg(View view) {
     Log.d("bgList", "Create New");
     Intent myIntent = new Intent(BgListActivity.this, BgEditActivity.class);
-    myIntent.putExtra(BgEditActivity.SELECTED_TILE, "");
+    myIntent.putExtra(BgEditActivity.SELECTED_TILE_ID, "");
     startActivity(myIntent);
   }
 

@@ -21,6 +21,7 @@ import android.widget.TextView;
 import com.alwaysrejoice.hexengine.R;
 import com.alwaysrejoice.hexengine.dto.Action;
 import com.alwaysrejoice.hexengine.dto.Damage;
+import com.alwaysrejoice.hexengine.dto.Game;
 import com.alwaysrejoice.hexengine.dto.Mod;
 import com.alwaysrejoice.hexengine.dto.ModParam;
 import com.alwaysrejoice.hexengine.dto.ModParamValue;
@@ -58,6 +59,7 @@ public class ActionEditActivity extends Activity {
     Log.d("actionEdit", "onCreate");
     setContentView(R.layout.action_edit);
     Bundle bundle = getIntent().getExtras();
+    Game game = GameUtils.getGame();
 
     returnLoc = (String) bundle.get(ActionListActivity.RETURN_LOC);
     callingObj = (String) bundle.get(ActionListActivity.CALLING_OBJ);
@@ -68,21 +70,25 @@ public class ActionEditActivity extends Activity {
     if (actionIndex >= 0) {
       action = actionList.get(actionIndex);
     } else {
-      action = new Action();
+      action = new Action(Utils.generateUniqueId());
       actionList.add(action);
     }
 
     List<String> modNames = new ArrayList();
-    for (String modName : GameUtils.getGame().getMods().keySet()) {
-      modNames.add(modName);
+    for (String modId : game.getMods().keySet()) {
+      modNames.add(game.getMods().get(modId).getName());
     }
     Collections.sort(modNames, String.CASE_INSENSITIVE_ORDER);
-
     Spinner modSpinner = (Spinner) findViewById(R.id.mod_name_spinner);
     ArrayAdapter<String> typeAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, modNames);
     typeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
     modSpinner.setAdapter(typeAdapter);
-    int selectedModTypeIndex = typeAdapter.getPosition(action.getModName());
+    Mod selectedMod = game.getMods().get(action.getModId());
+    String selectedModName = "";
+    if (selectedMod != null) {
+      selectedModName = selectedMod.getName();
+    }
+    int selectedModTypeIndex = typeAdapter.getPosition(selectedModName);
     if (selectedModTypeIndex < 0) {
       selectedModTypeIndex = 0;
     }
@@ -97,10 +103,11 @@ public class ActionEditActivity extends Activity {
 
   // Updates the current layout to match the selected Mod
   public void updateLayout() {
+    Map<String, Mod> allMods = GameUtils.getGame().getMods();
     Spinner typeSpinner = (Spinner) findViewById(R.id.mod_name_spinner);
     ArrayAdapter<String> typeAdapter = (ArrayAdapter<String>)typeSpinner.getAdapter();
     String modName = typeAdapter.getItem(typeSpinner.getSelectedItemPosition());
-    Mod mod = GameUtils.getGame().getMods().get(modName);
+    Mod mod = GameUtils.getModByName(modName);
     LayoutInflater inflator = LayoutInflater.from(getBaseContext());
     TableLayout inputTable = (TableLayout) findViewById(R.id.input_table);
     TableRow modNameRow = (TableRow) findViewById(R.id.mod_name_row);
@@ -202,7 +209,8 @@ public class ActionEditActivity extends Activity {
     Spinner typeSpinner = (Spinner) findViewById(R.id.mod_name_spinner);
     ArrayAdapter<String> typeAdapter = (ArrayAdapter<String>)typeSpinner.getAdapter();
     String modName = typeAdapter.getItem(Math.max(0, typeSpinner.getSelectedItemPosition()));
-    action.setModName(modName);
+    String modId = GameUtils.getModIdByName(modName);
+    action.setModId(modId);
 
     // Load the selected param values
     Map<String, ModParamValue> values = action.getValues();
@@ -240,7 +248,7 @@ public class ActionEditActivity extends Activity {
       }
     } // for
 
-    if ("".equals(action.getModName())) {
+    if ("".equals(modId)) {
       showError("You must choose a mod.");
       return;
     }

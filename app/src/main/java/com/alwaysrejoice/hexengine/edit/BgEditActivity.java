@@ -13,26 +13,21 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.alwaysrejoice.hexengine.R;
-import com.alwaysrejoice.hexengine.dto.BgMap;
 import com.alwaysrejoice.hexengine.dto.BgTile;
 import com.alwaysrejoice.hexengine.dto.Game;
-import com.alwaysrejoice.hexengine.dto.TileGroup;
-import com.alwaysrejoice.hexengine.dto.TileType;
-import com.alwaysrejoice.hexengine.dto.TileTypeLink;
 import com.alwaysrejoice.hexengine.util.GameUtils;
+import com.alwaysrejoice.hexengine.util.Utils;
 
 import java.util.List;
 import java.util.Map;
 
 public class BgEditActivity extends Activity {
-  public static final String SELECTED_TILE = "BGEDIT_SELECTED_TILE";
+  public static final String SELECTED_TILE_ID = "BGEDIT_SELECTED_TILE_ID";
   BgTile tile; // The tile we are currently editing
-  String origTileName = "";  // Tile name when the edit screen was first invoked
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    Log.d("bgEdit", "onCreate");
     setContentView(R.layout.bg_edit);
     Bundle bundle = getIntent().getExtras();
 
@@ -51,17 +46,15 @@ public class BgEditActivity extends Activity {
     }
 
     // Load the file we are editing
-    String tileName = (String) bundle.get(BgEditActivity.SELECTED_TILE);
-    if ((tileName != null) && !"".equals(tileName)) {
-      Game game = GameUtils.getGame();
-      tile = game.getBgTiles().get(tileName);
+    String tileId = (String) bundle.get(BgEditActivity.SELECTED_TILE_ID);
+    if ((tileId != null) && !"".equals(tileId)) {
+      tile = GameUtils.getGame().getBgTiles().get(tileId);
       setUiFromTile();
-      origTileName = tileName;
-      Log.d("bgEdit", "begin editing selected tile "+tileName);
+      Log.d("bgEdit", "begin editing selected tile "+tile.getName());
     }
 
     if (tile == null) {
-      tile = new BgTile();
+      tile = new BgTile(Utils.generateUniqueId());
     }
   }
 
@@ -78,27 +71,9 @@ public class BgEditActivity extends Activity {
       return;
     }
 
-    // If name is changing update all the links
-    if (!tile.getName().equals(origTileName)) {
-      for (BgMap bgMap : game.getBgMaps()) {
-        if (origTileName.equals(bgMap.getName())) {
-          bgMap.setName(tile.getName());
-        }
-      } //for
-      for (TileGroup group : game.getTileGroups()) {
-        for (TileTypeLink link : group.getTileLinks()) {
-          if ( origTileName.equals(link.getName()) &&
-              (link.getTileType() == TileType.TILE_TYPE.BACKGROUND)) {
-            link.setName(tile.getName());
-          }
-        }
-      } // for
-    }
-
-    bgTiles.remove(origTileName);
-    bgTiles.put(tile.getName(), tile);
+    bgTiles.put(tile.getId(), tile);
     GameUtils.saveGame();
-    Log.d("bgEdit", "saving bgTile name="+tile.getName()+" type="+tile.getType()+" orig="+origTileName);
+    Log.d("bgEdit", "saving bgTile name="+tile.getName()+" type="+tile.getType());
     // Go to the list
     Intent myIntent = new Intent(BgEditActivity.this, BgListActivity.class);
     startActivity(myIntent);

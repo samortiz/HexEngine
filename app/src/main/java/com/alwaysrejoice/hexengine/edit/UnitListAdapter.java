@@ -10,7 +10,6 @@ import android.widget.TextView;
 
 import com.alwaysrejoice.hexengine.R;
 import com.alwaysrejoice.hexengine.dto.UnitTile;
-import com.alwaysrejoice.hexengine.util.GameUtils;
 
 import java.util.List;
 
@@ -44,14 +43,13 @@ public class UnitListAdapter extends BaseAdapter {
     LayoutInflater inflater = LayoutInflater.from(context);
     View row = inflater.inflate(R.layout.unit_list_row, parent, false);
     UnitTile unit = this.units.get(position);
-    UnitTile tile = GameUtils.getGame().getUnitTiles().get(unit.getName());
 
     ImageView imageView = (ImageView) row.findViewById(R.id.row_img);
     TextView nameView = (TextView) row.findViewById(R.id.row_name);
     ImageView deleteImg = (ImageView) row.findViewById(R.id.row_delete);
 
-    imageView.setImageBitmap(tile.getBitmap());
-    nameView.setText(tile.getName());
+    imageView.setImageBitmap(unit.getBitmap());
+    nameView.setText(unit.getName());
     deleteImg.setTag(position);
     return (row);
   }

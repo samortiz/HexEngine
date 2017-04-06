@@ -14,10 +14,6 @@ import android.widget.TextView;
 
 import com.alwaysrejoice.hexengine.R;
 import com.alwaysrejoice.hexengine.dto.Game;
-import com.alwaysrejoice.hexengine.dto.TileGroup;
-import com.alwaysrejoice.hexengine.dto.TileType;
-import com.alwaysrejoice.hexengine.dto.TileTypeLink;
-import com.alwaysrejoice.hexengine.dto.UnitMap;
 import com.alwaysrejoice.hexengine.dto.UnitTile;
 import com.alwaysrejoice.hexengine.util.DialogMultiSelect;
 import com.alwaysrejoice.hexengine.util.DialogMultiSelectListener;
@@ -27,9 +23,8 @@ import com.alwaysrejoice.hexengine.util.Utils;
 import java.util.Map;
 
 public class UnitEditActivity extends Activity {
-  public static final String SELECTED_UNIT_NAME = "SELECTED_UNIT_NAME";
+  public static final String SELECTED_UNIT_ID = "SELECTED_UNIT_ID";
   UnitTile unit; // The unit we are currently editing
-  String origUnitName = "";  // name when the edit screen was first invoked
 
   DialogMultiSelect attrDialog;
   DialogMultiSelect moveRestrictDialog;
@@ -51,20 +46,18 @@ public class UnitEditActivity extends Activity {
     }
 
     // Load the file we are editing
-    String unitName = (String) bundle.get(UnitEditActivity.SELECTED_UNIT_NAME);
-    if ((unitName != null) && !"".equals(unitName)) {
-      unit = game.getUnitTiles().get(unitName);
-      origUnitName = unitName;
-      Log.d("unitEdit", "begin editing selected unit "+unitName);
+    String unitId = (String) bundle.get(UnitEditActivity.SELECTED_UNIT_ID);
+    if ((unitId != null) && !"".equals(unitId)) {
+      unit = game.getUnitTiles().get(unitId);
+      Log.d("unitEdit", "begin editing selected unit "+unit.getName());
     }
 
     if (unit == null) {
-      unit = new UnitTile();
-      origUnitName = "";
+      unit = new UnitTile(Utils.generateUniqueId());
     }
 
     Spinner teamSpinner = (Spinner) findViewById(R.id.team_spinner);
-    ArrayAdapter<String> teamAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, game.getTeams());
+    ArrayAdapter<String> teamAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, game.getTeams());
     teamAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
     teamSpinner.setAdapter(teamAdapter);
 
@@ -89,27 +82,9 @@ public class UnitEditActivity extends Activity {
       return;
     }
 
-    // If name is changing update all the links
-    if (!unit.getName().equals(origUnitName)) {
-      for (UnitMap unitMap : game.getUnitMaps()) {
-        if (origUnitName.equals(unitMap.getName())) {
-          unitMap.setName(unit.getName());
-        }
-      } //for
-      for (TileGroup group : game.getTileGroups()) {
-        for (TileTypeLink link : group.getTileLinks()) {
-          if ( origUnitName.equals(link.getName()) &&
-              (link.getTileType() == TileType.TILE_TYPE.UNIT)) {
-            link.setName(unit.getName());
-          }
-        }
-      } // for
-    }
-
-    unitTiles.remove(origUnitName);
-    unitTiles.put(unit.getName(), unit);
+    unitTiles.put(unit.getId(), unit);
     GameUtils.saveGame();
-    Log.d("unitEdit", "saving UnitTile name="+unit.getName()+" orig="+origUnitName);
+    Log.d("unitEdit", "saving UnitTile name="+unit.getName());
     // Go to the list
     Intent myIntent = new Intent(UnitEditActivity.this, UnitListActivity.class);
     startActivity(myIntent);
@@ -266,7 +241,7 @@ public class UnitEditActivity extends Activity {
   public void editDefence(View view) {
     save(view);
     Intent myIntent = new Intent(UnitEditActivity.this, DefenceListActivity.class);
-    myIntent.putExtra(DefenceListActivity.SELECTED_UNIT_NAME, unit.getName());
+    myIntent.putExtra(DefenceListActivity.SELECTED_UNIT_ID, unit.getId());
     startActivity(myIntent);
     Log.d("unitEdit", "goto defence list");
   }

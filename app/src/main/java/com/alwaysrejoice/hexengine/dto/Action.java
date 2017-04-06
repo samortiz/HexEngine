@@ -5,17 +5,30 @@ import java.util.Map;
 
 public class Action {
 
-  private String modName;
+  private String id;
+  private String modId;
   private Map<String, ModParamValue> values = new HashMap<>(); // keyed on var
 
   public Action() {}
 
-  public String getModName() {
-    return modName;
+  public Action(String id) {
+    this.id = id;
   }
 
-  public void setModName(String modName) {
-    this.modName = modName;
+  public String getModId() {
+    return modId;
+  }
+
+  public String getId() {
+    return id;
+  }
+
+  public void setId(String id) {
+    this.id = id;
+  }
+
+  public void setModId(String modId) {
+    this.modId = modId;
   }
 
   public Map<String, ModParamValue> getValues() {
@@ -29,7 +42,8 @@ public class Action {
   @Override
   public String toString() {
     return "Action{" +
-        "modName='" + modName + '\'' +
+        "id='" + id + '\'' +
+        ", modId='" + modId + '\'' +
         ", values=" + values +
         '}';
   }
