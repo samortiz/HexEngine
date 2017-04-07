@@ -76,8 +76,21 @@ public class ActionEditActivity extends Activity {
 
     List<String> modNames = new ArrayList();
     for (String modId : game.getMods().keySet()) {
-      modNames.add(game.getMods().get(modId).getName());
+      Mod mod = game.getMods().get(modId);
+      String modType = mod.getType();
+      if (ActionListActivity.RETURN_LOC_ABILITY_APPLIES.equals(returnLoc)) {
+        // For applies we filter for rules
+        if (Mod.TYPE_RULE.equals(modType) || Mod.TYPE_RULE_LOC.equals(modType)) {
+          modNames.add(mod.getName());
+        }
+      } else {
+        // If it's onStart, onRun, onEnd we filter for mods
+        if (Mod.TYPE_MOD.equals(modType) || Mod.TYPE_MOD_LOC.equals(modType)) {
+          modNames.add(mod.getName());
+        }
+      }
     }
+
     Collections.sort(modNames, String.CASE_INSENSITIVE_ORDER);
     Spinner modSpinner = (Spinner) findViewById(R.id.mod_name_spinner);
     ArrayAdapter<String> typeAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, modNames);
@@ -255,12 +268,21 @@ public class ActionEditActivity extends Activity {
     Log.d("actionEdit", "Saved Action "+action);
     Log.d("", "actionList = "+actionList);
 
-    // Go to the action list (with all the required data to restore it's state passed)
-    Intent myIntent = new Intent(ActionEditActivity.this, ActionListActivity.class);
-    myIntent.putExtra(ActionListActivity.RETURN_LOC, returnLoc);
-    myIntent.putExtra(ActionListActivity.CALLING_OBJ, callingObj);
-    myIntent.putExtra(ActionListActivity.ACTION_LIST, GameUtils.toJson(actionList));
-    startActivity(myIntent);
+    if (ActionListActivity.RETURN_LOC_ABILITY_APPLIES.equals(returnLoc)) {
+      // Go to the ability editor (we are choosing an applies rule)
+      Intent myIntent = new Intent(ActionEditActivity.this, AbilityEditActivity.class);
+      myIntent.putExtra(ActionListActivity.RETURN_LOC, returnLoc);
+      myIntent.putExtra(ActionListActivity.CALLING_OBJ, callingObj);
+      myIntent.putExtra(ActionListActivity.ACTION_LIST, GameUtils.toJson(actionList));
+      startActivity(myIntent);
+    } else {
+      // Go to the action list (with all the required data to restore it's state passed)
+      Intent myIntent = new Intent(ActionEditActivity.this, ActionListActivity.class);
+      myIntent.putExtra(ActionListActivity.RETURN_LOC, returnLoc);
+      myIntent.putExtra(ActionListActivity.CALLING_OBJ, callingObj);
+      myIntent.putExtra(ActionListActivity.ACTION_LIST, GameUtils.toJson(actionList));
+      startActivity(myIntent);
+    }
   }
 
   /**

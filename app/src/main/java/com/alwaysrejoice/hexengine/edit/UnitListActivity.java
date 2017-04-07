@@ -22,7 +22,7 @@ import java.util.Collections;
 import java.util.Map;
 
 /**
- * Displays and handles events for the list of games screen
+ * Displays and handles events for the list of units screen
  */
 public class UnitListActivity extends Activity implements AdapterView.OnItemClickListener {
   ListView list;

@@ -6,9 +6,11 @@ import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
+import android.widget.Spinner;
 
 import com.alwaysrejoice.hexengine.dto.Damage;
 
@@ -144,6 +146,34 @@ public class Utils {
     list.add(a);
     list.add(b);
     return list;
+  }
+
+
+  /**
+   * Setup a spinner with the supplied values
+   */
+  public static void setupSpinner(Spinner spinner, List<String> values) {
+    ArrayAdapter<String> adapter = new ArrayAdapter<>(spinner.getContext(), android.R.layout.simple_spinner_item, values);
+    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+    spinner.setAdapter(adapter);
+  }
+
+  /**
+   * Sets the spinner to the matching value.
+   */
+  public static String getSpinnerValue(Spinner spinner) {
+    ArrayAdapter<String> adapter = (ArrayAdapter<String>)spinner.getAdapter();
+    return adapter.getItem(spinner.getSelectedItemPosition());
+  }
+
+  /**
+   * Sets the selected item in the spinner to match the value.
+   * If the value is not in the list, then it will set the spinner to the first item.
+   */
+  public static void setSpinnerValue(Spinner spinner, String value) {
+    ArrayAdapter<String> adapter = (ArrayAdapter<String>)spinner.getAdapter();
+    int selectedIndex = Math.max(0, adapter.getPosition(value));
+    spinner.setSelection(selectedIndex);
   }
 
 }

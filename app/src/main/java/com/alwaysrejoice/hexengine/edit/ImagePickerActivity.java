@@ -33,6 +33,7 @@ public class ImagePickerActivity extends Activity {
   public static final String RETURN_BG = "BG";
   public static final String RETURN_UNIT = "UNIT";
   public static final String RETURN_EFFECT = "EFFECT";
+  public static final String RETURN_ABILITY = "ABILITY";
 
   ListView list;
 
@@ -58,6 +59,8 @@ public class ImagePickerActivity extends Activity {
       tempTile = GameUtils.jsonToUnitTile(tileJson);
     } else if (RETURN_EFFECT.equals(returnLoc)) {
       tempTile = GameUtils.jsonToEffectTile(tileJson);
+    } else if (RETURN_ABILITY.equals(returnLoc)) {
+      tempTile = GameUtils.jsonToAbility(tileJson);
     } else {
       Log.e("imagePicker", "Error! Unknown returnLoc="+returnLoc);
     }
@@ -81,6 +84,8 @@ public class ImagePickerActivity extends Activity {
       extDir = FileUtils.IMAGE_UNITS_DIR;
     } else if (RETURN_EFFECT.equals(returnLoc)) {
       extDir = FileUtils.IMAGE_EFFECTS_DIR;
+    } else if (RETURN_ABILITY.equals(returnLoc)) {
+      extDir = FileUtils.IMAGE_UNITS_DIR; // TODO: Should have it's own directory
     }
     List<String> fileNames = new ArrayList<>();
     fileNames.addAll(Arrays.asList(FileUtils.getExtPath(extDir).list()));
@@ -113,6 +118,8 @@ public class ImagePickerActivity extends Activity {
             myIntent = new Intent(ImagePickerActivity.this, UnitEditActivity.class);
           } else if (RETURN_EFFECT.equals(returnLoc)) {
             myIntent = new Intent(ImagePickerActivity.this, EffectEditActivity.class);
+          } else if (RETURN_ABILITY.equals(returnLoc)) {
+            myIntent = new Intent(ImagePickerActivity.this, AbilityEditActivity.class);
           }
           if (myIntent != null) {
             Log.d("imagePicker", "returning tile="+tile);

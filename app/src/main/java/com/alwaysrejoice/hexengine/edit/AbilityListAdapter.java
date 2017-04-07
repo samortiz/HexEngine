@@ -9,26 +9,26 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.alwaysrejoice.hexengine.R;
-import com.alwaysrejoice.hexengine.dto.Mod;
+import com.alwaysrejoice.hexengine.dto.Ability;
 
 import java.util.List;
 
-public class ModListAdapter extends BaseAdapter {
+public class AbilityListAdapter extends BaseAdapter {
 
   private Context context;
-  private List<Mod> mods;
+  private List<Ability> abilities;
 
-  public ModListAdapter(Context context, List<Mod> mods) {
+  public AbilityListAdapter(Context context, List<Ability> abilities) {
     this.context = context;
-    this.mods = mods;
+    this.abilities = abilities;
   }
 
   public int getCount() {
-    return mods.size();
+    return abilities.size();
   }
 
-  public Mod getItem(int arg0) {
-    return mods.get(arg0);
+  public Ability getItem(int arg0) {
+    return abilities.get(arg0);
   }
 
   public long getItemId(int position) {
@@ -36,16 +36,19 @@ public class ModListAdapter extends BaseAdapter {
   }
 
   public void removeItem(int position) {
-    mods.remove(position);
+    abilities.remove(position);
   }
 
   public View getView(int position, View convertView, ViewGroup parent) {
     LayoutInflater inflater = LayoutInflater.from(context);
-    View row = inflater.inflate(R.layout.mod_list_row, parent, false);
-    Mod mod = this.mods.get(position);
+    View row = inflater.inflate(R.layout.ability_list_row, parent, false);
+    Ability ability = this.abilities.get(position);
+
+    ImageView imageView = (ImageView) row.findViewById(R.id.row_img);
+    imageView.setImageBitmap(ability.getBitmap());
 
     TextView nameView = (TextView) row.findViewById(R.id.row_name);
-    nameView.setText(mod.getName()+" ("+mod.getType()+")");
+    nameView.setText(ability.getName());
 
     ImageView deleteImg = (ImageView) row.findViewById(R.id.row_delete);
     deleteImg.setTag(position);

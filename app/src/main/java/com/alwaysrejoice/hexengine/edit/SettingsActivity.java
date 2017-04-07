@@ -30,6 +30,12 @@ public class SettingsActivity extends Activity {
     Log.d("settings", "goto Unit List");
   }
 
+  public void gotoAbilityList(View view) {
+    Intent myIntent = new Intent(SettingsActivity.this, AbilityListActivity.class);
+    startActivity(myIntent);
+    Log.d("settings", "goto Ability List");
+  }
+
   public void gotoModList(View view) {
     Intent myIntent = new Intent(SettingsActivity.this, ModListActivity.class);
     startActivity(myIntent);

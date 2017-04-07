@@ -109,10 +109,7 @@ public class UnitEditActivity extends Activity {
     EditText nameInput = (EditText) findViewById(R.id.unit_name);
     unit.setName(nameInput.getText().toString().trim());
 
-    Spinner teamSpinner = (Spinner) findViewById(R.id.team_spinner);
-    ArrayAdapter<String> typeAdapter = (ArrayAdapter<String>)teamSpinner.getAdapter();
-    String team = typeAdapter.getItem(teamSpinner.getSelectedItemPosition());
-    unit.setTeam(team);
+    unit.setTeam(Utils.getSpinnerValue((Spinner)findViewById(R.id.team_spinner)));
 
     EditText hpInput = (EditText) findViewById(R.id.hp_input);
     unit.setHpMax(Utils.stringToDouble(hpInput.getText().toString().trim()));
@@ -149,10 +146,7 @@ public class UnitEditActivity extends Activity {
     EditText nameInput = (EditText) findViewById(R.id.unit_name);
     nameInput.setText(unit.getName());
 
-    Spinner teamSpinner = (Spinner) findViewById(R.id.team_spinner);
-    ArrayAdapter<String> teamAdapter = (ArrayAdapter<String>)teamSpinner.getAdapter();
-    int selectedTeamIndex = Math.max(0, teamAdapter.getPosition(unit.getTeam()));
-    teamSpinner.setSelection(selectedTeamIndex);
+    Utils.setSpinnerValue((Spinner) findViewById(R.id.team_spinner), unit.getTeam());
 
     EditText hpInput = (EditText) findViewById(R.id.hp_input);
     hpInput.setText(Utils.doubleToString(unit.getHpMax()));
@@ -215,7 +209,7 @@ public class UnitEditActivity extends Activity {
   }
 
   /**
-   * Called when the user clicks on the pencil to edit the move restrictions
+   * Called when the user clicks on the pencil to edit the sight restrictions
    */
   public void chooseSightRestrict(View view) {
     sightRestrictDialog.showDialog(new DialogMultiSelectListener() {

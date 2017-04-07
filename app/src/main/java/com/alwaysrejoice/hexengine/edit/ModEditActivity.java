@@ -25,7 +25,7 @@ import static com.alwaysrejoice.hexengine.util.Utils.setListViewHeight;
 
 public class ModEditActivity extends Activity {
   public static final String SELECTED_MOD_ID = "SELECTED_MOD_ID";
-  public static final String[] MOD_TYPES = {"Mod", "Rule", "ModLoc", "RuleLoc"};
+  public static final String[] MOD_TYPES = {Mod.TYPE_MOD, Mod.TYPE_MOD_LOC, Mod.TYPE_RULE, Mod.TYPE_RULE_LOC};
 
   Mod mod; // The mod we are currently editing
   int typeSelectedIndex = 0; // which type is currently selected

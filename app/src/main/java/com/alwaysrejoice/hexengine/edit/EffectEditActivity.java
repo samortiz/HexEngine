@@ -179,20 +179,9 @@ public class EffectEditActivity extends Activity {
     }
     nameInput.setText(effect.getName());
     durationInput.setText(Utils.intToString(effect.getDuration()));
-    onRun.setText(actionsToString(effect.getOnRun()));
-    onEnd.setText(actionsToString(effect.getOnEnd()));
+    onRun.setText(GameUtils.actionsToString(effect.getOnRun()));
+    onEnd.setText(GameUtils.actionsToString(effect.getOnEnd()));
     stackable.setChecked(effect.isStackable());
-  }
-
-  public String actionsToString(List<Action> actions) {
-    if (actions == null) {
-      return "";
-    }
-    StringBuffer str = new StringBuffer();
-    for (Action action : actions) {
-      str.append(" "+GameUtils.getModNameFromId(action.getModId()));
-    }
-    return str.toString().trim();
   }
 
   public void showError(String errorMsg) {

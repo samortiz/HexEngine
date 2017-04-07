@@ -8,7 +8,7 @@ public class Mod implements Comparable {
   public static final String TYPE_MOD="mod";
   public static final String TYPE_RULE="rule";
   public static final String TYPE_MOD_LOC="modloc";
-  public static final String TYPE_RULE_LOCK="ruleloc";
+  public static final String TYPE_RULE_LOC="ruleloc";
 
   private String id;
   private String name;

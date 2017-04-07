@@ -21,6 +21,7 @@ public class Game {
   private List<TileGroup> tileGroups = new ArrayList();
   private Map<String, Mod> mods = new HashMap(); // keyed on id
   private Map<String, Effect> effects = new HashMap(); // keyed on id
+  private Map<String, Ability> abilities = new HashMap(); // keyed on id
 
   // Lists of Strings
   private List<String> teams = new ArrayList<>();
@@ -92,6 +93,14 @@ public class Game {
     this.effects = effects;
   }
 
+  public Map<String, Ability> getAbilities() {
+    return abilities;
+  }
+
+  public void setAbilities(Map<String, Ability> abilities) {
+    this.abilities = abilities;
+  }
+
   public List<String> getTeams() {
     return teams;
   }
@@ -124,6 +133,7 @@ public class Game {
     this.attr = attr;
   }
 
+  @Override
   public String toString() {
     return "Game{" +
         "gameInfo=" + gameInfo +
@@ -134,6 +144,7 @@ public class Game {
         ", tileGroups=" + tileGroups +
         ", mods=" + mods +
         ", effects=" + effects +
+        ", abilities=" + abilities +
         ", teams=" + teams +
         ", bgTypes=" + bgTypes +
         ", damageTypes=" + damageTypes +
@@ -150,13 +161,13 @@ public class Game {
     game.setDamageTypes(Utils.makeList("Slash", "Poison"));
     game.setBgTypes(Utils.makeList("Grass", "Water"));
 
-    ModParam damage = new ModParam("damage", ModParam.TYPE.Damage);
     List<ModParam> params = new ArrayList<>();
-    params.add(damage);
-    Mod mod = new Mod(Utils.generateUniqueId(), "Damage", Mod.TYPE_MOD, params, "applyDamage(self, target, damage);");
-    Map<String, Mod> modMap = new HashMap();
-    modMap.put(mod.getId(), mod);
-    game.setMods(modMap);
+    params.add(new ModParam("damage", ModParam.TYPE.Damage));
+    Mod dmg = new Mod(Utils.generateUniqueId(), "Damage", Mod.TYPE_MOD, params, "applyDamage(self, target, damage);");
+    game.getMods().put(dmg.getId(), dmg);
+
+    Mod mod = new Mod(Utils.generateUniqueId(), "All", Mod.TYPE_RULE, new ArrayList<ModParam>(), "return true");
+    game.getMods().put(mod.getId(), mod);
   }
 
 

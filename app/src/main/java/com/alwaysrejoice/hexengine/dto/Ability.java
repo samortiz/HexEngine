@@ -6,18 +6,36 @@ import android.support.annotation.NonNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Ability implements Comparable {
+public class Ability implements TileType, Comparable {
 
-  private String name = "";
+  private String id;
+  private String name;
   private Bitmap bitmap;
   private Action applies;
   private int range;
-  private List<String> rangeRestrict;
+  private List<String> rangeRestrict = new ArrayList<>();
   private double actionCost;
   private List<Action> onStart = new ArrayList<>();
-  private Effect effect = null;
+  private String effectId;
 
   public Ability() {}
+
+  public Ability(String id) {
+    this.id = id;
+  }
+
+  @Override
+  public TILE_TYPE getTileType() {
+    return TileType.TILE_TYPE.ABILITY;
+  }
+
+  public String getId() {
+    return id;
+  }
+
+  public void setId(String id) {
+    this.id = id;
+  }
 
   public String getName() {
     return name;
@@ -75,30 +93,32 @@ public class Ability implements Comparable {
     this.onStart = onStart;
   }
 
-  public Effect getEffect() {
-    return effect;
+  public String getEffectId() {
+    return effectId;
   }
 
-  public void setEffect(Effect effect) {
-    this.effect = effect;
+  public void setEffectId(String effectId) {
+    this.effectId = effectId;
   }
 
   @Override
   public int compareTo(@NonNull Object o) {
+    if (o == null) return 0;
     return name.toLowerCase().compareTo(((Ability)o).getName().toLowerCase());
   }
 
   @Override
   public String toString() {
     return "Ability{" +
-        "name='" + name + '\'' +
+        "id='" + id + '\'' +
+        ", name='" + name + '\'' +
         ", bitmap=" + bitmap +
         ", applies=" + applies +
         ", range=" + range +
         ", rangeRestrict=" + rangeRestrict +
         ", actionCost=" + actionCost +
         ", onStart=" + onStart +
-        ", effect=" + effect +
+        ", effectId='" + effectId + '\'' +
         '}';
   }
 }

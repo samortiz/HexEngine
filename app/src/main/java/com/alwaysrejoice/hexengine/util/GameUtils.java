@@ -3,6 +3,7 @@ package com.alwaysrejoice.hexengine.util;
 import android.graphics.Bitmap;
 import android.util.Log;
 
+import com.alwaysrejoice.hexengine.dto.Ability;
 import com.alwaysrejoice.hexengine.dto.Action;
 import com.alwaysrejoice.hexengine.dto.BgTile;
 import com.alwaysrejoice.hexengine.dto.BitmapGsonAdapter;
@@ -22,6 +23,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import static com.alwaysrejoice.hexengine.util.FileUtils.MOD_DIR;
@@ -133,6 +135,10 @@ public class GameUtils {
     return gson.fromJson(json, Effect.class);
   }
 
+  public static Ability jsonToAbility(String json) {
+    return gson.fromJson(json, Ability.class);
+  }
+
   public static ArrayList<Action> jsonToActionList(String json) {
     return gson.fromJson(json, new TypeToken<ArrayList<Action>>(){}.getType());
   }
@@ -194,5 +200,17 @@ public class GameUtils {
     }
     return mod.getName();
   }
+
+  public static String actionsToString(List<Action> actions) {
+    if (actions == null) {
+      return "";
+    }
+    StringBuffer str = new StringBuffer();
+    for (Action action : actions) {
+      str.append(" "+GameUtils.getModNameFromId(action.getModId()));
+    }
+    return str.toString().trim();
+  }
+
 
 }

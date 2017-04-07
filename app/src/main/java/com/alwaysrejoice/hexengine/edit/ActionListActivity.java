@@ -24,6 +24,8 @@ public class ActionListActivity extends Activity implements AdapterView.OnItemCl
   public static final String RETURN_LOC = "ACTION_LIST_RETURN_LOC";
   public static final String RETURN_LOC_EFFECT_ONRUN = "RETURN_LOC_EFFECT_ONRUN";
   public static final String RETURN_LOC_EFFECT_ONEND = "RETURN_LOC_EFFECT_ONEND";
+  public static final String RETURN_LOC_ABILITY = "RETURN_LOC_ABILITY";
+  public static final String RETURN_LOC_ABILITY_APPLIES = "RETURN_LOC_ABILITY_APPLIES";
 
   // IN+OUT calling class object (will be passed back to caller as is)
   public static final String CALLING_OBJ = "ACTION_CALLING_OBJ";
@@ -54,7 +56,6 @@ public class ActionListActivity extends Activity implements AdapterView.OnItemCl
     // Inputs
     callingObjJson = (String) bundle.get(CALLING_OBJ);
     returnLoc = (String) bundle.get(RETURN_LOC);
-
     if (returnLoc == null) {
       throw new RuntimeException("Error! You must specify a RETURN_LOC when calling ActionListActivity");
     }
@@ -103,6 +104,11 @@ public class ActionListActivity extends Activity implements AdapterView.OnItemCl
       myIntent.putExtra(CALLING_OBJ, callingObjJson);
       myIntent.putExtra(ACTION_LIST, GameUtils.toJson(actions));
       myIntent.putExtra(RETURN_LOC, returnLoc);
+    } else if (RETURN_LOC_ABILITY.equals(returnLoc)) {
+        myIntent = new Intent(ActionListActivity.this, AbilityEditActivity.class);
+        myIntent.putExtra(CALLING_OBJ, callingObjJson);
+        myIntent.putExtra(ACTION_LIST, GameUtils.toJson(actions));
+        myIntent.putExtra(RETURN_LOC, returnLoc);
     } else {
       throw new RuntimeException("Error in ActionListActivity.goBack() Unknown returnLoc="+returnLoc);
     }
@@ -115,7 +121,7 @@ public class ActionListActivity extends Activity implements AdapterView.OnItemCl
   public void create(View view) {
     Log.d("actionList", "Create New");
     Intent myIntent = new Intent(ActionListActivity.this, ActionEditActivity.class);
-    myIntent.putExtra(ActionEditActivity.SELECTED_ACTION_INDEX, Integer.toString(-1));
+    myIntent.putExtra(ActionEditActivity.SELECTED_ACTION_INDEX, "-1");
     // Maintain the state of this object
     myIntent.putExtra(RETURN_LOC, returnLoc);
     myIntent.putExtra(CALLING_OBJ, callingObjJson);
