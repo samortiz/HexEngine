@@ -20,9 +20,9 @@ public class UnitTile implements TileType {
   private List<String> moveRestrict = new ArrayList<>();
   private int sightRange;
   private List<String> sightRestrict = new ArrayList<>();
-  List<Ability> abilities = new ArrayList<>();
+  List<String> abilityIds = new ArrayList<>(); // ability ids
   List<Damage> defence = new ArrayList<>();
-  private List<Effect> effects = new ArrayList<>();
+  private List<String> effectIds = new ArrayList<>(); // effect ids
   private Map<String, String> storage = new HashMap<>();
 
   public UnitTile() {
@@ -130,14 +130,13 @@ public class UnitTile implements TileType {
     this.sightRestrict = sightRestrict;
   }
 
-  public List<Ability> getAbilities() {
-    return abilities;
+  public List<String> getAbilityIds() {
+    return abilityIds;
   }
 
-  public void setAbilities(List<Ability> abilities) {
-    this.abilities = abilities;
+  public void setAbilityIds(List<String> abilityIds) {
+    this.abilityIds = abilityIds;
   }
-
   public List<Damage> getDefence() {
     return defence;
   }
@@ -146,12 +145,12 @@ public class UnitTile implements TileType {
     this.defence = defence;
   }
 
-  public List<Effect> getEffects() {
-    return effects;
+  public List<String> getEffectIds() {
+    return effectIds;
   }
 
-  public void setEffects(List<Effect> effects) {
-    this.effects = effects;
+  public void setEffectIds(List<String> effectIds) {
+    this.effectIds = effectIds;
   }
 
   public Map<String, String> getStorage() {
@@ -164,9 +163,7 @@ public class UnitTile implements TileType {
 
   @Override
   public int compareTo(Object o) {
-    if (o == null) {
-      return 0;
-    }
+    if (o == null) return 0;
     return this.getName().compareTo(((TileType) o).getName());
   }
 
@@ -184,9 +181,9 @@ public class UnitTile implements TileType {
         ", moveRestrict=" + moveRestrict +
         ", sightRange=" + sightRange +
         ", sightRestrict=" + sightRestrict +
-        ", abilities=" + abilities +
+        ", abilityIds=" + abilityIds +
         ", defence=" + defence +
-        ", effects=" + effects +
+        ", effectIds=" + effectIds +
         ", storage=" + storage +
         '}';
   }

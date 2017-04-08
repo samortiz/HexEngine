@@ -5,27 +5,28 @@ Map Editor
  - Boundary checks for tile placement
  - zoom on border causes warp
  - Toobar popup on right border with >1 column
- - Clear background behind buttons (units have transparent backgrounds)
+ - Clear background behind selected button (units have transparent backgrounds)
+
+Ability Editor
+ - When deleting an ability update units to remove selected abilityId
+ - Make some default graphics for abilities (sword, zap, web, heal, shield)
+
+Effect Editor
+ - When deleting an effect : remove effect from unit, and abilities
 
 Game 
  - Remove out-of-bounds tiles from map when resizing to smaller size
 
 Unit Editor
- - Edit Abilities
- - Edit Effects (chooser)
  - Edit Storage 
 
-Ability Editor
- - Global editor from settings
- - Unit specific editor (chooser)
- 
 Mod Editor
- - Update mod links in abilities when deleting mod
+ - When deleting mod : remove from all Actions in Abilities and Effects
  - In list prevent deleting the last item (or it causes the spinner to crash)
 
-Sync (Write and Load)
- - Sync Mods to disk
- - Sync Attributes to disk
- - Sync Units to disk 
- - Sync BG to disk
+Sync (Store and Load)
+ - Sync: BG, Units, Abilities, Mods, Effects
 
+
+Optional : 
+ - add confirm to delete, especially when it's really destructive

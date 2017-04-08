@@ -14,12 +14,17 @@ import android.widget.TextView;
 
 import com.alwaysrejoice.hexengine.R;
 import com.alwaysrejoice.hexengine.dto.Game;
+import com.alwaysrejoice.hexengine.dto.TileType;
 import com.alwaysrejoice.hexengine.dto.UnitTile;
 import com.alwaysrejoice.hexengine.util.DialogMultiSelect;
 import com.alwaysrejoice.hexengine.util.DialogMultiSelectListener;
+import com.alwaysrejoice.hexengine.util.DialogMultiSelectTileType;
 import com.alwaysrejoice.hexengine.util.GameUtils;
 import com.alwaysrejoice.hexengine.util.Utils;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 public class UnitEditActivity extends Activity {
@@ -29,6 +34,12 @@ public class UnitEditActivity extends Activity {
   DialogMultiSelect attrDialog;
   DialogMultiSelect moveRestrictDialog;
   DialogMultiSelect sightRestrictDialog;
+
+  DialogMultiSelectTileType abilityDialog;
+  List<TileType> unitAbilities; // Actually contains abilities
+
+  DialogMultiSelectTileType effectDialog;
+  List<TileType> unitEffects; // Actually contains effects
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +76,25 @@ public class UnitEditActivity extends Activity {
     moveRestrictDialog = new DialogMultiSelect(this, "Move Restrictions", game.getBgTypes(), unit.getMoveRestrict());
     sightRestrictDialog = new DialogMultiSelect(this, "Sight Restrictions", game.getBgTypes(), unit.getSightRestrict());
 
+    List<TileType> abilities = new ArrayList<>();
+    abilities.addAll(game.getAbilities().values());
+    Collections.sort(abilities);
+    unitAbilities = new ArrayList<>();
+    for (String abilityId : unit.getAbilityIds()) {
+      unitAbilities.add(game.getAbilities().get(abilityId));
+    }
+    abilityDialog = new DialogMultiSelectTileType(this, "Abilities", abilities, unitAbilities);
+
+
+    List<TileType> effects = new ArrayList<>();
+    effects.addAll(game.getEffects().values());
+    Collections.sort(effects);
+    unitEffects = new ArrayList<>();
+    for (String effectId : unit.getEffectIds()) {
+      unitEffects.add(game.getEffects().get(effectId));
+    }
+    effectDialog = new DialogMultiSelectTileType(this, "Effects", effects, unitEffects);
+
     // Load the UI with the unit data
     setUiFromUnit();
   }
@@ -80,6 +110,18 @@ public class UnitEditActivity extends Activity {
     if ("".equals(unit.getName())) {
       showError("You must enter a name.");
       return;
+    }
+
+    // Clear and re-add all the selected ability ids
+    unit.getAbilityIds().clear();
+    for (TileType t : unitAbilities) {
+      unit.getAbilityIds().add(t.getId());
+    }
+
+    // Clear and re-add all the selected effect ids
+    unit.getEffectIds().clear();
+    for (TileType t : unitEffects) {
+      unit.getEffectIds().add(t.getId());
     }
 
     unitTiles.put(unit.getId(), unit);
@@ -169,8 +211,14 @@ public class UnitEditActivity extends Activity {
     TextView sightRestrictText = (TextView) findViewById(R.id.sight_restrict);
     sightRestrictText.setText(Utils.toCSV(unit.getSightRestrict()));
 
+    TextView abilityText = (TextView) findViewById(R.id.abilities);
+    abilityText.setText(Utils.tileTypeToCSV(unitAbilities));
+
     TextView defenceText = (TextView) findViewById(R.id.defence);
     defenceText.setText(Utils.damageToCSV(unit.getDefence()));
+
+    TextView effectText = (TextView) findViewById(R.id.effects);
+    effectText.setText(Utils.tileTypeToCSV(unitEffects));
 
   }
 
@@ -222,8 +270,14 @@ public class UnitEditActivity extends Activity {
   }
 
   public void editAbilities(View view) {
-    // TODO
     Log.d("unitEdit", "Edit abilities");
+    abilityDialog.showDialog(new DialogMultiSelectListener() {
+      @Override
+      public void onOK() {
+        TextView textView = (TextView) findViewById(R.id.abilities);
+        textView.setText(Utils.tileTypeToCSV(unitAbilities));
+      }
+    });
   }
 
   /**
@@ -241,8 +295,14 @@ public class UnitEditActivity extends Activity {
   }
 
   public void editEffects(View view) {
-    // TODO
     Log.d("unitEdit", "Edit effects");
+    effectDialog.showDialog(new DialogMultiSelectListener() {
+      @Override
+      public void onOK() {
+        TextView textView = (TextView) findViewById(R.id.effects);
+        textView.setText(Utils.tileTypeToCSV(unitEffects));
+      }
+    });
   }
 
   public void editStorage(View view) {

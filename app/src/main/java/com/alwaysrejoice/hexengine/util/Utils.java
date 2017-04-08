@@ -13,6 +13,7 @@ import android.widget.RelativeLayout;
 import android.widget.Spinner;
 
 import com.alwaysrejoice.hexengine.dto.Damage;
+import com.alwaysrejoice.hexengine.dto.TileType;
 
 import java.nio.ByteBuffer;
 import java.text.DecimalFormat;
@@ -102,6 +103,19 @@ public class Utils {
       Damage dmg = list.get(i);
       if (dmg != null) {
         csv.append(dmg.getDisplayText());
+      }
+    }
+    return csv.toString();
+  }
+
+  public static String tileTypeToCSV(List<TileType> list) {
+    if (list == null) return "";
+    StringBuilder csv = new StringBuilder();
+    for (int i=0; i<list.size(); i++) {
+      if (i != 0) csv.append(", ");
+      TileType t = list.get(i);
+      if (t != null) {
+        csv.append(t.getName());
       }
     }
     return csv.toString();
