@@ -4,8 +4,6 @@ Map Editor
  - Warped starting view with irregular board size (should use min size)
  - Boundary checks for tile placement
  - zoom on border causes warp
- - Toobar popup on right border with >1 column
- - Clear background behind selected button (units have transparent backgrounds)
 
 Ability Editor
  - Make some default graphics for abilities (sword, zap, web, heal, shield)
@@ -15,6 +13,7 @@ Game
 
 Unit Editor
  - Edit Storage 
+
 
 
 Optional : 

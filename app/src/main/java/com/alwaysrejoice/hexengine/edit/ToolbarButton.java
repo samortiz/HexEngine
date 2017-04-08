@@ -10,6 +10,10 @@ import java.util.List;
 
 public class ToolbarButton {
 
+  // NOTE : This id is NOT the unique identifier for this ToolbarButton
+  // It is the id of the tile contained in this button.
+  // That means there could be two toolbar buttons with the same ID
+  // You need to do a compare like (buttonA == buttonB) to determine identity
   private String id;
   private String name;
   private TileType.TILE_TYPE type;
@@ -18,6 +22,7 @@ public class ToolbarButton {
   private ToolbarButton parent = null;
   private List<ToolbarButton> children = new ArrayList<ToolbarButton>();
   private Rect popupPosition;
+  private boolean longAlternateLayout = false;
 
   // Constructors
   public ToolbarButton() { }
@@ -100,6 +105,14 @@ public class ToolbarButton {
     this.popupPosition = popupPosition;
   }
 
+  public boolean isLongAlternateLayout() {
+    return longAlternateLayout;
+  }
+
+  public void setLongAlternateLayout(boolean longAlternateLayout) {
+    this.longAlternateLayout = longAlternateLayout;
+  }
+
   @Override
   public String toString() {
     return "ToolbarButton{" +
@@ -108,9 +121,20 @@ public class ToolbarButton {
         ", type=" + type +
         ", img=" + img +
         ", position=" + position +
-        ", parent=" + parent +
-        ", children=" + children +
+        ", parentName=" + ((parent != null) ? parent.getName() : "none") +
+        ", children =" + getChildrenNames()+ // Prevent infinite loop by printing parent
         ", popupPosition=" + popupPosition +
+        ", longAlternateLayout="+ longAlternateLayout+
         '}';
   }
+
+  /** Returns the names of the child buttons */
+  public List<String> getChildrenNames() {
+    List<String> childNames = new ArrayList<>();
+    for (ToolbarButton child : getChildren()) {
+      childNames.add(child.getName());
+    }
+    return childNames;
+  }
+
 }

@@ -57,26 +57,17 @@ public class Toolbar {
     borderPaint.setStyle(Paint.Style.STROKE);
     borderPaint.setStrokeWidth(4);
 
-    Log.d("toolbar", "loaded img");
-    // Setup the toolbar
-    if (screenHeight > screenWidth) {
-      // Portrait
-      toolbarHeight = screenHeight - viewSizeY;
-      toolbarWidth = screenWidth;
-      toolbarX = 0;
-      toolbarY = viewSizeY + 1;
-    } else {
-      // Landscape
-      toolbarHeight = screenHeight;
-      toolbarWidth = screenWidth - screenHeight;
-      toolbarX = toolbarWidth;
-      toolbarY = 0;
-    }
+    // Portrait
+    toolbarHeight = screenHeight - viewSizeY;
+    toolbarWidth = screenWidth;
+    toolbarX = 0;
+    toolbarY = viewSizeY + 1;
+
     toolbarWindow = new Rect(toolbarX, toolbarY, toolbarX + toolbarWidth, toolbarY + toolbarHeight);
     // Toolbar buttons
     toolbarButtons = new ArrayList<>();
     int buttonWidth = toolbarWidth / TOOLBAR_BUTTONS_PER_ROW;
-    int buttonHeight = buttonWidth;
+    int buttonHeight = buttonWidth; // (int)Math.round((double)buttonWidth * Math.sqrt(3.0) / 2.0);
     int buttonX = -buttonWidth; // so we can pre-increment
     int buttonY = toolbarY;
     Log.d("toolbar", "toolbarWidth="+toolbarWidth+" toolbarHeight="+toolbarHeight+" buttonWidth="+buttonWidth+" buttonHeight="+buttonHeight+" toolbarY="+toolbarY);
@@ -101,6 +92,9 @@ public class Toolbar {
       }
       groups.add(thisGroup);
     }
+
+    // Contains parent buttons whose children are too large fit using the standard layout
+    List<ToolbarButton> popupTooLarge = new ArrayList<>();
 
     // Setup the custom buttons
     for (List<TileType> group : groups) {
@@ -136,6 +130,11 @@ public class Toolbar {
           ToolbarButton newButton = new ToolbarButton(tile.getId(), tile.getName(), tile.getTileType(), tile.getBitmap(),
               new Rect(childLeft, childTop, childRight, childBottom), parentButton);
           parentButton.addChild(newButton);
+          if (childRight > screenWidth) {
+            if (!popupTooLarge.contains(parentButton)) {
+              popupTooLarge.add(parentButton);
+            }
+          }
           Log.d("toolbar", "added child " + newButton.getName() + " position=" + newButton.getPosition());
         }
       } // for tile
@@ -158,6 +157,34 @@ public class Toolbar {
       Rect popupPosition = new Rect(button.getPosition().left, buttonTop-popupHeight, button.getPosition().right+((colCount-1)*buttonWidth), buttonTop);
       button.setPopupPosition(popupPosition);
 
+      if (popupTooLarge.contains(button)) {
+        Log.d("toolbar", "Setting up the alternate layout for button="+button);
+        int childLeft = 0;
+        int childTop = 0;
+        int childRight = buttonWidth;
+        int childBottom = buttonHeight;
+        button.getChildren().add(0, new ToolbarButton(button.getId(), button.getName(), button.getType(), button.getImg(),
+            new Rect(childLeft, childTop, childRight, childBottom), button));
+        // Skip the first child, since we have already set the position in the above line
+        for (int i=1; i<button.getChildren().size(); i++) {
+          ToolbarButton child = button.getChildren().get(i);
+          childLeft += buttonWidth;
+          if ((childLeft + buttonWidth) > screenWidth) {
+            childLeft = 0;
+            childTop += buttonHeight;
+          }
+          childRight = childLeft + buttonWidth;
+            childBottom = childTop + buttonHeight;
+          child.setPosition(new Rect(childLeft, childTop, childRight, childBottom));
+        } // for
+        button.setPopupPosition(new Rect(0, 0, screenWidth, childBottom));
+        // If the alternate layout impinges on the toolbar, then we won't draw toolbar buttons
+        // when the alternateLayout is showing (or listen for clicks on them!)
+        if (childBottom > toolbarY) {
+          button.setLongAlternateLayout(true);
+        }
+      }
+
       Log.d("toolbar", "childCount="+childCount+" colCount="+colCount+ " popupPosition="+popupPosition);
     } // for
 
@@ -174,12 +201,16 @@ public class Toolbar {
     canvas.drawRect(toolbarWindow, fillPaint);
     // First level of buttons (across)
     for (ToolbarButton button : toolbarButtons) {
-      drawButton(button, canvas);
       // Check if the selected button is a child of this button
       if (selectedButton.getParent() == button) {
         // Draw the selected button at the location of the parent
         canvas.drawBitmap(selectedButton.getImg(), null, button.getPosition(), null);
         canvas.drawBitmap(selectedImg, null, button.getPosition(), null);
+      } else {
+        // A child button of this button is not selected (so we need to draw the button)
+        if (!(selectedButton.isLongAlternateLayout() && selectedButtonChildrenVisible)) {
+          drawButton(button, canvas);
+        }
       }
       if (button == selectedButton) {
         canvas.drawBitmap(selectedImg, null, button.getPosition(), null);
@@ -234,8 +265,10 @@ public class Toolbar {
       }
     }
     // The user clicked somewhere without hitting a button
-    if (!handledEvent) {
+    if (!handledEvent && selectedButtonChildrenVisible) {
+      Log.d("toolbar", "clicked without hitting a button");
       selectedButtonChildrenVisible = false;
+      handledEvent = true;
     }
     //Log.d("toolbar", "detector handledEvent="+handledEvent);
     return handledEvent;
@@ -250,13 +283,20 @@ public class Toolbar {
     boolean handledEvent = false;
     // If the click is on this button
     if (button.getPosition().contains((int)x, (int)y) &&
-        // And it's a top level parent
-        ((button.getParent() == null) ||
+        // And it's a top level parent (and there isn't a long popup showing)
+        ((button.getParent() == null)  ||
         // Or it's a visible child button
         (button.getParent() == selectedButton) && selectedButtonChildrenVisible)) {
       Log.d("toolbar", "button selected="+selectedButton.getName()+" clicked="+button.getName()+" x="+x+" y="+y+" pos="+button.getPosition());
       // If we have a main button (no parent)
       if (button.getParent() == null) {
+
+        if (selectedButtonChildrenVisible && selectedButton.isLongAlternateLayout()) {
+          // No click handling for parents when using alternate layout with long data (overlapping the toolbar)
+          Log.d("toolbar", "not drawing parent button when alternateLayout is long");
+          return false;
+        }
+
         if ((selectedButton == button) && selectedButtonChildrenVisible) {
           Log.d("toolbar", "top level button already selected hiding children");
           selectedButtonChildrenVisible = false;
