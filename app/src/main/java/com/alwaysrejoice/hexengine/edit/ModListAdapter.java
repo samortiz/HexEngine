@@ -45,7 +45,7 @@ public class ModListAdapter extends BaseAdapter {
     Mod mod = this.mods.get(position);
 
     TextView nameView = (TextView) row.findViewById(R.id.row_name);
-    nameView.setText(mod.getName()+" ("+mod.getType()+")");
+    nameView.setText(mod.getDisplayString());
 
     ImageView deleteImg = (ImageView) row.findViewById(R.id.row_delete);
     deleteImg.setTag(position);

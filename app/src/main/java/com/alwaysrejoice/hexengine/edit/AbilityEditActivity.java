@@ -166,7 +166,7 @@ public class AbilityEditActivity extends Activity {
     TextView appliesText = (TextView) findViewById(R.id.applies);
     Action applies = ability.getApplies();
     if (applies != null) {
-      appliesText.setText(GameUtils.getModNameFromId(applies.getModId()));
+      appliesText.setText(GameUtils.getModDisplayFromId(applies.getModId()));
     }
 
     EditText rangeInput = (EditText) findViewById(R.id.range_input);
@@ -179,7 +179,7 @@ public class AbilityEditActivity extends Activity {
     actionInput.setText(Utils.doubleToString(ability.getActionCost()));
 
     TextView onStart = (TextView) findViewById(R.id.on_start);
-    onStart.setText(GameUtils.actionsToString(ability.getOnStart()));
+    onStart.setText(GameUtils.actionsToCSV(ability.getOnStart()));
 
     if (ability.getEffectId() != null) {
       Utils.setSpinnerValue((Spinner) findViewById(R.id.effect_spinner),

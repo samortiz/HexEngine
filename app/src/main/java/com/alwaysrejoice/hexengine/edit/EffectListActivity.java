@@ -1,6 +1,8 @@
 package com.alwaysrejoice.hexengine.edit;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -9,8 +11,10 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.alwaysrejoice.hexengine.R;
+import com.alwaysrejoice.hexengine.dto.Ability;
 import com.alwaysrejoice.hexengine.dto.Effect;
 import com.alwaysrejoice.hexengine.dto.Game;
+import com.alwaysrejoice.hexengine.dto.UnitTile;
 import com.alwaysrejoice.hexengine.util.GameUtils;
 
 import java.util.ArrayList;
@@ -58,18 +62,32 @@ public class EffectListActivity extends Activity implements AdapterView.OnItemCl
    * Called when the user clicks "Delete" on a row
    */
   public void delete(View view) {
-    Game game = GameUtils.getGame();
-    int position = (int) view.getTag();
-    Effect effect = (Effect) list.getItemAtPosition(position);
-    Map<String, Effect> effectMap = game.getEffects();
-    effectMap.remove(effect.getId());
-
-    // TODO : Delete all the links pointing to this effect
-
-    GameUtils.saveGame();
-    adapter.removeItem(position);
-    adapter.notifyDataSetChanged();
-    Log.d("effectList", "deleted "+effect.getName());
+    final int position = (int) view.getTag();
+    final Effect effect = (Effect) list.getItemAtPosition(position);
+    new AlertDialog.Builder(this)
+        .setTitle("Confirm Delete")
+        .setMessage("Are you sure you want to delete "+effect.getName()+"?")
+        .setIcon(android.R.drawable.ic_dialog_alert)
+        .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+          public void onClick(DialogInterface dialog, int whichButton) {
+            final Game game = GameUtils.getGame();
+            // Delete all the links pointing to this effect
+            for (UnitTile unit : game.getUnitTiles().values()) {
+              unit.getEffectIds().remove(effect.getId());
+            } // for
+            for (Ability ability : game.getAbilities().values()) {
+              if (effect.getId().equals(ability.getEffectId())) {
+                ability.setEffectId(null);
+              }
+            }  // for
+            Map<String, Effect> effectMap = game.getEffects();
+            effectMap.remove(effect.getId());
+            GameUtils.saveGame();
+            adapter.removeItem(position);
+            adapter.notifyDataSetChanged();
+            Log.d("effectList", "deleted "+effect.getName());
+          }})
+        .setNegativeButton("Cancel", null).show();
   }
 
   /**

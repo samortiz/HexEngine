@@ -179,8 +179,8 @@ public class EffectEditActivity extends Activity {
     }
     nameInput.setText(effect.getName());
     durationInput.setText(Utils.intToString(effect.getDuration()));
-    onRun.setText(GameUtils.actionsToString(effect.getOnRun()));
-    onEnd.setText(GameUtils.actionsToString(effect.getOnEnd()));
+    onRun.setText(GameUtils.actionsToCSV(effect.getOnRun()));
+    onEnd.setText(GameUtils.actionsToCSV(effect.getOnEnd()));
     stackable.setChecked(effect.isStackable());
   }
 

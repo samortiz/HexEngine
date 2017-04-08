@@ -212,13 +212,13 @@ public class UnitEditActivity extends Activity {
     sightRestrictText.setText(Utils.toCSV(unit.getSightRestrict()));
 
     TextView abilityText = (TextView) findViewById(R.id.abilities);
-    abilityText.setText(Utils.tileTypeToCSV(unitAbilities));
+    abilityText.setText(GameUtils.tileTypeToCSV(unitAbilities));
 
     TextView defenceText = (TextView) findViewById(R.id.defence);
-    defenceText.setText(Utils.damageToCSV(unit.getDefence()));
+    defenceText.setText(GameUtils.damageToCSV(unit.getDefence()));
 
     TextView effectText = (TextView) findViewById(R.id.effects);
-    effectText.setText(Utils.tileTypeToCSV(unitEffects));
+    effectText.setText(GameUtils.tileTypeToCSV(unitEffects));
 
   }
 
@@ -275,7 +275,7 @@ public class UnitEditActivity extends Activity {
       @Override
       public void onOK() {
         TextView textView = (TextView) findViewById(R.id.abilities);
-        textView.setText(Utils.tileTypeToCSV(unitAbilities));
+        textView.setText(GameUtils.tileTypeToCSV(unitAbilities));
       }
     });
   }
@@ -300,7 +300,7 @@ public class UnitEditActivity extends Activity {
       @Override
       public void onOK() {
         TextView textView = (TextView) findViewById(R.id.effects);
-        textView.setText(Utils.tileTypeToCSV(unitEffects));
+        textView.setText(GameUtils.tileTypeToCSV(unitEffects));
       }
     });
   }

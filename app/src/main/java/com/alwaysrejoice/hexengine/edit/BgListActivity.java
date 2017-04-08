@@ -1,6 +1,8 @@
 package com.alwaysrejoice.hexengine.edit;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -61,33 +63,39 @@ public class BgListActivity extends Activity implements AdapterView.OnItemClickL
    * Called when the user clicks "Delete" on a row
    */
   public void deleteBg(View view) {
-    Game game = GameUtils.getGame();
-    int position = (int) view.getTag();
-    BgTile tile = (BgTile) list.getItemAtPosition(position);
-    Map<String, BgTile> bgTiles = game.getBgTiles();
-    bgTiles.remove(tile.getId());
-
-    // delete all the links pointing to this bgTile
-    for (int i=game.getBgMaps().size()-1; i>=0; i--) {
-      BgMap bgMap = game.getBgMaps().get(i);
-      if (tile.getId().equals(bgMap.getId())) {
-        game.getBgMaps().remove(i);
-      }
-    } //for
-    for (TileGroup group : game.getTileGroups()) {
-      for (int i = group.getTileLinks().size()-1; i>=0; i--) {
-        TileTypeLink link = group.getTileLinks().get(i);
-        if (tile.getId().equals(link.getId()) &&
-            (link.getTileType() == TileType.TILE_TYPE.BACKGROUND)) {
-          group.getTileLinks().remove(i);
-        }
-      }
-    } // for
-
-    GameUtils.saveGame();
-    adapter.removeItem(position);
-    adapter.notifyDataSetChanged();
-    Log.d("bgList", "deleted "+tile.getName());
+    final Game game = GameUtils.getGame();
+    final int position = (int) view.getTag();
+    final BgTile tile = (BgTile) list.getItemAtPosition(position);
+    new AlertDialog.Builder(this)
+        .setTitle("Confirm Delete")
+        .setMessage("Are you sure you want to delete "+tile.getName()+"?")
+        .setIcon(android.R.drawable.ic_dialog_alert)
+        .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+          public void onClick(DialogInterface dialog, int whichButton) {
+            // delete all the links pointing to this bgTile
+            for (int i=game.getBgMaps().size()-1; i>=0; i--) {
+              BgMap bgMap = game.getBgMaps().get(i);
+              if (tile.getId().equals(bgMap.getId())) {
+                game.getBgMaps().remove(i);
+              }
+            } //for
+            for (TileGroup group : game.getTileGroups()) {
+              for (int i = group.getTileLinks().size()-1; i>=0; i--) {
+                TileTypeLink link = group.getTileLinks().get(i);
+                if (tile.getId().equals(link.getId()) &&
+                    (link.getTileType() == TileType.TILE_TYPE.BACKGROUND)) {
+                  group.getTileLinks().remove(i);
+                }
+              }
+            } // for
+            Map<String, BgTile> bgTiles = game.getBgTiles();
+            bgTiles.remove(tile.getId());
+            GameUtils.saveGame();
+            adapter.removeItem(position);
+            adapter.notifyDataSetChanged();
+            Log.d("bgList", "deleted "+tile.getName());
+          }})
+        .setNegativeButton("Cancel", null).show();
   }
 
   /**

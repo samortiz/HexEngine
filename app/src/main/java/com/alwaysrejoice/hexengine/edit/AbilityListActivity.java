@@ -1,6 +1,8 @@
 package com.alwaysrejoice.hexengine.edit;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,6 +13,7 @@ import android.widget.ListView;
 import com.alwaysrejoice.hexengine.R;
 import com.alwaysrejoice.hexengine.dto.Ability;
 import com.alwaysrejoice.hexengine.dto.Game;
+import com.alwaysrejoice.hexengine.dto.UnitTile;
 import com.alwaysrejoice.hexengine.util.GameUtils;
 
 import java.util.ArrayList;
@@ -59,16 +62,27 @@ public class AbilityListActivity extends Activity implements AdapterView.OnItemC
    * Called when the user clicks "Delete" on a row
    */
   public void delete(View view) {
-    Game game = GameUtils.getGame();
-    int position = (int) view.getTag();
-    Ability ability = (Ability) list.getItemAtPosition(position);
-    Map<String, Ability> abilityTiles = game.getAbilities();
-    abilityTiles.remove(ability.getId());
-    // TODO: Delete all the links pointing to this ability
-    GameUtils.saveGame();
-    adapter.removeItem(position);
-    adapter.notifyDataSetChanged();
-    Log.d("abilityList", "deleted "+ability.getName());
+    final Game game = GameUtils.getGame();
+    final int position = (int) view.getTag();
+    final Ability ability = (Ability) list.getItemAtPosition(position);
+    new AlertDialog.Builder(this)
+      .setTitle("Confirm Delete")
+      .setMessage("Are you sure you want to delete "+ability.getName()+"?")
+      .setIcon(android.R.drawable.ic_dialog_alert)
+      .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+        public void onClick(DialogInterface dialog, int whichButton) {
+          // Delete all the links pointing to this ability
+          for (UnitTile unit : game.getUnitTiles().values()) {
+            unit.getAbilityIds().remove(ability.getId());
+          } // for
+          Map<String, Ability> abilityTiles = game.getAbilities();
+          abilityTiles.remove(ability.getId());
+          GameUtils.saveGame();
+          adapter.removeItem(position);
+          adapter.notifyDataSetChanged();
+          Log.d("abilityList", "deleted "+ability.getName());
+        }})
+      .setNegativeButton("Cancel", null).show();
   }
 
   /**

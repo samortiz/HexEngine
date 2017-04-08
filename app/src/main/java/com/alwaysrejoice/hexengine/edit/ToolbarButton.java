@@ -10,6 +10,7 @@ import java.util.List;
 
 public class ToolbarButton {
 
+  private String id;
   private String name;
   private TileType.TILE_TYPE type;
   private Bitmap img;
@@ -21,7 +22,8 @@ public class ToolbarButton {
   // Constructors
   public ToolbarButton() { }
 
-  public ToolbarButton(String name, TileType.TILE_TYPE type, Bitmap img, Rect position, ToolbarButton parent) {
+  public ToolbarButton(String id, String name, TileType.TILE_TYPE type, Bitmap img, Rect position, ToolbarButton parent) {
+    this.id = id;
     this.name = name;
     this.type = type;
     this.img = img;
@@ -34,15 +36,14 @@ public class ToolbarButton {
     children.add(child);
   }
 
-  /**
-   * @return true if this button has children (top level button)
-   */
-  public boolean hasChildren() {
-    return children.size() > 0;
+  public String getId() {
+    return id;
   }
 
+  public void setId(String id) {
+    this.id = id;
+  }
 
-  // Getter / Setter
   public String getName() {
     return name;
   }
@@ -97,5 +98,19 @@ public class ToolbarButton {
 
   public void setPopupPosition(Rect popupPosition) {
     this.popupPosition = popupPosition;
+  }
+
+  @Override
+  public String toString() {
+    return "ToolbarButton{" +
+        "id='" + id + '\'' +
+        ", name='" + name + '\'' +
+        ", type=" + type +
+        ", img=" + img +
+        ", position=" + position +
+        ", parent=" + parent +
+        ", children=" + children +
+        ", popupPosition=" + popupPosition +
+        '}';
   }
 }

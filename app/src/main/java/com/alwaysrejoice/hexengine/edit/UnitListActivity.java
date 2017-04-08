@@ -1,6 +1,8 @@
 package com.alwaysrejoice.hexengine.edit;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -62,34 +64,40 @@ public class UnitListActivity extends Activity implements AdapterView.OnItemClic
    * Called when the user clicks "Delete" on a row
    */
   public void delete(View view) {
-    Game game = GameUtils.getGame();
-    int position = (int) view.getTag();
-    UnitTile unit = (UnitTile) list.getItemAtPosition(position);
-    Map<String, UnitTile> unitTiles = game.getUnitTiles();
-    unitTiles.remove(unit.getId());
-
-    // delete all the links pointing to this unit
-    for (int i=game.getUnitMaps().size()-1; i>=0; i--) {
-      UnitMap unitMap = game.getUnitMaps().get(i);
-      if (unit.getId().equals(unitMap.getId())) {
-        game.getUnitMaps().remove(i);
-      }
-    } //for
-    for (TileGroup group : game.getTileGroups()) {
-      for (int i = group.getTileLinks().size()-1; i>=0; i--) {
-        TileTypeLink link = group.getTileLinks().get(i);
-        if (unit.getId().equals(link.getId()) &&
-            (link.getTileType() == TileType.TILE_TYPE.UNIT)) {
-          group.getTileLinks().remove(i);
-        }
-      }
-    } // for
-
-    GameUtils.saveGame();
-    adapter.removeItem(position);
-    Collections.sort(units);
-    adapter.notifyDataSetChanged();
-    Log.d("unitList", "deleted "+unit.getName());
+    final Game game = GameUtils.getGame();
+    final int position = (int) view.getTag();
+    final UnitTile unit = (UnitTile) list.getItemAtPosition(position);
+    new AlertDialog.Builder(this)
+      .setTitle("Confirm Delete")
+      .setMessage("Are you sure you want to delete "+unit.getName()+"?")
+      .setIcon(android.R.drawable.ic_dialog_alert)
+      .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+        public void onClick(DialogInterface dialog, int whichButton) {
+          // delete all the links pointing to this unit
+          for (int i=game.getUnitMaps().size()-1; i>=0; i--) {
+            UnitMap unitMap = game.getUnitMaps().get(i);
+            if (unit.getId().equals(unitMap.getId())) {
+              game.getUnitMaps().remove(i);
+            }
+          } //for
+          for (TileGroup group : game.getTileGroups()) {
+            for (int i = group.getTileLinks().size()-1; i>=0; i--) {
+              TileTypeLink link = group.getTileLinks().get(i);
+              if (unit.getId().equals(link.getId()) &&
+                  (link.getTileType() == TileType.TILE_TYPE.UNIT)) {
+                group.getTileLinks().remove(i);
+              }
+            }
+          } // for
+          Map<String, UnitTile> unitTiles = game.getUnitTiles();
+          unitTiles.remove(unit.getId());
+          GameUtils.saveGame();
+          adapter.removeItem(position);
+          Collections.sort(units);
+          adapter.notifyDataSetChanged();
+          Log.d("unitList", "deleted "+unit.getName());
+        }})
+      .setNegativeButton("Cancel", null).show();
   }
 
   /**

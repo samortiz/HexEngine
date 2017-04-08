@@ -161,13 +161,24 @@ public class Game {
     game.setDamageTypes(Utils.makeList("Slash", "Poison"));
     game.setBgTypes(Utils.makeList("Grass", "Water"));
 
+    // Default Mods
     List<ModParam> params = new ArrayList<>();
     params.add(new ModParam("damage", ModParam.TYPE.Damage));
     Mod dmg = new Mod(Utils.generateUniqueId(), "Damage", Mod.TYPE_MOD, params, "applyDamage(self, target, damage);");
     game.getMods().put(dmg.getId(), dmg);
 
-    Mod mod = new Mod(Utils.generateUniqueId(), "All", Mod.TYPE_RULE, new ArrayList<ModParam>(), "return true");
-    game.getMods().put(mod.getId(), mod);
+    params = new ArrayList<>();
+    params.add(new ModParam("damage", ModParam.TYPE.Damage));
+    params.add(new ModParam("range", ModParam.TYPE.Integer));
+    Mod areaDmg = new Mod(Utils.generateUniqueId(), "Area Damage", Mod.TYPE_MOD_LOC, params, "for (Unit target : allUnitsInRange(x,y,range) { applyDamage(self, target, damage); }");
+    game.getMods().put(areaDmg.getId(), areaDmg);
+
+    Mod rule = new Mod(Utils.generateUniqueId(), "All", Mod.TYPE_RULE, new ArrayList<ModParam>(), "return true");
+    game.getMods().put(rule.getId(), rule);
+
+    Mod ruleLoc = new Mod(Utils.generateUniqueId(), "Anywhere", Mod.TYPE_RULE_LOC, new ArrayList<ModParam>(), "return true");
+    game.getMods().put(ruleLoc.getId(), ruleLoc);
+
   }
 
 

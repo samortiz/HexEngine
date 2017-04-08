@@ -1,6 +1,8 @@
 package com.alwaysrejoice.hexengine.edit;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -70,16 +72,24 @@ public class GameListActivity extends Activity implements AdapterView.OnItemClic
    * Called when the user clicks on the delete icon on a row
    */
   public void deleteGame(View view) {
-    int position = (int) view.getTag();
-    String gameName = gameList.getItemAtPosition(position).toString();
-    if (GameUtils.deleteGame(gameName)) {
-      adapter.removeItem(position);
-      adapter.notifyDataSetChanged();
-      GameUtils.setGame(null);
-      Log.d("gameList", "Deleted gameName="+gameName);
-    } else {
-      Log.e("gameList", "unable to delete gameName="+gameName);
-    }
+    final int position = (int) view.getTag();
+    final String gameName = gameList.getItemAtPosition(position).toString();
+    new AlertDialog.Builder(this)
+        .setTitle("Confirm Delete")
+        .setMessage("Are you sure you want to delete "+gameName+"?")
+        .setIcon(android.R.drawable.ic_dialog_alert)
+        .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+          public void onClick(DialogInterface dialog, int whichButton) {
+            if (GameUtils.deleteGame(gameName)) {
+              adapter.removeItem(position);
+              adapter.notifyDataSetChanged();
+              GameUtils.setGame(null);
+              Log.d("gameList", "Deleted gameName="+gameName);
+            } else {
+              Log.e("gameList", "unable to delete gameName="+gameName);
+            }
+          }})
+        .setNegativeButton("Cancel", null).show();
   }
 
   /**

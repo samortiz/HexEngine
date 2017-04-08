@@ -86,4 +86,22 @@ public class Mod implements Comparable {
     return this.getName().toLowerCase().compareTo(((Mod)o).getName().toLowerCase());
   }
 
+  /**
+   * @return A string describing this type for the user
+   */
+  public String getDisplayType() {
+    if (TYPE_MOD.equals(type)) return "(Mod unit)";
+    if (TYPE_MOD_LOC.equals(type)) return "(Mod location)";
+    if (TYPE_RULE.equals(type)) return "(Rule unit)";
+    if (TYPE_RULE_LOC.equals(type)) return "(Rule location)";
+    return "Unknown type:"+type;
+  }
+
+  /**
+   * @return A String to display to the user describing this mod
+   */
+  public String getDisplayString() {
+    return name+" "+getDisplayType();
+  }
+
 }

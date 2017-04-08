@@ -124,7 +124,7 @@ public class EditMapView extends View {
         Bitmap bitmap = bgTile.getBitmap();
         if (bitmap != null) {
           bgCanvas.drawBitmap(bitmap, x, y, null);
-        } else Log.e("editMapView", "Error in drawBackground, no image for BgTile with name="+bgTile.getName());
+        } else Log.e("editMapView", "Error in drawBackground, no image for BgTile with id="+bgTile.getId());
       } else Log.e("editMapView", "Error in drawBackground, no tile in BgTiles with id="+tile.getId());
     } // for
 
@@ -136,8 +136,8 @@ public class EditMapView extends View {
         Bitmap bitmap = tile.getBitmap();
         if (bitmap != null) {
           bgCanvas.drawBitmap(bitmap, x, y, null);
-        } else Log.e("editMapView", "Error in drawBackground, no image for UnitTile with name="+tile.getName());
-      } else Log.e("editMapView", "Error in drawBackground, no tile in UnitTiles with name="+tile.getName());
+        } else Log.e("editMapView", "Error in drawBackground, no image for UnitTile with id="+tile.getId());
+      } else Log.e("editMapView", "Error in drawBackground, no tile in UnitTiles with id="+tile.getId());
     } // for
   }
 
@@ -329,12 +329,12 @@ public class EditMapView extends View {
       if (selectedButton.getType() == TileType.TILE_TYPE.BACKGROUND) {
         erase(col, row, TileType.TILE_TYPE.BACKGROUND);
         // Add the new bgMap
-        game.getBgMaps().add(new BgMap(col, row, selectedButton.getName()));
+        game.getBgMaps().add(new BgMap(col, row, selectedButton.getId()));
         //Log.d("drawTile", "added bg "+selectedButton.getName()+" at col="+col+" row="+row);
       } else if (selectedButton.getType() == TileType.TILE_TYPE.UNIT) {
         erase(col, row, TileType.TILE_TYPE.UNIT);
         // Add a new unitMap
-        game.getUnitMaps().add(new UnitMap(col, row, selectedButton.getName()));
+        game.getUnitMaps().add(new UnitMap(col, row, selectedButton.getId()));
         //Log.d("drawTile", "added unit "+selectedButton.getName()+" at col="+col+" row="+row);
       } else if ((selectedButton.getType() == TileType.TILE_TYPE.SYSTEM) &&
                  (toolbar.getMode() == Toolbar.Mode.ERASE)) {

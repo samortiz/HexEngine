@@ -74,34 +74,34 @@ public class ActionEditActivity extends Activity {
       actionList.add(action);
     }
 
-    List<String> modNames = new ArrayList();
+    List<String> modDisplayStrs = new ArrayList();
     for (String modId : game.getMods().keySet()) {
       Mod mod = game.getMods().get(modId);
       String modType = mod.getType();
       if (ActionListActivity.RETURN_LOC_ABILITY_APPLIES.equals(returnLoc)) {
         // For applies we filter for rules
         if (Mod.TYPE_RULE.equals(modType) || Mod.TYPE_RULE_LOC.equals(modType)) {
-          modNames.add(mod.getName());
+          modDisplayStrs.add(mod.getDisplayString());
         }
       } else {
         // If it's onStart, onRun, onEnd we filter for mods
         if (Mod.TYPE_MOD.equals(modType) || Mod.TYPE_MOD_LOC.equals(modType)) {
-          modNames.add(mod.getName());
+          modDisplayStrs.add(mod.getDisplayString());
         }
       }
     }
-
-    Collections.sort(modNames, String.CASE_INSENSITIVE_ORDER);
+    Collections.sort(modDisplayStrs, String.CASE_INSENSITIVE_ORDER);
+    Log.d("ActionEdit", "modDisplayStrs="+modDisplayStrs);
     Spinner modSpinner = (Spinner) findViewById(R.id.mod_name_spinner);
-    ArrayAdapter<String> typeAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, modNames);
+    ArrayAdapter<String> typeAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, modDisplayStrs);
     typeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
     modSpinner.setAdapter(typeAdapter);
     Mod selectedMod = game.getMods().get(action.getModId());
-    String selectedModName = "";
+    String selectedModDisplayStr = "";
     if (selectedMod != null) {
-      selectedModName = selectedMod.getName();
+      selectedModDisplayStr = selectedMod.getDisplayString();
     }
-    int selectedModTypeIndex = typeAdapter.getPosition(selectedModName);
+    int selectedModTypeIndex = typeAdapter.getPosition(selectedModDisplayStr);
     if (selectedModTypeIndex < 0) {
       selectedModTypeIndex = 0;
     }
@@ -116,11 +116,11 @@ public class ActionEditActivity extends Activity {
 
   // Updates the current layout to match the selected Mod
   public void updateLayout() {
-    Map<String, Mod> allMods = GameUtils.getGame().getMods();
     Spinner typeSpinner = (Spinner) findViewById(R.id.mod_name_spinner);
     ArrayAdapter<String> typeAdapter = (ArrayAdapter<String>)typeSpinner.getAdapter();
-    String modName = typeAdapter.getItem(typeSpinner.getSelectedItemPosition());
-    Mod mod = GameUtils.getModByName(modName);
+    String modDisplayString = typeAdapter.getItem(typeSpinner.getSelectedItemPosition());
+    Log.d("actionEdit", "modDispStr="+modDisplayString);
+    Mod mod = GameUtils.getModByDisplayString(modDisplayString);
     LayoutInflater inflator = LayoutInflater.from(getBaseContext());
     TableLayout inputTable = (TableLayout) findViewById(R.id.input_table);
     TableRow modNameRow = (TableRow) findViewById(R.id.mod_name_row);
@@ -221,8 +221,8 @@ public class ActionEditActivity extends Activity {
   public void save(View view) {
     Spinner typeSpinner = (Spinner) findViewById(R.id.mod_name_spinner);
     ArrayAdapter<String> typeAdapter = (ArrayAdapter<String>)typeSpinner.getAdapter();
-    String modName = typeAdapter.getItem(Math.max(0, typeSpinner.getSelectedItemPosition()));
-    String modId = GameUtils.getModIdByName(modName);
+    String modDisplayString = typeAdapter.getItem(Math.max(0, typeSpinner.getSelectedItemPosition()));
+    String modId = GameUtils.getModIdByDisplayString(modDisplayString);
     action.setModId(modId);
 
     // Load the selected param values

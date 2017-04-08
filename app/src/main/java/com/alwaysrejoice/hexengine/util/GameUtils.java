@@ -11,6 +11,7 @@ import com.alwaysrejoice.hexengine.dto.Damage;
 import com.alwaysrejoice.hexengine.dto.Effect;
 import com.alwaysrejoice.hexengine.dto.Game;
 import com.alwaysrejoice.hexengine.dto.Mod;
+import com.alwaysrejoice.hexengine.dto.TileType;
 import com.alwaysrejoice.hexengine.dto.UnitTile;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -175,42 +176,72 @@ public class GameUtils {
   /**
    * Looks up a mod by it's name instead of id
    */
-  public static Mod getModByName(String modName) {
+  public static Mod getModByDisplayString(String displayString) {
     Map<String, Mod> allMods = getGame().getMods();
     for (Mod mod : allMods.values()) {
-      if (modName.equals(mod.getName())) {
+      if (displayString.equals(mod.getDisplayString())) {
         return mod;
       }
     }// for
     return null;
   }
 
-  public static String getModIdByName(String modName) {
-    Mod mod = getModByName(modName);
+  public static String getModIdByDisplayString(String displayString) {
+    Mod mod = getModByDisplayString(displayString);
     if (mod == null) {
       return "";
     }
     return mod.getId();
   }
 
-  public static String getModNameFromId(String modId) {
+  public static String getModDisplayFromId(String modId) {
     Mod mod = getGame().getMods().get(modId);
     if (mod == null) {
       return "";
     }
-    return mod.getName();
+    return mod.getDisplayString();
   }
 
-  public static String actionsToString(List<Action> actions) {
+  public static String actionsToCSV(List<Action> actions) {
     if (actions == null) {
       return "";
     }
+    Map<String, Mod> mods = GameUtils.getGame().getMods();
     StringBuffer str = new StringBuffer();
-    for (Action action : actions) {
-      str.append(" "+GameUtils.getModNameFromId(action.getModId()));
+    for (int i=0; i<actions.size(); i++) {
+      Action action = actions.get(i);
+      Mod mod = mods.get(action.getModId());
+      if (i > 0) str.append("\n");
+      str.append(mod.getDisplayString());
     }
-    return str.toString().trim();
+    return str.toString();
   }
 
+
+  public static String damageToCSV(List<Damage> list) {
+    if (list == null) return "";
+    StringBuilder csv = new StringBuilder();
+    for (int i=0; i<list.size(); i++) {
+      if (i != 0) csv.append("\n");
+      Damage dmg = list.get(i);
+      if (dmg != null) {
+        csv.append(dmg.getDisplayText());
+      }
+    }
+    return csv.toString();
+  }
+
+  public static String tileTypeToCSV(List<TileType> list) {
+    if (list == null) return "";
+    StringBuilder csv = new StringBuilder();
+    for (int i=0; i<list.size(); i++) {
+      if (i != 0) csv.append(", ");
+      TileType t = list.get(i);
+      if (t != null) {
+        csv.append(t.getName());
+      }
+    }
+    return csv.toString();
+  }
 
 }

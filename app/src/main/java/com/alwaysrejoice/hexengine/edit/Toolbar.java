@@ -114,11 +114,10 @@ public class Toolbar {
       // Draw the buttons
       for (int i=0; i<group.size(); i++) {
         TileType tile = group.get(i);
-        String name = tile.getName();
-        Bitmap img = tile.getBitmap();
         if (i == 0) {
           // It's a parent button
-          ToolbarButton newButton = new ToolbarButton(name, tile.getTileType(), img, new Rect(buttonX, buttonY, buttonX+buttonWidth, buttonY+buttonHeight), null);
+          ToolbarButton newButton = new ToolbarButton(tile.getId(), tile.getName(), tile.getTileType(), tile.getBitmap(),
+              new Rect(buttonX, buttonY, buttonX+buttonWidth, buttonY+buttonHeight), null);
           toolbarButtons.add(newButton);
           parentButton = newButton;
           Log.d("toolbar", "Added parent "+newButton.getName()+" position="+newButton.getPosition());
@@ -134,7 +133,8 @@ public class Toolbar {
             childRight += buttonWidth;
             childBottom = childTop + buttonHeight;
           } // while
-          ToolbarButton newButton = new ToolbarButton(name, tile.getTileType(), img, new Rect(childLeft, childTop, childRight, childBottom), parentButton);
+          ToolbarButton newButton = new ToolbarButton(tile.getId(), tile.getName(), tile.getTileType(), tile.getBitmap(),
+              new Rect(childLeft, childTop, childRight, childBottom), parentButton);
           parentButton.addChild(newButton);
           Log.d("toolbar", "added child " + newButton.getName() + " position=" + newButton.getPosition());
         }
