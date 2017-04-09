@@ -56,6 +56,10 @@
         android:windowSoftInputMode="stateHidden">
     </activity>
     <activity
+        android:name=".edit.AbilityChooserActivity"
+        android:screenOrientation="portrait">
+    </activity>
+    <activity
         android:name=".edit.AbilityListActivity"
         android:screenOrientation="portrait">
     </activity>

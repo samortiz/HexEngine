@@ -6,7 +6,6 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
@@ -68,9 +67,7 @@ public class UnitEditActivity extends Activity {
     }
 
     Spinner teamSpinner = (Spinner) findViewById(R.id.team_spinner);
-    ArrayAdapter<String> teamAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, game.getTeams());
-    teamAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-    teamSpinner.setAdapter(teamAdapter);
+    Utils.setupSpinner(teamSpinner, game.getTeams());
 
     attrDialog = new DialogMultiSelect(this, "Attributes", game.getAttr(), unit.getAttr());
     moveRestrictDialog = new DialogMultiSelect(this, "Move Restrictions", game.getBgTypes(), unit.getMoveRestrict());
@@ -106,17 +103,6 @@ public class UnitEditActivity extends Activity {
     loadUnitFromUi();
     Game game = GameUtils.getGame();
     Map<String, UnitTile> unitTiles = game.getUnitTiles();
-
-    if ("".equals(unit.getName())) {
-      showError("You must enter a name.");
-      return;
-    }
-
-    // Clear and re-add all the selected ability ids
-    unit.getAbilityIds().clear();
-    for (TileType t : unitAbilities) {
-      unit.getAbilityIds().add(t.getId());
-    }
 
     // Clear and re-add all the selected effect ids
     unit.getEffectIds().clear();
@@ -270,14 +256,11 @@ public class UnitEditActivity extends Activity {
   }
 
   public void editAbilities(View view) {
+    save(view);
     Log.d("unitEdit", "Edit abilities");
-    abilityDialog.showDialog(new DialogMultiSelectListener() {
-      @Override
-      public void onOK() {
-        TextView textView = (TextView) findViewById(R.id.abilities);
-        textView.setText(GameUtils.tileTypeToCSV(unitAbilities));
-      }
-    });
+    Intent myIntent = new Intent(UnitEditActivity.this, AbilityChooserActivity.class);
+    myIntent.putExtra(AbilityChooserActivity.SELECTED_UNIT_ID, unit.getId());
+    startActivity(myIntent);
   }
 
   /**

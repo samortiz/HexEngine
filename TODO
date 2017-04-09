@@ -2,6 +2,7 @@ TODO
 
 Ability Editor
  - Make some default graphics for abilities (sword, zap, web, heal, shield)
+ - Load graphics for abilities from a separate directory
 
 Unit Editor
  - Edit Storage 

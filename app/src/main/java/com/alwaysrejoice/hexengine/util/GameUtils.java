@@ -205,6 +205,16 @@ public class GameUtils {
     return mod.getDisplayString();
   }
 
+  public static String getAbilityIdFromName(String abilityName) {
+    for (Ability ability : getGame().getAbilities().values()) {
+      if (abilityName.equals(ability.getName())) {
+        return ability.getId();
+      }
+    };
+    return null;
+  }
+
+
   public static String actionsToCSV(List<Action> actions) {
     if (actions == null) {
       return "";
