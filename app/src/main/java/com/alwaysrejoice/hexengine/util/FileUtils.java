@@ -18,6 +18,7 @@ public class FileUtils {
   public static final String IMAGE_BACKGROUND_DIR = ROOT_DIR+"/images/background";
   public static final String IMAGE_UNITS_DIR = ROOT_DIR+"/images/units";
   public static final String IMAGE_EFFECTS_DIR = ROOT_DIR+"/images/effects";
+  public static final String IMAGE_ABILITIES_DIR = ROOT_DIR+"/images/abilities";
   public static final String MOD_DIR = ROOT_DIR+"/mods";
 
   /**
@@ -115,6 +116,7 @@ public class FileUtils {
     initDir(assetManager, "images/background", IMAGE_BACKGROUND_DIR);
     initDir(assetManager, "images/units", IMAGE_UNITS_DIR);
     initDir(assetManager, "images/effects", IMAGE_EFFECTS_DIR);
+    initDir(assetManager, "images/abilities", IMAGE_ABILITIES_DIR);
     initDir(assetManager, "games", GAME_DIR);
   }
 
@@ -152,6 +154,7 @@ public class FileUtils {
     deleteDir(IMAGE_BACKGROUND_DIR);
     deleteDir(IMAGE_UNITS_DIR);
     deleteDir(IMAGE_EFFECTS_DIR);
+    deleteDir(IMAGE_ABILITIES_DIR);
     deleteDir(GAME_DIR);
     deleteDir(ROOT_DIR);
   }

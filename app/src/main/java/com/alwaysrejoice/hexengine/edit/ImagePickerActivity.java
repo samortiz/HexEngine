@@ -85,7 +85,7 @@ public class ImagePickerActivity extends Activity {
     } else if (RETURN_EFFECT.equals(returnLoc)) {
       extDir = FileUtils.IMAGE_EFFECTS_DIR;
     } else if (RETURN_ABILITY.equals(returnLoc)) {
-      extDir = FileUtils.IMAGE_UNITS_DIR; // TODO: Should have it's own directory
+      extDir = FileUtils.IMAGE_ABILITIES_DIR;
     }
     List<String> fileNames = new ArrayList<>();
     fileNames.addAll(Arrays.asList(FileUtils.getExtPath(extDir).list()));

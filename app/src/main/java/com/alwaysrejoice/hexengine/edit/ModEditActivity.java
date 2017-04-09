@@ -85,8 +85,6 @@ public class ModEditActivity extends Activity {
       return;
     }
 
-    // TODO: If name is changing update all the links
-
     // Update the mod in the game
     modMap.put(mod.getId(), mod);
     GameUtils.saveGame();

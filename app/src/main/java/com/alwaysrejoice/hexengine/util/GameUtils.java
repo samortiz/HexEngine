@@ -30,7 +30,6 @@ import java.util.Map;
 
 import static com.alwaysrejoice.hexengine.edit.EditMapView.TILE_HEIGHT;
 import static com.alwaysrejoice.hexengine.edit.EditMapView.TILE_WIDTH;
-import static com.alwaysrejoice.hexengine.util.FileUtils.MOD_DIR;
 
 public class GameUtils {
   private static Game game = null;
@@ -153,27 +152,6 @@ public class GameUtils {
 
   public static Damage jsonToDamage(String json) {
     return gson.fromJson(json, Damage.class);
-  }
-
-  /**
-   * Loads a mod from the mod storage directory
-   * @param fileName name of mod file in MOD_DIR
-   */
-  public static Mod loadMod(String fileName) {
-    InputStream inputStream = null;
-    Mod mod = null;
-    try {
-      File file = new File(FileUtils.getExtPath(MOD_DIR), fileName);
-      inputStream = new FileInputStream(file);
-      String jsonMod = IOUtils.toString(inputStream, "UTF-8");
-      inputStream.close();
-      mod = gson.fromJson(jsonMod, Mod.class);
-    } catch (IOException e) {
-      Log.e("IO Error", "Error in loadMod loading "+fileName, e);
-      if (inputStream != null) try { inputStream.close(); } catch (IOException e1) { e.printStackTrace();}
-    }
-    Log.d("GameUtils", "Loaded mod "+mod.getName()+" from file "+fileName);
-    return mod;
   }
 
   /**

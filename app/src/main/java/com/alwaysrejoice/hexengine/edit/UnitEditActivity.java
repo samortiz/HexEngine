@@ -289,8 +289,10 @@ public class UnitEditActivity extends Activity {
   }
 
   public void editStorage(View view) {
-    // TODO
     Log.d("unitEdit", "Edit storage");
+    Intent myIntent = new Intent(UnitEditActivity.this, StorageListActivity.class);
+    myIntent.putExtra(StorageListActivity.SELECTED_UNIT_ID, unit.getId());
+    startActivity(myIntent);
   }
 
 }
