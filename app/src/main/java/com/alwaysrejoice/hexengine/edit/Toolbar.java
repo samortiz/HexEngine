@@ -40,15 +40,9 @@ public class Toolbar {
   private ToolbarButton selectedButton = null;
   private boolean selectedButtonChildrenVisible = false;
 
-  // Variables from EditMapView
-  private int viewSizeX;
-  private int viewSizeY;
-
   // Default Constructor
   public Toolbar(EditMapView editMapView, int viewSizeX, int viewSizeY, int screenWidth, int screenHeight) {
     this.editMapView = editMapView;
-    this.viewSizeX = viewSizeX;
-    this.viewSizeY = viewSizeY;
     Log.d("toolbar", "Creating toolbar viewSizeX="+viewSizeX+" viewSizeY="+viewSizeY);
 
     selectedImg = SystemTile.getTile(SystemTile.NAME.SELECTED).getBitmap();

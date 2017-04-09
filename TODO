@@ -1,17 +1,10 @@
 TODO 
 
-Map Editor
- - Boundary checks for tile placement
-
 Ability Editor
  - Make some default graphics for abilities (sword, zap, web, heal, shield)
 
-Game 
- - Remove out-of-bounds tiles from map when resizing to smaller size
-
 Unit Editor
  - Edit Storage 
-
 
 Optional : 
  - Sync: BG, Units, Abilities, Mods, Effects

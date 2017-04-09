@@ -1,9 +1,10 @@
 package com.alwaysrejoice.hexengine.dto;
 
+import static android.R.attr.width;
+
 public class GameInfo {
   private String name = "";
-  private int width = 12;
-  private int height = 12;
+  private int size = 12;
   private Color backgroundColor = new Color(00, 50, 50);
 
   public String getName() {
@@ -18,16 +19,12 @@ public class GameInfo {
     return width;
   }
 
-  public void setWidth(int width) {
-    this.width = width;
+  public int getSize() {
+    return size;
   }
 
-  public int getHeight() {
-    return height;
-  }
-
-  public void setHeight(int height) {
-    this.height = height;
+  public void setSize(int size) {
+    this.size = size;
   }
 
   public Color getBackgroundColor() {
@@ -43,7 +40,7 @@ public class GameInfo {
     return "GameInfo{" +
         "name='" + name + '\'' +
         ", width=" + width +
-        ", height=" + height +
+        ", size=" + size +
         ", backgroundColor=" + backgroundColor +
         '}';
   }

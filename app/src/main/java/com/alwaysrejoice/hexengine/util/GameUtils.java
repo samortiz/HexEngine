@@ -13,6 +13,7 @@ import com.alwaysrejoice.hexengine.dto.Game;
 import com.alwaysrejoice.hexengine.dto.Mod;
 import com.alwaysrejoice.hexengine.dto.TileType;
 import com.alwaysrejoice.hexengine.dto.UnitTile;
+import com.alwaysrejoice.hexengine.edit.EditMapView;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -27,6 +28,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static com.alwaysrejoice.hexengine.edit.EditMapView.TILE_HEIGHT;
+import static com.alwaysrejoice.hexengine.edit.EditMapView.TILE_WIDTH;
 import static com.alwaysrejoice.hexengine.util.FileUtils.MOD_DIR;
 
 public class GameUtils {
@@ -242,6 +245,32 @@ public class GameUtils {
       }
     }
     return csv.toString();
+  }
+
+  /**
+   * Calculates the backgroundSize (X and Y) given a game size
+   * @param size GameInfo.size, roughly how many tiles fit vertically into the map
+   * @return The size in PX of the background
+   */
+  public static int getBackgroundSize(int size) {
+    return size * TILE_HEIGHT;
+  }
+
+  /**
+   * Bounds checking for a tile fitting into the background
+   * @param backgroundSize : width and height of the background (in pixels)
+   * @param col axial position of the tile
+   * @param row axial position of the tile
+   * @return true if the tile fits on the map without drawing off the border
+   */
+  public static boolean tileFitsInBackground(int backgroundSize, int row, int col) {
+    int x = (backgroundSize / 2) + Math.round(EditMapView.HEX_SIZE * 1.5f  * col) - (TILE_WIDTH / 2);
+    int y = (backgroundSize / 2) + Math.round(EditMapView.HEX_SIZE * EditMapView.SQRT_3 * (row + (col / 2f))) - (EditMapView.TILE_HEIGHT / 2);
+    boolean fits = ((x > 1) && (y > 1) &&
+        ((x + TILE_WIDTH) < backgroundSize-1) &&
+        ((y + EditMapView.TILE_HEIGHT) < backgroundSize-1));
+    Log.d("fits", "x="+x+" y="+y+" fits="+fits+" bgSize="+backgroundSize+" TILE_WIDTH="+TILE_WIDTH);
+    return fits;
   }
 
 }

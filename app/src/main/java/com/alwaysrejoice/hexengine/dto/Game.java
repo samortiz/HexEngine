@@ -8,10 +8,8 @@ import java.util.List;
 import java.util.Map;
 
 public class Game {
-  public static final int MAX_GAME_WIDTH = 100;
-  public static final int MAX_GAME_HEIGHT = 100;
-  public static final int MIN_GAME_WIDTH = 10;
-  public static final int MIN_GAME_HEIGHT = 10;
+  public static final int MAX_GAME_SIZE = 50;
+  public static final int MIN_GAME_SIZE = 5;
 
   private GameInfo gameInfo =  new GameInfo();
   private List<BgMap> bgMaps = new ArrayList();

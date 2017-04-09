@@ -27,8 +27,8 @@ public class EditMapView extends View {
   Context context;
 
   // Game drawing variables
-  public static final int TILE_WIDTH = 52; // width of one tile on the map
-  public static final int TILE_HEIGHT = 60; // height of one tile on the map
+  public static final int TILE_WIDTH = 60; // height of one tile on the map
+  public static final int TILE_HEIGHT = 52; // width of one tile on the map
   public static final int HEX_SIZE = 30; // Length of one side of a hexagon
   public static final float SQRT_3 = (float) Math.sqrt(3);
   private Game game; // Data loaded from the user
@@ -75,11 +75,11 @@ public class EditMapView extends View {
     ((Activity) getContext()).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
     game = GameUtils.getGame();
     SystemTile.init(context.getAssets());
-    Log.d("init", "loaded width="+ game.getGameInfo().getWidth()+" height="+ game.getGameInfo().getHeight());
+    Log.d("init", "loaded game with size="+game.getGameInfo().getSize());
 
     // Make a background map
-    backgroundSizeX = Math.round(game.getGameInfo().getWidth() * TILE_WIDTH * 0.75f);
-    backgroundSizeY = game.getGameInfo().getHeight() * TILE_HEIGHT;
+    backgroundSizeY = GameUtils.getBackgroundSize(game.getGameInfo().getSize());
+    backgroundSizeX = backgroundSizeY; // make a square background image
     bgCenterX = backgroundSizeX / 2;
     bgCenterY = backgroundSizeY / 2;
     Log.d("init", "Generating background bitmap width="+backgroundSizeX+" height="+backgroundSizeY);
@@ -329,6 +329,12 @@ public class EditMapView extends View {
       int col = Math.round(bgX * (2f/3f) / HEX_SIZE);
       int row = Math.round((-bgX / 3f + (float)Math.sqrt(3f)/3f * bgY) / HEX_SIZE) ;
       //Log.d("drawTile", "x="+x+" y="+y+" col="+col+" row="+row);
+
+      if (!GameUtils.tileFitsInBackground(backgroundSizeX, row, col)) {
+        // The tile is off the map
+        Log.d("drawTile", "Did not draw tile at x="+x+" y="+y+" col="+col+" row="+row);
+        return false;
+      }
 
       ToolbarButton selectedButton = toolbar.getSelectedToolbarButton();
       if (selectedButton.getType() == TileType.TILE_TYPE.BACKGROUND) {

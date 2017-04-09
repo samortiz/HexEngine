@@ -10,9 +10,14 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.alwaysrejoice.hexengine.R;
+import com.alwaysrejoice.hexengine.dto.BgMap;
 import com.alwaysrejoice.hexengine.dto.Game;
+import com.alwaysrejoice.hexengine.dto.UnitMap;
 import com.alwaysrejoice.hexengine.util.FileUtils;
 import com.alwaysrejoice.hexengine.util.GameUtils;
+import com.alwaysrejoice.hexengine.util.Utils;
+
+import java.util.List;
 
 /**
  * Game Edit Screen
@@ -28,11 +33,11 @@ public class GameEditActivity extends Activity {
     // Editing existing game
     if (game != null) {
       EditText nameInput = (EditText) findViewById(R.id.edit_game_name);
-      EditText widthInput = (EditText) findViewById(R.id.edit_game_width);
-      EditText heightInput = (EditText) findViewById(R.id.edit_game_height);
       nameInput.setText(game.getGameInfo().getName());
-      widthInput.setText(Integer.toString(game.getGameInfo().getWidth()));
-      heightInput.setText(Integer.toString(game.getGameInfo().getHeight()));
+
+      EditText sizeInput = (EditText) findViewById(R.id.game_size);
+      sizeInput.setText(Integer.toString(game.getGameInfo().getSize()));
+
       TextView title = (TextView) findViewById(R.id.title);
       title.setText("Edit Game");
     }
@@ -43,24 +48,17 @@ public class GameEditActivity extends Activity {
    */
   public void saveGame(View view) {
     EditText nameInput = (EditText) findViewById(R.id.edit_game_name);
-    EditText widthInput = (EditText) findViewById(R.id.edit_game_width);
-    EditText heightInput = (EditText) findViewById(R.id.edit_game_height);
     String gameName = nameInput.getText().toString();
-    int width = getInputInt(widthInput, 10);
-    int height = getInputInt(heightInput, 10);
+
+    EditText sizeInput = (EditText) findViewById(R.id.game_size);
+    int size = Utils.stringToInt(sizeInput.getText().toString());
+    size = Math.min(Math.max(size, Game.MIN_GAME_SIZE), Game.MAX_GAME_SIZE);
+
     Game game = GameUtils.getGame();
-
-    width = Math.min(Math.max(width, Game.MIN_GAME_WIDTH), Game.MAX_GAME_WIDTH);
-    height = Math.min(Math.max(height, Game.MIN_GAME_HEIGHT), Game.MAX_GAME_HEIGHT);
-
     if ("".equals(gameName)) {
       showError("You must specify a game name");
       return;
     }
-
-    // Validation Problem. Validate that the old game does not have tiles in excess of the new game size
-    // The corners make this hard, we need to translate the row,col into X,Y position and determine
-    // if it exceeds the bounds.
 
     // Creating a new game
     if (game == null) {
@@ -86,10 +84,31 @@ public class GameEditActivity extends Activity {
       }
     }
 
+    // If we are changing the game size to a smaller one
+    if (size < game.getGameInfo().getSize()) {
+      int backgroundSize = GameUtils.getBackgroundSize(size);
+      // Remove any tiles that won't fit into the new game size
+      List<BgMap> bgMaps = game.getBgMaps();
+      for (int i=bgMaps.size()-1; i>=0; i--) {
+        BgMap bgMap = bgMaps.get(i);
+        if (!GameUtils.tileFitsInBackground(backgroundSize, bgMap.getRow(), bgMap.getCol())) {
+          Log.d("gameEdit", "Removing bg "+bgMap);
+          bgMaps.remove(i);
+        }
+      } // for
+      List<UnitMap> unitMaps = game.getUnitMaps();
+      for (int i=unitMaps.size()-1; i>=0; i--) {
+        UnitMap unitMap = unitMaps.get(i);
+        if (!GameUtils.tileFitsInBackground(backgroundSize, unitMap.getRow(), unitMap.getCol())) {
+          Log.d("gameEdit", "Removing unit "+unitMap);
+          unitMaps.remove(i);
+        }
+      } // for
+    }
+
     game.getGameInfo().setName(gameName);
-    game.getGameInfo().setWidth(width);
-    game.getGameInfo().setHeight(height);
-    Log.d("chooseFile", "editGame gameName="+gameName+" width="+width+" height="+height);
+    game.getGameInfo().setSize(size);
+    Log.d("chooseFile", "editGame gameName="+gameName+" size="+size);
     GameUtils.saveGame(game);
     Intent myIntent = new Intent(GameEditActivity.this, GameListActivity.class);
     startActivity(myIntent);
@@ -99,18 +118,6 @@ public class GameEditActivity extends Activity {
     TextView errView = (TextView) findViewById(R.id.error_message);
     errView.setText(errMsg);
     errView.setTextColor(Color.RED);
-  }
-
-  /**
-   * Gets a value from a text input and returns it as a String
-   * @return int value of input, or defaultVal if there was any problem
-   */
-  public int getInputInt(EditText input, int defaultVal) {
-    String val = input.getText().toString();
-    if (val.length() > 0) {
-      return Integer.parseInt(val);
-    }
-    return defaultVal;
   }
 
 }
