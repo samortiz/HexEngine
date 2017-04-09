@@ -57,8 +57,9 @@ public class EditMapView extends View {
   private float gestureDiffY = 0;
 
   // Zooming (scaling)
-  private static final float MIN_SCALE = 0.10f;
-  private static final float MAX_SCALE = 3.0f;
+  private static final float GLOBAL_MIN_SCALE = 0.10f;
+  private static final float GLOBAL_MAX_SCALE = 3.0f;
+  private float maxScale = GLOBAL_MAX_SCALE;
   private ScaleGestureDetector mapScaleDetector;
   private float mapScaleFactor = 0.5f;
   private float scaleDiffX = 0;
@@ -93,7 +94,11 @@ public class EditMapView extends View {
     viewSizeY = viewSizeX;
     Log.i("init", "edit viewSizeX="+viewSizeX+" viewSizeY="+viewSizeY);
     uiWindow = new Rect(0, 0, viewSizeX, viewSizeY);
-    mapScaleFactor = Math.max(MIN_SCALE, Math.min(((float)backgroundSizeX / (float)viewSizeX), MAX_SCALE));
+
+    float maxScaleX = (float)backgroundSizeX / (float)viewSizeX;
+    float maxScaleY = (float)backgroundSizeY / (float)viewSizeY;
+    maxScale = Math.min(Math.min(maxScaleX, maxScaleY), GLOBAL_MAX_SCALE);
+    mapScaleFactor = maxScale;
     mapX = (backgroundSizeX / 2) - Math.round(viewSizeX * mapScaleFactor / 2);
     mapY = (backgroundSizeY / 2) - Math.round(viewSizeY * mapScaleFactor / 2);
 
@@ -385,10 +390,7 @@ public class EditMapView extends View {
     @Override
     public boolean onScale(ScaleGestureDetector detector) {
       float newScaleFactor = mapScaleFactor * (1f - (detector.getScaleFactor() - 1f));
-      newScaleFactor = Math.max(MIN_SCALE, Math.min(newScaleFactor, MAX_SCALE));
-      if ((viewSizeX * newScaleFactor) >= backgroundSizeX) {
-        newScaleFactor = (float)backgroundSizeX / (float)viewSizeX;
-      }
+      newScaleFactor = Math.max(GLOBAL_MIN_SCALE, Math.min(newScaleFactor, maxScale));
       // Pan while zooming to maintain the relative position on the screen of the center of the gesture
       float relativeX = detector.getFocusX() / viewSizeX; //  percent of view port
       float relativeY = detector.getFocusY() / viewSizeY;
