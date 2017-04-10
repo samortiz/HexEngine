@@ -168,7 +168,7 @@ public class Game {
     params = new ArrayList<>();
     params.add(new ModParam("damage", ModParam.TYPE.Damage));
     params.add(new ModParam("range", ModParam.TYPE.Integer));
-    Mod areaDmg = new Mod(Utils.generateUniqueId(), "Area Damage", Mod.TYPE_MOD_LOC, params, "for (Unit target : allUnitsInRange(x,y,range) { applyDamage(self, target, damage); }");
+    Mod areaDmg = new Mod(Utils.generateUniqueId(), "Damage Area", Mod.TYPE_MOD_LOC, params, "for (Unit target : allUnitsInRange(x,y,range) { applyDamage(self, target, damage); }");
     game.getMods().put(areaDmg.getId(), areaDmg);
 
     Mod rule = new Mod(Utils.generateUniqueId(), "All", Mod.TYPE_RULE, new ArrayList<ModParam>(), "return true");

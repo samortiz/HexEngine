@@ -9,7 +9,7 @@ public class ListBgTypeActivity extends ListStringBaseActivity {
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     types = GameUtils.getGame().getBgTypes();
-    typeName = "Background Type";
+    typeName = "Background";
     super.onCreate(savedInstanceState);
   }
 
