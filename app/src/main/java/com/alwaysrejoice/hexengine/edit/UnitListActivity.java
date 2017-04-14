@@ -76,7 +76,7 @@ public class UnitListActivity extends Activity implements AdapterView.OnItemClic
           // delete all the links pointing to this unit
           for (int i=game.getUnitMaps().size()-1; i>=0; i--) {
             UnitMap unitMap = game.getUnitMaps().get(i);
-            if (unit.getId().equals(unitMap.getId())) {
+            if (unit.getId().equals(unitMap.getUnitTileId())) {
               game.getUnitMaps().remove(i);
             }
           } //for
@@ -84,7 +84,7 @@ public class UnitListActivity extends Activity implements AdapterView.OnItemClic
             for (int i = group.getTileLinks().size()-1; i>=0; i--) {
               TileTypeLink link = group.getTileLinks().get(i);
               if (unit.getId().equals(link.getId()) &&
-                  (link.getTileType() == TileType.TILE_TYPE.UNIT)) {
+                  (link.getTileType() == TileType.TILE_TYPE.UNIT_TILE)) {
                 group.getTileLinks().remove(i);
               }
             }

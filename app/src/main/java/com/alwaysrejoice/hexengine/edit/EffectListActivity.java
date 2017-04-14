@@ -11,8 +11,8 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.alwaysrejoice.hexengine.R;
-import com.alwaysrejoice.hexengine.dto.Ability;
-import com.alwaysrejoice.hexengine.dto.Effect;
+import com.alwaysrejoice.hexengine.dto.AbilityTile;
+import com.alwaysrejoice.hexengine.dto.EffectTile;
 import com.alwaysrejoice.hexengine.dto.Game;
 import com.alwaysrejoice.hexengine.dto.UnitTile;
 import com.alwaysrejoice.hexengine.util.GameUtils;
@@ -27,7 +27,7 @@ import java.util.Map;
 public class EffectListActivity extends Activity implements AdapterView.OnItemClickListener {
   ListView list;
   EffectListAdapter adapter;
-  ArrayList<Effect> effects;
+  ArrayList<EffectTile> effectTiles;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -36,13 +36,13 @@ public class EffectListActivity extends Activity implements AdapterView.OnItemCl
     Game game = GameUtils.getGame();
 
     list = (ListView) findViewById(R.id.effect_list_view);
-    effects = new ArrayList<>();
+    effectTiles = new ArrayList<>();
     for (String id : game.getEffects().keySet()) {
-      Effect effect = game.getEffects().get(id);
-      effects.add(effect);
+      EffectTile effectTile = game.getEffects().get(id);
+      effectTiles.add(effectTile);
     }
-    Collections.sort(effects);
-    adapter = new EffectListAdapter(this, effects);
+    Collections.sort(effectTiles);
+    adapter = new EffectListAdapter(this, effectTiles);
     list.setAdapter(adapter);
     list.setOnItemClickListener(this);
   }
@@ -51,10 +51,10 @@ public class EffectListActivity extends Activity implements AdapterView.OnItemCl
    * Called when a particular game row is clicked on the edit screen (choose file screen)
    */
   public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
-    Effect effect = (Effect) arg0.getItemAtPosition(position);
-    Log.d("effectList", "onItemClick effect="+effect);
+    EffectTile effectTile = (EffectTile) arg0.getItemAtPosition(position);
+    Log.d("effectList", "onItemClick effectTile="+ effectTile);
     Intent myIntent = new Intent(EffectListActivity.this, EffectEditActivity.class);
-    myIntent.putExtra(EffectEditActivity.SELECTED_EFFECT_ID, effect.getId());
+    myIntent.putExtra(EffectEditActivity.SELECTED_EFFECT_ID, effectTile.getId());
     startActivity(myIntent);
   }
 
@@ -63,29 +63,29 @@ public class EffectListActivity extends Activity implements AdapterView.OnItemCl
    */
   public void delete(View view) {
     final int position = (int) view.getTag();
-    final Effect effect = (Effect) list.getItemAtPosition(position);
+    final EffectTile effectTile = (EffectTile) list.getItemAtPosition(position);
     new AlertDialog.Builder(this)
         .setTitle("Confirm Delete")
-        .setMessage("Are you sure you want to delete "+effect.getName()+"?")
+        .setMessage("Are you sure you want to delete "+ effectTile.getName()+"?")
         .setIcon(android.R.drawable.ic_dialog_alert)
         .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
           public void onClick(DialogInterface dialog, int whichButton) {
             final Game game = GameUtils.getGame();
-            // Delete all the links pointing to this effect
+            // Delete all the links pointing to this effectTile
             for (UnitTile unit : game.getUnitTiles().values()) {
-              unit.getEffectIds().remove(effect.getId());
+              unit.getEffectIds().remove(effectTile.getId());
             } // for
-            for (Ability ability : game.getAbilities().values()) {
-              if (effect.getId().equals(ability.getEffectId())) {
-                ability.setEffectId(null);
+            for (AbilityTile abilityTile : game.getAbilities().values()) {
+              if (effectTile.getId().equals(abilityTile.getEffectId())) {
+                abilityTile.setEffectId(null);
               }
             }  // for
-            Map<String, Effect> effectMap = game.getEffects();
-            effectMap.remove(effect.getId());
+            Map<String, EffectTile> effectMap = game.getEffects();
+            effectMap.remove(effectTile.getId());
             GameUtils.saveGame();
             adapter.removeItem(position);
             adapter.notifyDataSetChanged();
-            Log.d("effectList", "deleted "+effect.getName());
+            Log.d("effectList", "deleted "+ effectTile.getName());
           }})
         .setNegativeButton("Cancel", null).show();
   }

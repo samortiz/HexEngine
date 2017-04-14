@@ -75,7 +75,7 @@ public class BgListActivity extends Activity implements AdapterView.OnItemClickL
             // delete all the links pointing to this bgTile
             for (int i=game.getBgMaps().size()-1; i>=0; i--) {
               BgMap bgMap = game.getBgMaps().get(i);
-              if (tile.getId().equals(bgMap.getId())) {
+              if (tile.getId().equals(bgMap.getBgTileId())) {
                 game.getBgMaps().remove(i);
               }
             } //for

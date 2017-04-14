@@ -9,7 +9,7 @@ import android.widget.ListView;
 import android.widget.Spinner;
 
 import com.alwaysrejoice.hexengine.R;
-import com.alwaysrejoice.hexengine.dto.Ability;
+import com.alwaysrejoice.hexengine.dto.AbilityTile;
 import com.alwaysrejoice.hexengine.dto.Game;
 import com.alwaysrejoice.hexengine.dto.UnitTile;
 import com.alwaysrejoice.hexengine.util.GameUtils;
@@ -28,7 +28,7 @@ public class AbilityChooserActivity extends Activity {
   String unitId;
   ListView list;
   AbilityListAdapter adapter;
-  List<Ability> abilities;
+  List<AbilityTile> abilities;
   UnitTile unit;
   List<String> allAbilityNames;
 
@@ -51,16 +51,16 @@ public class AbilityChooserActivity extends Activity {
     list = (ListView) findViewById(R.id.ability_list_view);
     abilities = new ArrayList<>();
     for (String abilityId : unit.getAbilityIds()) {
-      Ability ability = game.getAbilities().get(abilityId);
-      abilities.add(ability);
+      AbilityTile abilityTile = game.getAbilities().get(abilityId);
+      abilities.add(abilityTile);
     }
     adapter = new AbilityListAdapter(this, abilities);
     list.setAdapter(adapter);
 
     allAbilityNames = new ArrayList<>();
-    for (Ability ability : game.getAbilities().values()) {
-      if (!abilities.contains(ability)) {
-        allAbilityNames.add(ability.getName());
+    for (AbilityTile abilityTile : game.getAbilities().values()) {
+      if (!abilities.contains(abilityTile)) {
+        allAbilityNames.add(abilityTile.getName());
       }
     }
     resetAbilitySpinner();
@@ -71,12 +71,12 @@ public class AbilityChooserActivity extends Activity {
    */
   public void delete(View view) {
     final int position = (int) view.getTag();
-    final Ability ability = (Ability) list.getItemAtPosition(position);
-    allAbilityNames.add(ability.getName());
+    final AbilityTile abilityTile = (AbilityTile) list.getItemAtPosition(position);
+    allAbilityNames.add(abilityTile.getName());
     resetAbilitySpinner();
     adapter.removeItem(position);
     adapter.notifyDataSetChanged();
-    Log.d("abilityChooser", "deleted "+ability.getName());
+    Log.d("abilityChooser", "deleted "+ abilityTile.getName());
   }
 
   /**
@@ -86,8 +86,8 @@ public class AbilityChooserActivity extends Activity {
     Log.d("abilityChooser", "Save");
     List<String> abilityIds = unit.getAbilityIds();
     abilityIds.clear();
-    for (Ability ability : abilities) {
-      abilityIds.add(ability.getId());
+    for (AbilityTile abilityTile : abilities) {
+      abilityIds.add(abilityTile.getId());
     } // for
     GameUtils.saveGame();
     Intent myIntent = new Intent(AbilityChooserActivity.this, UnitEditActivity.class);
@@ -102,11 +102,11 @@ public class AbilityChooserActivity extends Activity {
     Log.d("abilityChooser", "Add");
     String abilityName = Utils.getSpinnerValue((Spinner) findViewById(R.id.ability_spinner));
     String abilityId = GameUtils.getAbilityIdFromName(abilityName);
-    Ability ability = GameUtils.getGame().getAbilities().get(abilityId);
+    AbilityTile abilityTile = GameUtils.getGame().getAbilities().get(abilityId);
     allAbilityNames.remove(abilityName);
     resetAbilitySpinner();
-    if (!abilities.contains(ability)) {
-      abilities.add(ability);
+    if (!abilities.contains(abilityTile)) {
+      abilities.add(abilityTile);
     }
     adapter.notifyDataSetChanged();
   }

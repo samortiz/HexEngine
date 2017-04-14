@@ -269,7 +269,7 @@ public class ActionEditActivity extends Activity {
     Log.d("", "actionList = "+actionList);
 
     if (ActionListActivity.RETURN_LOC_ABILITY_APPLIES.equals(returnLoc)) {
-      // Go to the ability editor (we are choosing an applies rule)
+      // Go to the abilityTile editor (we are choosing an applies rule)
       Intent myIntent = new Intent(ActionEditActivity.this, AbilityEditActivity.class);
       myIntent.putExtra(ActionListActivity.RETURN_LOC, returnLoc);
       myIntent.putExtra(ActionListActivity.CALLING_OBJ, callingObj);

@@ -7,7 +7,7 @@ import android.util.Log;
 import android.view.View;
 
 import com.alwaysrejoice.hexengine.edit.GameListActivity;
-import com.alwaysrejoice.hexengine.play.MapActivity;
+import com.alwaysrejoice.hexengine.play.WorldListActivity;
 import com.alwaysrejoice.hexengine.util.FileUtils;
 
 /**
@@ -32,7 +32,7 @@ public class MainActivity extends Activity {
   }
 
   public void showPlay(View view){
-    Intent myIntent = new Intent(MainActivity.this, MapActivity.class);
+    Intent myIntent = new Intent(MainActivity.this, WorldListActivity.class);
     startActivity(myIntent);
     Log.d("click", "mainActivity showPlay");
   }

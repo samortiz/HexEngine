@@ -1,48 +1,50 @@
 package com.alwaysrejoice.hexengine.dto;
 
 public class BgMap {
-  private int col;
-  private int row;
-  private String id;
+  private Position pos;
+  private String bgTileId;
 
   public BgMap() {}
 
-  public BgMap(int col, int row, String id) {
-    this.col = col;
-    this.row = row;
-    this.id = id;
+  public BgMap(int row, int col, String bgTileId) {
+    this.pos = new Position(row, col);
+    this.bgTileId = bgTileId;
+  }
+
+  public BgMap(Position pos, String bgTileId) {
+    this.pos = pos;
+    this.bgTileId = bgTileId;
+  }
+
+  public Position getPos() {
+    return pos;
+  }
+
+  public void setPos(Position pos) {
+    this.pos = pos;
+  }
+
+  public String getBgTileId() {
+    return bgTileId;
+  }
+
+  public void setBgTileId(String bgTileId) {
+    this.bgTileId = bgTileId;
   }
 
   public int getCol() {
-    return col;
-  }
-
-  public void setCol(int col) {
-    this.col = col;
+    return pos.getCol();
   }
 
   public int getRow() {
-    return row;
-  }
-
-  public void setRow(int row) {
-    this.row = row;
-  }
-
-  public String getId() {
-    return id;
-  }
-
-  public void setId(String id) {
-    this.id = id;
+    return pos.getRow();
   }
 
   @Override
   public String toString() {
     return "BgMap{" +
-        "col=" + col +
-        ", row=" + row +
-        ", id='" + id + '\'' +
+        "pos=" + pos +
+        ", bgTileId='" + bgTileId + '\'' +
         '}';
   }
 }

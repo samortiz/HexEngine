@@ -12,9 +12,9 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.alwaysrejoice.hexengine.R;
-import com.alwaysrejoice.hexengine.dto.Ability;
+import com.alwaysrejoice.hexengine.dto.AbilityTile;
 import com.alwaysrejoice.hexengine.dto.Action;
-import com.alwaysrejoice.hexengine.dto.Effect;
+import com.alwaysrejoice.hexengine.dto.EffectTile;
 import com.alwaysrejoice.hexengine.dto.Game;
 import com.alwaysrejoice.hexengine.util.DialogMultiSelect;
 import com.alwaysrejoice.hexengine.util.DialogMultiSelectListener;
@@ -30,7 +30,7 @@ import static com.alwaysrejoice.hexengine.edit.ActionListActivity.CALLING_OBJ;
 
 public class AbilityEditActivity extends Activity {
   public static final String SELECTED_ABILITY_ID = "SELECTED_ABILITY_ID";
-  Ability ability; // The ability we are currently editing
+  AbilityTile abilityTile; // The abilityTile we are currently editing
   DialogMultiSelect rangeRestrictDialog;
 
   @Override
@@ -44,24 +44,24 @@ public class AbilityEditActivity extends Activity {
     // Check if we are coming back from an ImagePickerActivity
     String abilityJson = (String) bundle.get(ImagePickerActivity.EXTRA_TILE);
     if (abilityJson != null) {
-      ability = GameUtils.jsonToAbility(abilityJson);
-      Log.d("abilityEdit", "Tile chosen! " + ability.getName());
+      abilityTile = GameUtils.jsonToAbility(abilityJson);
+      Log.d("abilityEdit", "Tile chosen! " + abilityTile.getName());
     }
 
     // Check if we are coming back from choosing Actions for onStart
     String abilityId = (String) bundle.get(CALLING_OBJ);
-    // Load the ability we are editing (if one is selected from the ability list)
+    // Load the abilityTile we are editing (if one is selected from the abilityTile list)
     if (abilityId == null) {
       abilityId = (String) bundle.get(AbilityEditActivity.SELECTED_ABILITY_ID);
     }
     if ((abilityId != null) && !"".equals(abilityId)) {
-      ability = game.getAbilities().get(abilityId);
-      Log.d("abilityEdit", "begin editing selected ability "+ability.getName());
+      abilityTile = game.getAbilities().get(abilityId);
+      Log.d("abilityEdit", "begin editing selected abilityTile "+ abilityTile.getName());
     }
 
-    // No ability loaded create a new one
-    if (ability == null) {
-      ability = new Ability(Utils.generateUniqueId());
+    // No abilityTile loaded create a new one
+    if (abilityTile == null) {
+      abilityTile = new AbilityTile(Utils.generateUniqueId());
     }
 
     String returnLoc = (String) bundle.get(ActionListActivity.RETURN_LOC);
@@ -70,9 +70,9 @@ public class AbilityEditActivity extends Activity {
     if (listActionJson != null) {
       List<Action> actions = GameUtils.jsonToActionList(listActionJson);
       if (ActionListActivity.RETURN_LOC_ABILITY.equals(returnLoc)) {
-        ability.setOnStart(actions);
+        abilityTile.setOnStart(actions);
       } else if (ActionListActivity.RETURN_LOC_ABILITY_APPLIES.equals(returnLoc)) {
-        ability.setApplies(actions.get(0));
+        abilityTile.setApplies(actions.get(0));
       } else {
         Log.e("abilityEdit", "Error, found an actionList but of an unknown returnLoc="+returnLoc);
       }
@@ -85,9 +85,9 @@ public class AbilityEditActivity extends Activity {
     }
     Utils.setupSpinner((Spinner)findViewById(R.id.effect_spinner), effectNames);
 
-    rangeRestrictDialog = new DialogMultiSelect(this, "Range Restrictions", game.getBgTypes(), ability.getRangeRestrict());
+    rangeRestrictDialog = new DialogMultiSelect(this, "Range Restrictions", game.getBgTypes(), abilityTile.getRangeRestrict());
 
-    // Load the UI with the ability data
+    // Load the UI with the abilityTile data
     setUiFromAbility();
   }
 
@@ -97,10 +97,10 @@ public class AbilityEditActivity extends Activity {
   public void save(View view) {
     loadAbilityFromUi();
     Game game = GameUtils.getGame();
-    Map<String, Ability> abilities = game.getAbilities();
-    abilities.put(ability.getId(), ability);
+    Map<String, AbilityTile> abilities = game.getAbilities();
+    abilities.put(abilityTile.getId(), abilityTile);
     GameUtils.saveGame();
-    Log.d("abilityEdit", "saved Ability name="+ability.getName());
+    Log.d("abilityEdit", "saved AbilityTile name="+ abilityTile.getName());
     // Go to the list
     Intent myIntent = new Intent(AbilityEditActivity.this, AbilityListActivity.class);
     startActivity(myIntent);
@@ -113,46 +113,46 @@ public class AbilityEditActivity extends Activity {
     loadAbilityFromUi();
     Intent myIntent = new Intent(AbilityEditActivity.this, ImagePickerActivity.class);
     myIntent.putExtra(ImagePickerActivity.EXTRA_RETURN, ImagePickerActivity.RETURN_ABILITY);
-    myIntent.putExtra(ImagePickerActivity.EXTRA_TILE, GameUtils.toJson(ability));
+    myIntent.putExtra(ImagePickerActivity.EXTRA_TILE, GameUtils.toJson(abilityTile));
     startActivity(myIntent);
   }
 
   /**
-   * Loads the information from the UI input components into the ability
+   * Loads the information from the UI input components into the abilityTile
    */
   private void loadAbilityFromUi() {
     // bitmap is set by the ImagePicker
 
     EditText nameInput = (EditText) findViewById(R.id.ability_name);
-    ability.setName(nameInput.getText().toString().trim());
+    abilityTile.setName(nameInput.getText().toString().trim());
 
     EditText rangeInput = (EditText) findViewById(R.id.range_input);
-    ability.setRange(Utils.stringToInt(rangeInput.getText().toString().trim()));
+    abilityTile.setRange(Utils.stringToInt(rangeInput.getText().toString().trim()));
 
     // RangeRestrict is set by the dialog
 
     EditText actionInput = (EditText) findViewById(R.id.action_cost_input);
-    ability.setActionCost(Utils.stringToDouble(actionInput.getText().toString().trim()));
+    abilityTile.setActionCost(Utils.stringToDouble(actionInput.getText().toString().trim()));
 
-    ability.setEffectId(null);
+    abilityTile.setEffectId(null);
     String effectName = Utils.getSpinnerValue((Spinner)findViewById(R.id.effect_spinner));
-    Map<String, Effect> effects = GameUtils.getGame().getEffects();
+    Map<String, EffectTile> effects = GameUtils.getGame().getEffects();
     for (String effectId : effects.keySet()) {
-      Effect effect = effects.get(effectId);
-      if (effect.getName().equals(effectName)) {
-        ability.setEffectId(effect.getId());
+      EffectTile effectTile = effects.get(effectId);
+      if (effectTile.getName().equals(effectName)) {
+        abilityTile.setEffectId(effectTile.getId());
       }
     } // for
 
   }
 
   /**
-   * Updates the UI to match the data in the ability
+   * Updates the UI to match the data in the abilityTile
    */
   private void setUiFromAbility() {
     ImageView imgInput = (ImageView) findViewById(R.id.ability_img);
-    if (ability.getBitmap() != null) {
-      imgInput.setImageBitmap(ability.getBitmap());
+    if (abilityTile.getBitmap() != null) {
+      imgInput.setImageBitmap(abilityTile.getBitmap());
       imgInput.getLayoutParams().height = 200;
       imgInput.setScaleType(ImageView.ScaleType.FIT_CENTER);
       imgInput.setAdjustViewBounds(true);
@@ -161,29 +161,29 @@ public class AbilityEditActivity extends Activity {
     }
 
     EditText nameInput = (EditText) findViewById(R.id.ability_name);
-    nameInput.setText(ability.getName());
+    nameInput.setText(abilityTile.getName());
 
     TextView appliesText = (TextView) findViewById(R.id.applies);
-    Action applies = ability.getApplies();
+    Action applies = abilityTile.getApplies();
     if (applies != null) {
       appliesText.setText(GameUtils.getModDisplayFromId(applies.getModId()));
     }
 
     EditText rangeInput = (EditText) findViewById(R.id.range_input);
-    rangeInput.setText(Utils.intToString(ability.getRange()));
+    rangeInput.setText(Utils.intToString(abilityTile.getRange()));
 
     TextView rangeRestrictText = (TextView) findViewById(R.id.range_restrict);
-    rangeRestrictText.setText(Utils.toCSV(ability.getRangeRestrict()));
+    rangeRestrictText.setText(Utils.toCsv(abilityTile.getRangeRestrict()));
 
     EditText actionInput = (EditText) findViewById(R.id.action_cost_input);
-    actionInput.setText(Utils.doubleToString(ability.getActionCost()));
+    actionInput.setText(Utils.doubleToString(abilityTile.getActionCost()));
 
     TextView onStart = (TextView) findViewById(R.id.on_start);
-    onStart.setText(GameUtils.actionsToCSV(ability.getOnStart()));
+    onStart.setText(GameUtils.actionsToCSV(abilityTile.getOnStart()));
 
-    if (ability.getEffectId() != null) {
+    if (abilityTile.getEffectId() != null) {
       Utils.setSpinnerValue((Spinner) findViewById(R.id.effect_spinner),
-          GameUtils.getGame().getEffects().get(ability.getEffectId()).getName());
+          GameUtils.getGame().getEffects().get(abilityTile.getEffectId()).getName());
     }
 
   }
@@ -202,7 +202,7 @@ public class AbilityEditActivity extends Activity {
       @Override
       public void onOK() {
         TextView textView = (TextView) findViewById(R.id.range_restrict);
-        textView.setText(Utils.toCSV(ability.getRangeRestrict()));
+        textView.setText(Utils.toCsv(abilityTile.getRangeRestrict()));
       }
     });
   }
@@ -211,14 +211,14 @@ public class AbilityEditActivity extends Activity {
     Log.d("abilityEdit", "Edit Applies");
     save(view);
     ArrayList<Action> actions = new ArrayList<>();
-    if (ability.getApplies() != null) {
-      actions.add(ability.getApplies());
+    if (abilityTile.getApplies() != null) {
+      actions.add(abilityTile.getApplies());
     }
 
     Intent myIntent = new Intent(AbilityEditActivity.this, ActionEditActivity.class);
     myIntent.putExtra(ActionEditActivity.SELECTED_ACTION_INDEX, Integer.toString(actions.size() -1));
     myIntent.putExtra(ActionListActivity.RETURN_LOC, ActionListActivity.RETURN_LOC_ABILITY_APPLIES);
-    myIntent.putExtra(ActionListActivity.CALLING_OBJ, ability.getId());
+    myIntent.putExtra(ActionListActivity.CALLING_OBJ, abilityTile.getId());
     myIntent.putExtra(ActionListActivity.ACTION_LIST, GameUtils.toJson(actions));
     startActivity(myIntent);
   }
@@ -227,8 +227,8 @@ public class AbilityEditActivity extends Activity {
     save(view);
     Intent myIntent = new Intent(AbilityEditActivity.this, ActionListActivity.class);
     myIntent.putExtra(ActionListActivity.RETURN_LOC, ActionListActivity.RETURN_LOC_ABILITY);
-    myIntent.putExtra(ActionListActivity.CALLING_OBJ, ability.getId());
-    myIntent.putExtra(ActionListActivity.ACTION_LIST, GameUtils.toJson(ability.getOnStart()));
+    myIntent.putExtra(ActionListActivity.CALLING_OBJ, abilityTile.getId());
+    myIntent.putExtra(ActionListActivity.ACTION_LIST, GameUtils.toJson(abilityTile.getOnStart()));
     startActivity(myIntent);
   }
 

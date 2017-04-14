@@ -1,47 +1,74 @@
 package com.alwaysrejoice.hexengine.dto;
 
 import android.graphics.Bitmap;
+import android.support.annotation.NonNull;
+
+import com.alwaysrejoice.hexengine.util.Utils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class UnitTile implements TileType {
+public class Unit implements TileType {
 
   private String id;
+  private Position pos;
+  private String unitTileId;
   private String name;
   private Bitmap bitmap;
   private String team;
+  private double hp;
   private double hpMax;
+  private double action;
   private double actionMax;
   private List<String> attr = new ArrayList<>();
   private int moveRange;
   private List<String> moveRestrict = new ArrayList<>();
   private int sightRange;
   private List<String> sightRestrict = new ArrayList<>();
-  private List<String> abilityIds = new ArrayList<>(); // ability ids
+  private List<Ability> abilities = new ArrayList<>();
   private List<Damage> defence = new ArrayList<>();
-  private List<String> effectIds = new ArrayList<>(); // effect ids
+  private List<Effect> effects = new ArrayList<>();
   private Map<String, String> storage = new HashMap<>();
 
-  public UnitTile() {
+  public Unit() {
   }
 
-  public UnitTile(String id) {
-    this.id = id;
+  public Unit(UnitMap unitMap, Game game) {
+    this.id = Utils.generateUniqueId();
+    this.pos = unitMap.getPos();
+    UnitTile unitTile = game.getUnitTiles().get(unitMap.getUnitTileId());
+    this.unitTileId = unitTile.getId();
+    this.name = unitTile.getName();
+    this.bitmap = unitTile.getBitmap();
+    this.team = unitTile.getTeam();
+    this.hp = unitTile.getHpMax();
+    this.hpMax = unitTile.getHpMax();
+    this.action = unitTile.getActionMax();
+    this.actionMax = unitTile.getActionMax();
+    this.attr.addAll(unitTile.getAttr());
+    this.moveRange = unitTile.getMoveRange();
+    this.moveRestrict.addAll(unitTile.getMoveRestrict());
+    this.sightRange = unitTile.getSightRange();
+    this.sightRestrict.addAll(unitTile.getSightRestrict());
+    Map<String, AbilityTile> allAbilities = game.getAbilities();
+    for (String abilityId : unitTile.getAbilityIds()) {
+      this.abilities.add(new Ability(allAbilities.get(abilityId), game));
+    }
+    this.defence.addAll(unitTile.getDefence());
+    for (String effectTileId : unitTile.getEffectIds()) {
+      this.effects.add(new Effect(game.getEffects().get(effectTileId)));
+    }
+    this.storage.putAll(unitTile.getStorage());
   }
 
-  public UnitTile(String id, String name, Bitmap bitmap) {
-    this.id = id;
-    this.name = name;
-    this.bitmap = bitmap;
-  }
-
+  @Override
   public TILE_TYPE getTileType() {
-    return TILE_TYPE.UNIT_TILE;
+    return TileType.TILE_TYPE.UNIT;
   }
 
+  @Override
   public String getId() {
     return id;
   }
@@ -50,18 +77,38 @@ public class UnitTile implements TileType {
     this.id = id;
   }
 
+  public Position getPos() {
+    return pos;
+  }
+
+  public void setPos(Position pos) {
+    this.pos = pos;
+  }
+
+  public String getUnitTileId() {
+    return unitTileId;
+  }
+
+  public void setUnitTileId(String unitTileId) {
+    this.unitTileId = unitTileId;
+  }
+
+  @Override
   public String getName() {
     return name;
   }
 
+  @Override
   public void setName(String name) {
     this.name = name;
   }
 
+  @Override
   public Bitmap getBitmap() {
     return bitmap;
   }
 
+  @Override
   public void setBitmap(Bitmap bitmap) {
     this.bitmap = bitmap;
   }
@@ -74,12 +121,28 @@ public class UnitTile implements TileType {
     this.team = team;
   }
 
+  public double getHp() {
+    return hp;
+  }
+
+  public void setHp(double hp) {
+    this.hp = hp;
+  }
+
   public double getHpMax() {
     return hpMax;
   }
 
   public void setHpMax(double hpMax) {
     this.hpMax = hpMax;
+  }
+
+  public double getAction() {
+    return action;
+  }
+
+  public void setAction(double action) {
+    this.action = action;
   }
 
   public double getActionMax() {
@@ -130,13 +193,14 @@ public class UnitTile implements TileType {
     this.sightRestrict = sightRestrict;
   }
 
-  public List<String> getAbilityIds() {
-    return abilityIds;
+  public List<Ability> getAbilities() {
+    return abilities;
   }
 
-  public void setAbilityIds(List<String> abilityIds) {
-    this.abilityIds = abilityIds;
+  public void setAbilities(List<Ability> abilities) {
+    this.abilities = abilities;
   }
+
   public List<Damage> getDefence() {
     return defence;
   }
@@ -145,12 +209,12 @@ public class UnitTile implements TileType {
     this.defence = defence;
   }
 
-  public List<String> getEffectIds() {
-    return effectIds;
+  public List<Effect> getEffects() {
+    return effects;
   }
 
-  public void setEffectIds(List<String> effectIds) {
-    this.effectIds = effectIds;
+  public void setEffects(List<Effect> effects) {
+    this.effects = effects;
   }
 
   public Map<String, String> getStorage() {
@@ -162,29 +226,32 @@ public class UnitTile implements TileType {
   }
 
   @Override
-  public int compareTo(Object o) {
-    if (o == null) return 0;
-    return this.getName().compareTo(((TileType) o).getName());
-  }
-
-  @Override
   public String toString() {
-    return "UnitTile{" +
+    return "Unit{" +
         "id='" + id + '\'' +
+        ", unitTileId='" + unitTileId + '\'' +
         ", name='" + name + '\'' +
         ", bitmap=" + bitmap +
         ", team='" + team + '\'' +
+        ", hp=" + hp +
         ", hpMax=" + hpMax +
+        ", action=" + action +
         ", actionMax=" + actionMax +
         ", attr=" + attr +
         ", moveRange=" + moveRange +
         ", moveRestrict=" + moveRestrict +
         ", sightRange=" + sightRange +
         ", sightRestrict=" + sightRestrict +
-        ", abilityIds=" + abilityIds +
+        ", abilities=" + abilities +
         ", defence=" + defence +
-        ", effectIds=" + effectIds +
+        ", effects=" + effects +
         ", storage=" + storage +
         '}';
+  }
+
+  @Override
+  public int compareTo(@NonNull Object o) {
+    if (o == null) return 0;
+    return ((Unit)o).getName().toLowerCase().compareTo(name.toLowerCase());
   }
 }

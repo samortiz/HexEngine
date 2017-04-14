@@ -36,5 +36,4 @@ public class EditMapActivity extends Activity implements View.OnTouchListener {
     super.onBackPressed();
   }
 
-
 }

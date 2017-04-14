@@ -38,7 +38,7 @@ public class UnitEditActivity extends Activity {
   List<TileType> unitAbilities; // Actually contains abilities
 
   DialogMultiSelectTileType effectDialog;
-  List<TileType> unitEffects; // Actually contains effects
+  List<TileType> unitEffects; // Actually contains effectTiles
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -104,7 +104,7 @@ public class UnitEditActivity extends Activity {
     Game game = GameUtils.getGame();
     Map<String, UnitTile> unitTiles = game.getUnitTiles();
 
-    // Clear and re-add all the selected effect ids
+    // Clear and re-add all the selected effectTile ids
     unit.getEffectIds().clear();
     for (TileType t : unitEffects) {
       unit.getEffectIds().add(t.getId());
@@ -183,27 +183,27 @@ public class UnitEditActivity extends Activity {
     actionInput.setText(Utils.doubleToString(unit.getActionMax()));
 
     TextView attrText = (TextView) findViewById(R.id.selected_attr);
-    attrText.setText(Utils.toCSV(unit.getAttr()));
+    attrText.setText(Utils.toCsv(unit.getAttr()));
 
     EditText moveRangeInput = (EditText) findViewById(R.id.move_range_input);
     moveRangeInput.setText(Utils.intToString(unit.getMoveRange()));
 
     TextView moveRestrictText = (TextView) findViewById(R.id.move_restrict);
-    moveRestrictText.setText(Utils.toCSV(unit.getMoveRestrict()));
+    moveRestrictText.setText(Utils.toCsv(unit.getMoveRestrict()));
 
     EditText sightRangeInput = (EditText) findViewById(R.id.sight_range_input);
     sightRangeInput.setText(Utils.intToString(unit.getSightRange()));
 
     TextView sightRestrictText = (TextView) findViewById(R.id.sight_restrict);
-    sightRestrictText.setText(Utils.toCSV(unit.getSightRestrict()));
+    sightRestrictText.setText(Utils.toCsv(unit.getSightRestrict()));
 
     TextView abilityText = (TextView) findViewById(R.id.abilities);
     abilityText.setText(GameUtils.tileTypeToCSV(unitAbilities));
 
     TextView defenceText = (TextView) findViewById(R.id.defence);
-    defenceText.setText(GameUtils.damageToCSV(unit.getDefence()));
+    defenceText.setText(GameUtils.damagesToString(unit.getDefence()));
 
-    TextView effectText = (TextView) findViewById(R.id.effects);
+    TextView effectText = (TextView) findViewById(R.id.effectTiles);
     effectText.setText(GameUtils.tileTypeToCSV(unitEffects));
 
   }
@@ -224,7 +224,7 @@ public class UnitEditActivity extends Activity {
       @Override
       public void onOK() {
         TextView textView = (TextView) findViewById(R.id.selected_attr);
-        textView.setText(Utils.toCSV(unit.getAttr()));
+        textView.setText(Utils.toCsv(unit.getAttr()));
       }
     });
   }
@@ -237,7 +237,7 @@ public class UnitEditActivity extends Activity {
       @Override
       public void onOK() {
         TextView textView = (TextView) findViewById(R.id.move_restrict);
-        textView.setText(Utils.toCSV(unit.getMoveRestrict()));
+        textView.setText(Utils.toCsv(unit.getMoveRestrict()));
       }
     });
   }
@@ -250,7 +250,7 @@ public class UnitEditActivity extends Activity {
       @Override
       public void onOK() {
         TextView textView = (TextView) findViewById(R.id.sight_restrict);
-        textView.setText(Utils.toCSV(unit.getSightRestrict()));
+        textView.setText(Utils.toCsv(unit.getSightRestrict()));
       }
     });
   }
@@ -278,11 +278,11 @@ public class UnitEditActivity extends Activity {
   }
 
   public void editEffects(View view) {
-    Log.d("unitEdit", "Edit effects");
+    Log.d("unitEdit", "Edit effectTiles");
     effectDialog.showDialog(new DialogMultiSelectListener() {
       @Override
       public void onOK() {
-        TextView textView = (TextView) findViewById(R.id.effects);
+        TextView textView = (TextView) findViewById(R.id.effectTiles);
         textView.setText(GameUtils.tileTypeToCSV(unitEffects));
       }
     });

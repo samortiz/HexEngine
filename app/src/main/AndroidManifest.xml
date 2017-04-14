@@ -141,7 +141,11 @@
         android:screenOrientation="portrait">
     </activity>
     <activity
-        android:name=".play.MapActivity"
+        android:name=".play.WorldActivity"
+        android:screenOrientation="portrait">
+    </activity>
+    <activity
+        android:name=".play.WorldListActivity"
         android:screenOrientation="portrait">
     </activity>
   </application>

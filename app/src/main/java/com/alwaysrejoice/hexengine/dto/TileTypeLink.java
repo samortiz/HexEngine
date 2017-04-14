@@ -24,7 +24,7 @@ public class TileTypeLink {
           return tile;
         }
       } // for
-    } else if (TileType.TILE_TYPE.UNIT.equals(link.getTileType())) {
+    } else if (TileType.TILE_TYPE.UNIT_TILE.equals(link.getTileType())) {
       for (String tileId : game.getUnitTiles().keySet()) {
         UnitTile tile = game.getUnitTiles().get(tileId);
         if (link.getId().equals(tile.getId())) {

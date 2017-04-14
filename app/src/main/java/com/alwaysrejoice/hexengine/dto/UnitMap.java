@@ -1,48 +1,50 @@
 package com.alwaysrejoice.hexengine.dto;
 
 public class UnitMap {
-  private int col;
-  private int row;
-  private String id;
+  private Position pos;
+  private String unitTileId;
 
   public UnitMap() {}
 
-  public UnitMap(int col, int row, String id) {
-    this.col = col;
-    this.row = row;
-    this.id = id;
+  public UnitMap(int row, int col, String unitTileId) {
+    this.pos = new Position(row, col);
+    this.unitTileId = unitTileId;
   }
 
-  public int getCol() {
-    return col;
+  public UnitMap(Position pos, String unitTileId) {
+    this.pos = pos;
+    this.unitTileId = unitTileId;
   }
 
-  public void setCol(int col) {
-    this.col = col;
+  public Position getPos() {
+    return pos;
+  }
+
+  public void setPos(Position pos) {
+    this.pos = pos;
+  }
+
+  public String getUnitTileId() {
+    return unitTileId;
+  }
+
+  public void setUnitTileId(String unitTileId) {
+    this.unitTileId = unitTileId;
   }
 
   public int getRow() {
-    return row;
+    return pos.getRow();
   }
 
-  public void setRow(int row) {
-    this.row = row;
-  }
-
-  public String getId() {
-    return id;
-  }
-
-  public void setId(String id) {
-    this.id = id;
+  public int getCol() {
+    return pos.getCol();
   }
 
   @Override
   public String toString() {
     return "UnitMap{" +
-        "col=" + col +
-        ", row=" + row +
-        ", id='" + id + '\'' +
+        "pos=" + pos +
+        ", unitTileId='" + unitTileId + '\'' +
         '}';
   }
 }

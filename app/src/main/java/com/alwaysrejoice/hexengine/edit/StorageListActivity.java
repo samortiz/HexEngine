@@ -81,7 +81,7 @@ public class StorageListActivity extends Activity {
    * Called when the user clicks on "Create New"
    */
   public void create(View view) {
-    Log.d("storageList", "Create New");
+    Log.d("storageList", "Add New");
     EditText keyInput = (EditText) findViewById(R.id.storage_key);
     String key = keyInput.getText().toString();
     keyInput.setText("");

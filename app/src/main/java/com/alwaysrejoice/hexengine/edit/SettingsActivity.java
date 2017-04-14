@@ -33,7 +33,7 @@ public class SettingsActivity extends Activity {
   public void gotoAbilityList(View view) {
     Intent myIntent = new Intent(SettingsActivity.this, AbilityListActivity.class);
     startActivity(myIntent);
-    Log.d("settings", "goto Ability List");
+    Log.d("settings", "goto AbilityTile List");
   }
 
   public void gotoModList(View view) {
@@ -45,7 +45,7 @@ public class SettingsActivity extends Activity {
   public void gotoEffectsList(View view) {
     Intent myIntent = new Intent(SettingsActivity.this, EffectListActivity.class);
     startActivity(myIntent);
-    Log.d("settings", "goto Effect List");
+    Log.d("settings", "goto EffectTile List");
   }
 
   public void gotoListEditor(View view) {

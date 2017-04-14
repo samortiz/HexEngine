@@ -12,9 +12,9 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.alwaysrejoice.hexengine.R;
-import com.alwaysrejoice.hexengine.dto.Ability;
+import com.alwaysrejoice.hexengine.dto.AbilityTile;
 import com.alwaysrejoice.hexengine.dto.Action;
-import com.alwaysrejoice.hexengine.dto.Effect;
+import com.alwaysrejoice.hexengine.dto.EffectTile;
 import com.alwaysrejoice.hexengine.dto.Mod;
 import com.alwaysrejoice.hexengine.util.GameUtils;
 
@@ -86,12 +86,12 @@ public class ModListActivity extends Activity implements AdapterView.OnItemClick
         .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
           public void onClick(DialogInterface dialog, int whichButton) {
             // Clear all matching mod links in the game
-            for (Ability ability : GameUtils.getGame().getAbilities().values()) {
-              deleteMod(mod.getId(), ability.getOnStart());
+            for (AbilityTile abilityTile : GameUtils.getGame().getAbilities().values()) {
+              deleteMod(mod.getId(), abilityTile.getOnStart());
             }
-            for (Effect effect : GameUtils.getGame().getEffects().values()) {
-              deleteMod(mod.getId(), effect.getOnRun());
-              deleteMod(mod.getId(), effect.getOnEnd());
+            for (EffectTile effectTile : GameUtils.getGame().getEffects().values()) {
+              deleteMod(mod.getId(), effectTile.getOnRun());
+              deleteMod(mod.getId(), effectTile.getOnEnd());
             }
             // Remove the mod from master list
             modMap.remove(mod.getId());

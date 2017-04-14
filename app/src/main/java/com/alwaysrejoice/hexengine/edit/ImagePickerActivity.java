@@ -31,7 +31,7 @@ public class ImagePickerActivity extends Activity {
   public static final String EXTRA_TILE = "IMAGE_PICKER_TILE";
 
   public static final String RETURN_BG = "BG";
-  public static final String RETURN_UNIT = "UNIT";
+  public static final String RETURN_UNIT = "UNIT_TILE";
   public static final String RETURN_EFFECT = "EFFECT";
   public static final String RETURN_ABILITY = "ABILITY";
 
@@ -45,7 +45,16 @@ public class ImagePickerActivity extends Activity {
 
     // Set the page title
     final String returnLoc = getIntent().getStringExtra(EXTRA_RETURN);
-    String desc = RETURN_BG.equals(returnLoc) ? "Choose Image for Background" : "Choose Image for Unit";
+    String desc = "Choose Image";
+    if (RETURN_BG.equals(returnLoc)) {
+      desc = "Choose Image for Background";
+    } else if (RETURN_UNIT.equals(returnLoc)) {
+      desc = "Choose Image for Unit";
+    } else if (RETURN_EFFECT.equals(returnLoc)) {
+      desc = "Choose Image for Effect";
+    } else if (RETURN_ABILITY.equals(returnLoc)) {
+      desc = "Choose Image for Ability";
+    }
     TextView titleView = (TextView) findViewById(R.id.title);
     titleView.setText(desc);
 

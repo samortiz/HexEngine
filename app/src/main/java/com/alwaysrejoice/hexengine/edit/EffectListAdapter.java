@@ -9,26 +9,26 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.alwaysrejoice.hexengine.R;
-import com.alwaysrejoice.hexengine.dto.Effect;
+import com.alwaysrejoice.hexengine.dto.EffectTile;
 
 import java.util.List;
 
 public class EffectListAdapter extends BaseAdapter {
 
   private Context context;
-  private List<Effect> effects;
+  private List<EffectTile> effectTiles;
 
-  public EffectListAdapter(Context context, List<Effect> effects) {
+  public EffectListAdapter(Context context, List<EffectTile> effectTiles) {
     this.context = context;
-    this.effects = effects;
+    this.effectTiles = effectTiles;
   }
 
   public int getCount() {
-    return effects.size();
+    return effectTiles.size();
   }
 
-  public Effect getItem(int arg0) {
-    return effects.get(arg0);
+  public EffectTile getItem(int arg0) {
+    return effectTiles.get(arg0);
   }
 
   public long getItemId(int position) {
@@ -36,20 +36,20 @@ public class EffectListAdapter extends BaseAdapter {
   }
 
   public void removeItem(int position) {
-    effects.remove(position);
+    effectTiles.remove(position);
   }
 
   public View getView(int position, View convertView, ViewGroup parent) {
     LayoutInflater inflater = LayoutInflater.from(context);
     View row = inflater.inflate(R.layout.effect_list_row, parent, false);
-    Effect effect = this.effects.get(position);
+    EffectTile effectTile = this.effectTiles.get(position);
 
     ImageView imageView = (ImageView) row.findViewById(R.id.row_img);
     TextView nameView = (TextView) row.findViewById(R.id.row_name);
     ImageView deleteImg = (ImageView) row.findViewById(R.id.row_delete);
 
-    imageView.setImageBitmap(effect.getBitmap());
-    nameView.setText(effect.getName()+"("+effect.getDuration()+")");
+    imageView.setImageBitmap(effectTile.getBitmap());
+    nameView.setText(effectTile.getName()+"("+ effectTile.getDuration()+")");
     deleteImg.setTag(position);
     return (row);
   }

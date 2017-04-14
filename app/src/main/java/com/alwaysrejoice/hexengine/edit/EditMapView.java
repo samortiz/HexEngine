@@ -115,7 +115,7 @@ public class EditMapView extends View {
                      game.getGameInfo().getBackgroundColor().getBlue());
     // Draw border
     Paint paint = new Paint();
-    paint.setStrokeWidth(5);
+    paint.setStrokeWidth(2);
     paint.setColor(Color.WHITE);
     paint.setStyle(Paint.Style.STROKE);
     bgCanvas.drawRect(0, 0, backgroundSizeX, backgroundSizeY, paint);
@@ -124,19 +124,19 @@ public class EditMapView extends View {
     for (BgMap tile : game.getBgMaps()) {
       int x = bgCenterX + Math.round(HEX_SIZE * 1.5f  * tile.getCol()) - (TILE_WIDTH / 2);
       int y = bgCenterY + Math.round(HEX_SIZE * SQRT_3 * (tile.getRow() + (tile.getCol() / 2f))) - (TILE_HEIGHT/2);
-      BgTile bgTile = game.getBgTiles().get(tile.getId());
+      BgTile bgTile = game.getBgTiles().get(tile.getBgTileId());
       if (bgTile != null) {
         Bitmap bitmap = bgTile.getBitmap();
         if (bitmap != null) {
           bgCanvas.drawBitmap(bitmap, x, y, null);
         } else Log.e("editMapView", "Error in drawBackground, no image for BgTile with id="+bgTile.getId());
-      } else Log.e("editMapView", "Error in drawBackground, no tile in BgTiles with id="+tile.getId());
+      } else Log.e("editMapView", "Error in drawBackground, no tile in BgTiles with id="+tile.getBgTileId());
     } // for
 
     for (UnitMap unitMap : game.getUnitMaps()) {
       int x = bgCenterX + Math.round(HEX_SIZE * 1.5f  * unitMap.getCol()) - (TILE_WIDTH / 2);
       int y = bgCenterY + Math.round(HEX_SIZE * SQRT_3 * (unitMap.getRow() + (unitMap.getCol() / 2f))) - (TILE_HEIGHT/2);
-      UnitTile tile = game.getUnitTiles().get(unitMap.getId());
+      UnitTile tile = game.getUnitTiles().get(unitMap.getUnitTileId());
       if (tile != null) {
         Bitmap bitmap = tile.getBitmap();
         if (bitmap != null) {
@@ -340,17 +340,17 @@ public class EditMapView extends View {
       if (selectedButton.getType() == TileType.TILE_TYPE.BACKGROUND) {
         erase(col, row, TileType.TILE_TYPE.BACKGROUND);
         // Add the new bgMap
-        game.getBgMaps().add(new BgMap(col, row, selectedButton.getId()));
+        game.getBgMaps().add(new BgMap(row, col, selectedButton.getId()));
         //Log.d("drawTile", "added bg "+selectedButton.getName()+" at col="+col+" row="+row);
-      } else if (selectedButton.getType() == TileType.TILE_TYPE.UNIT) {
-        erase(col, row, TileType.TILE_TYPE.UNIT);
+      } else if (selectedButton.getType() == TileType.TILE_TYPE.UNIT_TILE) {
+        erase(col, row, TileType.TILE_TYPE.UNIT_TILE);
         // Add a new unitMap
-        game.getUnitMaps().add(new UnitMap(col, row, selectedButton.getId()));
+        game.getUnitMaps().add(new UnitMap(row, col, selectedButton.getId()));
         //Log.d("drawTile", "added unit "+selectedButton.getName()+" at col="+col+" row="+row);
       } else if ((selectedButton.getType() == TileType.TILE_TYPE.SYSTEM) &&
                  (toolbar.getMode() == Toolbar.Mode.ERASE)) {
         // Try to erase a unit at that location
-        if (!erase(col, row, TileType.TILE_TYPE.UNIT)) {
+        if (!erase(col, row, TileType.TILE_TYPE.UNIT_TILE)) {
           // If no unit was erased try to erase a background tile
           erase(col, row, TileType.TILE_TYPE.BACKGROUND);
         }
@@ -376,7 +376,7 @@ public class EditMapView extends View {
           foundTile = true;
         }
       } // for
-    } else if (type == TileType.TILE_TYPE.UNIT) {
+    } else if (type == TileType.TILE_TYPE.UNIT_TILE) {
       // Remove any unit tiles that exist at that location already
       for (int i = game.getUnitMaps().size() - 1; i >= 0; i--) {
         UnitMap unitMap = game.getUnitMaps().get(i);

@@ -11,7 +11,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.alwaysrejoice.hexengine.R;
-import com.alwaysrejoice.hexengine.dto.Ability;
+import com.alwaysrejoice.hexengine.dto.AbilityTile;
 import com.alwaysrejoice.hexengine.dto.Game;
 import com.alwaysrejoice.hexengine.dto.UnitTile;
 import com.alwaysrejoice.hexengine.util.GameUtils;
@@ -27,7 +27,7 @@ import java.util.Map;
 public class AbilityListActivity extends Activity implements AdapterView.OnItemClickListener {
   ListView list;
   AbilityListAdapter adapter;
-  List<Ability> abilities;
+  List<AbilityTile> abilities;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -38,8 +38,8 @@ public class AbilityListActivity extends Activity implements AdapterView.OnItemC
     list = (ListView) findViewById(R.id.ability_list_view);
     abilities = new ArrayList<>();
     for (String abilityId: game.getAbilities().keySet()) {
-      Ability ability = game.getAbilities().get(abilityId);
-      abilities.add(ability);
+      AbilityTile abilityTile = game.getAbilities().get(abilityId);
+      abilities.add(abilityTile);
     }
     Collections.sort(abilities);
     adapter = new AbilityListAdapter(this, abilities);
@@ -52,9 +52,9 @@ public class AbilityListActivity extends Activity implements AdapterView.OnItemC
    */
   public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
     Log.d("abilityList", "onItemClick ");
-    Ability ability = (Ability) arg0.getItemAtPosition(position);
+    AbilityTile abilityTile = (AbilityTile) arg0.getItemAtPosition(position);
     Intent myIntent = new Intent(AbilityListActivity.this, AbilityEditActivity.class);
-    myIntent.putExtra(AbilityEditActivity.SELECTED_ABILITY_ID, ability.getId());
+    myIntent.putExtra(AbilityEditActivity.SELECTED_ABILITY_ID, abilityTile.getId());
     startActivity(myIntent);
   }
 
@@ -64,23 +64,23 @@ public class AbilityListActivity extends Activity implements AdapterView.OnItemC
   public void delete(View view) {
     final Game game = GameUtils.getGame();
     final int position = (int) view.getTag();
-    final Ability ability = (Ability) list.getItemAtPosition(position);
+    final AbilityTile abilityTile = (AbilityTile) list.getItemAtPosition(position);
     new AlertDialog.Builder(this)
       .setTitle("Confirm Delete")
-      .setMessage("Are you sure you want to delete "+ability.getName()+"?")
+      .setMessage("Are you sure you want to delete "+ abilityTile.getName()+"?")
       .setIcon(android.R.drawable.ic_dialog_alert)
       .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
         public void onClick(DialogInterface dialog, int whichButton) {
-          // Delete all the links pointing to this ability
+          // Delete all the links pointing to this abilityTile
           for (UnitTile unit : game.getUnitTiles().values()) {
-            unit.getAbilityIds().remove(ability.getId());
+            unit.getAbilityIds().remove(abilityTile.getId());
           } // for
-          Map<String, Ability> abilityTiles = game.getAbilities();
-          abilityTiles.remove(ability.getId());
+          Map<String, AbilityTile> abilityTiles = game.getAbilities();
+          abilityTiles.remove(abilityTile.getId());
           GameUtils.saveGame();
           adapter.removeItem(position);
           adapter.notifyDataSetChanged();
-          Log.d("abilityList", "deleted "+ability.getName());
+          Log.d("abilityList", "deleted "+ abilityTile.getName());
         }})
       .setNegativeButton("Cancel", null).show();
   }

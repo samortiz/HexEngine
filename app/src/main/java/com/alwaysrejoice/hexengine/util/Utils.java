@@ -26,7 +26,7 @@ import java.util.Random;
 public class Utils {
   public static final Random random = new Random();
 
-  private static final DecimalFormat decimalFormat = new DecimalFormat("0", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+  public static final DecimalFormat decimalFormat = new DecimalFormat("0", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
   {
     decimalFormat.setMaximumFractionDigits(10);
   }
@@ -79,7 +79,7 @@ public class Utils {
   /**
    * Makes a comma separated list of strings
    */
-  public static String toCSV(List<String> list) {
+  public static String toCsv(List<String> list) {
     if (list == null) return "";
     StringBuilder csv = new StringBuilder();
     for (int i=0; i<list.size(); i++) {
@@ -133,6 +133,13 @@ public class Utils {
     return list;
   }
 
+  public static List<String> makeList(String[] strings) {
+    List<String> list = new ArrayList<>(strings.length);
+    for (String str : strings) {
+      list.add(str);
+    }
+    return list;
+  }
 
   /**
    * Setup a spinner with the supplied values

@@ -2,15 +2,12 @@ package com.alwaysrejoice.hexengine.dto;
 
 import android.graphics.Bitmap;
 
-import com.alwaysrejoice.hexengine.util.Utils;
-
 import java.util.ArrayList;
 import java.util.List;
 
-public class Effect implements TileType, Comparable {
+public class EffectTile implements TileType, Comparable {
 
   private String id;
-  private String effectTileId;
   private String name;
   private Bitmap bitmap;
   private int duration = 0;
@@ -18,21 +15,10 @@ public class Effect implements TileType, Comparable {
   private List<Action> onEnd = new ArrayList<>();
   private boolean stackable = false;
 
-  public Effect() {}
+  public EffectTile() {}
 
-  public Effect(String id) {
+  public EffectTile(String id) {
     this.id = id;
-  }
-
-  public Effect(EffectTile effectTile) {
-    this.id = Utils.generateUniqueId();
-    this.effectTileId = effectTile.getId();
-    this.name = effectTile.getName();
-    this.bitmap = effectTile.getBitmap();
-    this.duration = effectTile.getDuration();
-    this.onRun.addAll(effectTile.getOnRun());
-    this.onEnd.addAll(effectTile.getOnEnd());
-    this.stackable = effectTile.isStackable();
   }
 
   @Override
@@ -46,14 +32,6 @@ public class Effect implements TileType, Comparable {
 
   public void setId(String id) {
     this.id = id;
-  }
-
-  public String getEffectTileId() {
-    return effectTileId;
-  }
-
-  public void setEffectTileId(String effectTileId) {
-    this.effectTileId = effectTileId;
   }
 
   public String getName() {
@@ -107,7 +85,7 @@ public class Effect implements TileType, Comparable {
   @Override
   public int compareTo(Object o) {
     if (o == null) return 0;
-    return this.getName().toLowerCase().compareTo(((Effect)o).getName().toLowerCase());
+    return this.getName().toLowerCase().compareTo(((EffectTile)o).getName().toLowerCase());
   }
 
   @Override

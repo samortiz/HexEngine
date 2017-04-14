@@ -22,7 +22,8 @@ public class SystemTile implements TileType {
     SETTINGS ("settings"),
     SAVE ("save"),
     EXIT ("exit"),
-    SELECTED ("selected");
+    SELECTED ("selected"),
+    MOVE ("move");
     private final String name;
     private NAME(String s) {
       name = s;
@@ -44,6 +45,10 @@ public class SystemTile implements TileType {
    * Loads the system tiles. This should be called before constructing any SystemTiles
    */
   public static void init(AssetManager assetManager) {
+    if (tiles != null) {
+      // initialization is already done
+      return;
+    }
     tiles = new HashMap();
     InputStream inputStream = null;
     try {

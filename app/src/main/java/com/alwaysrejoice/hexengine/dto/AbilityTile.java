@@ -3,15 +3,12 @@ package com.alwaysrejoice.hexengine.dto;
 import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
 
-import com.alwaysrejoice.hexengine.util.Utils;
-
 import java.util.ArrayList;
 import java.util.List;
 
-public class Ability implements TileType, Comparable {
+public class AbilityTile implements TileType, Comparable {
 
   private String id;
-  private String abilityTileId;
   private String name;
   private Bitmap bitmap;
   private Action applies;
@@ -19,29 +16,17 @@ public class Ability implements TileType, Comparable {
   private List<String> rangeRestrict = new ArrayList<>();
   private double actionCost;
   private List<Action> onStart = new ArrayList<>();
-  private Effect effect = null;
+  private String effectId;
 
-  public Ability() {}
+  public AbilityTile() {}
 
-  public Ability(AbilityTile abilityTile, Game game) {
-    this.id = Utils.generateUniqueId();
-    this.abilityTileId = abilityTile.getId();
-    this.name = abilityTile.getName();
-    this.bitmap = abilityTile.getBitmap();
-    this.applies = abilityTile.getApplies();
-    this.range = abilityTile.getRange();
-    this.rangeRestrict.addAll(abilityTile.getRangeRestrict());
-    this.actionCost = abilityTile.getActionCost();
-    this.onStart.addAll(abilityTile.getOnStart());
-    EffectTile effectTile = game.getEffects().get(abilityTile.getEffectId());
-    if (effectTile != null) {
-      this.effect = new Effect(effectTile);
-    }
+  public AbilityTile(String id) {
+    this.id = id;
   }
 
   @Override
   public TILE_TYPE getTileType() {
-    return TILE_TYPE.ABILITY;
+    return TileType.TILE_TYPE.ABILITY;
   }
 
   public String getId() {
@@ -50,14 +35,6 @@ public class Ability implements TileType, Comparable {
 
   public void setId(String id) {
     this.id = id;
-  }
-
-  public String getAbilityTileId() {
-    return abilityTileId;
-  }
-
-  public void setAbilityTileId(String abilityTileId) {
-    this.abilityTileId = abilityTileId;
   }
 
   public String getName() {
@@ -116,25 +93,24 @@ public class Ability implements TileType, Comparable {
     this.onStart = onStart;
   }
 
-  public Effect getEffect() {
-    return effect;
+  public String getEffectId() {
+    return effectId;
   }
 
-  public void setEffect(Effect effect) {
-    this.effect = effect;
+  public void setEffectId(String effectId) {
+    this.effectId = effectId;
   }
 
   @Override
   public int compareTo(@NonNull Object o) {
     if (o == null) return 0;
-    return name.toLowerCase().compareTo(((Ability)o).getName().toLowerCase());
+    return name.toLowerCase().compareTo(((AbilityTile)o).getName().toLowerCase());
   }
 
   @Override
   public String toString() {
-    return "Ability{" +
+    return "AbilityTile{" +
         "id='" + id + '\'' +
-        ", abilityTileId='" + abilityTileId + '\'' +
         ", name='" + name + '\'' +
         ", bitmap=" + bitmap +
         ", applies=" + applies +
@@ -142,7 +118,7 @@ public class Ability implements TileType, Comparable {
         ", rangeRestrict=" + rangeRestrict +
         ", actionCost=" + actionCost +
         ", onStart=" + onStart +
-        ", effect=" + effect +
+        ", effectId='" + effectId + '\'' +
         '}';
   }
 }

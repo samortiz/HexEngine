@@ -20,6 +20,7 @@ public class FileUtils {
   public static final String IMAGE_EFFECTS_DIR = ROOT_DIR+"/images/effects";
   public static final String IMAGE_ABILITIES_DIR = ROOT_DIR+"/images/abilities";
   public static final String MOD_DIR = ROOT_DIR+"/mods";
+  public static final String WORLDS_DIR = "/worlds";
 
   /**
    * @return  Path to the game storage location in external storage
@@ -36,19 +37,54 @@ public class FileUtils {
    * @return the path to the file containing the specified game
    */
   public static File getGameFile(String gameName) {
+    return getExtJsonFile(gameName, GAME_DIR);
+  }
+
+  /**
+   * @return the file object for the specified world
+   */
+  public static File getWorldFile(String worldName) {
+    return getExtJsonFile(worldName, WORLDS_DIR);
+  }
+
+  /**
+   *  Checks if a file exists on external storage
+   * @param dir use one of the *_DIR constants in this file
+   * @param fileName name of the file (including the .json)
+   * @return true if the file exists
+   */
+  public static boolean fileExists(String dir, String fileName) {
+    try {
+      File fullDir = getExtPath(dir);
+      File file = new File(fullDir, fileName);
+      return file.exists();
+    } catch (Exception e) {
+      Log.e("GameUtils", "Error checking for file "+dir+"/"+fileName, e);
+    }
+    return false;
+  }
+
+  /**
+   * Gets a file from the external file system (testing for writability)
+   * @param fileName name of the file without the .json extension
+   * @param dir to external path (use constants in this file *_DIR)
+   * @return the File object
+   */
+  public static File getExtJsonFile(String fileName, String dir) {
     File file =  null;
     if (!isExternalStorageWritable()) {
       Log.e("ERROR", "External Storage is not writable");
       return null;
     }
     try {
-      File gameDir = getExtPath(GAME_DIR);
-      file = new File(gameDir, gameName+".json");
+      File fullDir = getExtPath(dir);
+      file = new File(fullDir, fileName+".json");
     } catch (Exception e) {
-      Log.e("GameUtils", "Error creating file for "+gameName, e);
+      Log.e("GameUtils", "Error getting file "+fileName, e);
     }
     return file;
   }
+
 
   /* Checks if external storage is available for read and write */
   public static boolean isExternalStorageWritable() {
@@ -118,6 +154,7 @@ public class FileUtils {
     initDir(assetManager, "images/effects", IMAGE_EFFECTS_DIR);
     initDir(assetManager, "images/abilities", IMAGE_ABILITIES_DIR);
     initDir(assetManager, "games", GAME_DIR);
+    initDir(assetManager, "worlds", WORLDS_DIR);
   }
 
   // Copies files from the specified assets folder to the external storage directory
@@ -156,6 +193,7 @@ public class FileUtils {
     deleteDir(IMAGE_EFFECTS_DIR);
     deleteDir(IMAGE_ABILITIES_DIR);
     deleteDir(GAME_DIR);
+    deleteDir(WORLDS_DIR);
     deleteDir(ROOT_DIR);
   }
 

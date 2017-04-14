@@ -7,7 +7,7 @@ import android.graphics.Bitmap;
  * These are items in the popup popup menu
  */
 public interface TileType extends Comparable {
-  public static enum TILE_TYPE {BACKGROUND, UNIT, SYSTEM, EFFECT, ABILITY};
+  public static enum TILE_TYPE {BACKGROUND, UNIT_TILE, SYSTEM, EFFECT, ABILITY, UNIT};
 
   public TILE_TYPE getTileType();
 
