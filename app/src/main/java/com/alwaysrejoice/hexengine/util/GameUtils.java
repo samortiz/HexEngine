@@ -14,6 +14,7 @@ import com.alwaysrejoice.hexengine.dto.Game;
 import com.alwaysrejoice.hexengine.dto.Mod;
 import com.alwaysrejoice.hexengine.dto.Position;
 import com.alwaysrejoice.hexengine.dto.TileType;
+import com.alwaysrejoice.hexengine.dto.Unit;
 import com.alwaysrejoice.hexengine.dto.UnitTile;
 import com.alwaysrejoice.hexengine.dto.World;
 import com.alwaysrejoice.hexengine.edit.EditMapView;
@@ -335,9 +336,8 @@ public class GameUtils {
    * Lookup all the valid positions given the restrictions
    * @return a list of all the valid posisions
    */
-  public static List<Position> getValidPositions(Position origin, int range, List<String> restrict, World world) {
+  public static List<Position> validMovePositions(Position origin, int range, List<String> restrict, World world) {
     List<Position> validPositions = new ArrayList<>();
-    validPositions.add(origin);
     // nStepsAway[n] contains all the positions that are n steps away from origin
     List<List<Position>> fringes = new ArrayList<>(range);
     List<Position> root = new ArrayList<>();
@@ -350,7 +350,7 @@ public class GameUtils {
       // Go through all the previous step's fringe
       for (Position pos : fringes.get(n-1)) {
         for (Position neighbor : pos.getNeighbors()) {
-          if (!validPositions.contains(neighbor) && isValidPosition(neighbor, restrict, world)) {
+          if (!validPositions.contains(neighbor) && isValidMovePosition(neighbor, restrict, world)) {
             validPositions.add(neighbor);
             fringe.add(neighbor);
           }
@@ -366,7 +366,7 @@ public class GameUtils {
    * is a valid position given the terrain type restrictions
    * @return true if the position is valid, false if not or if there was an error
    */
-  public static boolean isValidPosition(Position pos, List<String> restrict, World world) {
+  public static boolean isValidMovePosition(Position pos, List<String> restrict, World world) {
     String bgTileId = null;
     for (BgMap bgMap : world.getBgMaps()) {
       if ((bgMap.getRow() == pos.getRow()) && (bgMap.getCol() == pos.getCol())) {
@@ -381,7 +381,17 @@ public class GameUtils {
       Log.d("GameUtils", "Error! Unable to find bgTileId="+bgTileId+" in the list of tiles. The game file is corrupt.");
       return false;
     }
-    return !restrict.contains(bgTile.getType());
+    // You are not allowed to move to that kind of terrain
+    if (restrict.contains(bgTile.getType())) {
+      return false;
+    }
+    // Already a unit at that location - you can't move there
+    for (Unit unit : world.getUnits()) {
+      if (pos.equals(unit.getPos())) {
+        return false;
+      }
+    } // for
+    return true;
   }
 
 }

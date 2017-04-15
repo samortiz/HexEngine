@@ -46,4 +46,10 @@ public class WorldActivity extends Activity implements View.OnTouchListener {
     super.onBackPressed();
   }
 
+  @Override
+  public void onDestroy() {
+    worldView.getScripEngine().onDestroy();
+    super.onDestroy();
+  }
+
 }

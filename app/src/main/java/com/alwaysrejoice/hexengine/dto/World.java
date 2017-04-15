@@ -37,6 +37,7 @@ public class World {
     for (UnitMap unitMap : game.getUnitMaps()) {
       this.units.add(new Unit(unitMap, game));
     }
+    this.mods.putAll(game.getMods());
   }
 
   public String getId() {

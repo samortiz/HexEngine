@@ -18,16 +18,21 @@ import android.view.ScaleGestureDetector;
 import android.view.View;
 
 import com.alwaysrejoice.hexengine.dto.Ability;
+import com.alwaysrejoice.hexengine.dto.Action;
 import com.alwaysrejoice.hexengine.dto.BgMap;
 import com.alwaysrejoice.hexengine.dto.BgTile;
+import com.alwaysrejoice.hexengine.dto.Mod;
 import com.alwaysrejoice.hexengine.dto.Position;
 import com.alwaysrejoice.hexengine.dto.SystemTile;
 import com.alwaysrejoice.hexengine.dto.Unit;
 import com.alwaysrejoice.hexengine.dto.World;
 import com.alwaysrejoice.hexengine.util.GameUtils;
+import com.alwaysrejoice.hexengine.util.ScriptEngine;
 import com.alwaysrejoice.hexengine.util.Utils;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static android.R.attr.centerX;
 
@@ -90,8 +95,13 @@ public class WorldView extends View {
 
   // Moving
   private Unit selectedUnit = null;
+  List<Position> validMoves = null;
   Bitmap moveImg;
 
+  // Abilities
+  private Map<Position, Ability> selectedAbilities;
+  ScriptEngine scriptEngine;
+  Paint whiteHighlightPaint = new Paint();
 
   public WorldView(Context context, World world) {
     super(context);
@@ -147,6 +157,10 @@ public class WorldView extends View {
       }
     } // for
 
+    whiteHighlightPaint.setColor(Color.parseColor("#90ffffff")); // a little transparent
+    whiteHighlightPaint.setStyle(Paint.Style.FILL);
+    // Setup the scripting engine (will be shutdown when the activity is destroyed)
+    scriptEngine = new ScriptEngine(world);
   }
 
   /**
@@ -330,7 +344,7 @@ public class WorldView extends View {
           // Find the axial row, col coordinates from the screen x,y
           int col = Math.round(bgX * (2f / 3f) / HEX_SIZE);
           int row = Math.round((-bgX / 3f + (float) Math.sqrt(3f) / 3f * bgY) / HEX_SIZE);
-          selectUnit(col, row);
+          selectLocation(new Position(row, col));
         } //else Log.d("WorldView", "no click dX="+dX+" dY="+dY+" pointerId="+pointerId);
       } //else Log.d("WorldView", "not a click");
     }
@@ -361,16 +375,58 @@ public class WorldView extends View {
   /**
    * Selects the unit at the specific col, row
    */
-  private void selectUnit(int col, int row) {
+  private void selectLocation(Position pos) {
     for (Unit unit : world.getUnits()) {
-      if (unit.getPos().equals(row, col)) {
-        drawBackground(); // in case there is other selected bits already drawn
+      if (pos.equals(unit.getPos())) {
+        drawBackground(); // in case there are other selected things already drawn
         this.selectedUnit = unit;
         drawSelectedUnitInfo(unit);
         setupUnitMove(unit);
-        break;
+        setupSelectedUnitAbilities();
+        return; // We handled the click
       }
     } // for
+    // Clicked on a validMove
+    if (validMoves != null) {
+      for (Position movePos : validMoves) {
+        if (pos.equals(movePos)) {
+          moveSelectedUnit(pos);
+          drawBackground(); // Show the unit at the new location
+          return; // we handled the click
+        }
+      } // for
+    }
+    // If no unit was found at that location
+    for (BgMap bgMap : world.getBgMaps()) {
+      if (pos.equals(bgMap.getPos())) {
+        drawBackground(); // in case there are other selected things already drawn
+        this.selectedUnit = null;
+        drawSelectedBackgroundInfo(world.getBgTiles().get(bgMap.getBgTileId()));
+        return;
+      }
+    } // for
+  }
+
+  /**
+   * Draws the info area at the bottom for a selected background tile
+   */
+  private void drawSelectedBackgroundInfo(BgTile bgTile) {
+    Log.d("WorldView", "drawing bg "+bgTile);
+    infoCanvas.drawRGB(240, 240, 200);
+
+    // Draw border
+    Paint paint = new Paint();
+    paint.setStrokeWidth(5);
+    paint.setColor(Color.GREEN);
+    paint.setStyle(Paint.Style.STROKE);
+    infoCanvas.drawRect(infoWindow.left, infoWindow.top, infoWindow.right, infoWindow.bottom, paint);
+
+    int centerX = infoWindow.width() / 2;
+    int rowY = INFO_TOP_PADDING;
+    int imgHeight = INFO_IMG_MAX_HEIGHT;
+    int imgWidth = Math.round(((float)imgHeight * 2.0f) / SQRT_3);
+    String desc = bgTile.getName()+" ("+bgTile.getType()+")";
+    drawLeftColImgAndText(bgTile.getBitmap(), imgWidth, imgHeight, desc, rowY);
   }
 
   /**
@@ -479,14 +535,85 @@ public class WorldView extends View {
    * Sets up the unit for moving (showing where the unit can move to)
    */
   private void setupUnitMove(Unit unit) {
-    Log.d("WorldView", "Moving unit at "+ unit.getPos());
-    List<Position> movePositions = GameUtils.getValidPositions(unit.getPos(), unit.getMoveRange(), unit.getMoveRestrict(), world);
-    movePositions.remove(unit.getPos()); // can't move where you already are
-    for (Position pos : movePositions) {
+    Log.d("WorldView", "Setting up moves for "+unit.getName()+" at "+ unit.getPos());
+    validMoves = GameUtils.validMovePositions(unit.getPos(), unit.getMoveRange(), unit.getMoveRestrict(), world);
+    for (Position pos : validMoves) {
       //Log.d("WorldView", "Can move to "+pos);
       int x = bgCenterX + Math.round(HEX_SIZE * 1.5f  * pos.getCol()) - (TILE_WIDTH / 2);
       int y = bgCenterY + Math.round(HEX_SIZE * SQRT_3 * (pos.getRow() + (pos.getCol() / 2f))) - (TILE_HEIGHT/2);
       bgCanvas.drawBitmap(moveImg, x, y, null);
+    }
+  }
+
+  /**
+   * Moves the unit to the specified location
+   */
+  public void moveSelectedUnit(Position pos) {
+    if (selectedUnit == null) {
+      return;
+    }
+    selectedUnit.setPos(pos);
+    // Clear valid moves, need to click again for a second move
+    validMoves = null;
+  }
+
+  /**
+   * loads and draws all the target ability locations for the unit
+   */
+  public void setupSelectedUnitAbilities() {
+    if (selectedUnit != null) {
+      selectedAbilities = new HashMap<>();
+      for (Ability ability : selectedUnit.getAbilities()) {
+        Log.d("WorldView", "setting up " + selectedUnit.getName() + " ability " + ability.getName());
+        int range = ability.getRange();
+        Action applies = ability.getApplies();
+        if (applies == null) {
+          Log.d("WorldView", "Applies is null");
+          continue;
+        }
+        Mod mod = world.getMods().get(applies.getModId());
+        if (mod == null) {
+          Log.d("WorldView", "mod is null. modId="+applies.getModId()+" mods="+world.getMods());
+          continue;
+        }
+        if (Mod.TYPE_RULE.equals(mod.getType())) {
+          for (Unit target : world.getUnits()) {
+            Log.d("WorldView", "checking "+ability.getName()+" range:"+ability.getRange()+" against "+target.getName()+" at "+target.getPos()+" distance="+target.getPos().distanceTo(selectedUnit.getPos()));
+            if (!selectedAbilities.containsKey(target.getPos()) &&
+                (target.getPos().distanceTo(selectedUnit.getPos()) <= range)) {
+              // Run the applies JS rule
+              if (scriptEngine.runRule(applies, selectedUnit, target)) {
+                selectedAbilities.put(target.getPos(), ability);
+              }
+            }
+          } // for unit
+        } else {
+          Log.d("WorldView", "Not handled MOD_TYPE="+mod.getType());
+        }
+      } // for Ability
+
+      Log.d("WorldView", "selectedAbilities="+selectedAbilities);
+      drawSelectedUnitAbilities();
+    }
+  }
+
+  public ScriptEngine getScripEngine() {
+    return this.scriptEngine;
+  }
+
+
+  public void drawSelectedUnitAbilities() {
+    Log.d("WorldView", "Setting up selectedAbilities "+selectedAbilities);
+    if (selectedAbilities != null) {
+      for (Position pos : selectedAbilities.keySet()) {
+        Ability ability = selectedAbilities.get(pos);
+        int x = bgCenterX+Math.round(HEX_SIZE * 1.5f * pos.getCol())-(TILE_WIDTH / 2);
+        int y = bgCenterY+Math.round(HEX_SIZE * SQRT_3 * (pos.getRow()+(pos.getCol() / 2f)))-(TILE_HEIGHT / 2);
+        Rect imgPos = new Rect(x+(TILE_WIDTH/4), y+(TILE_HEIGHT/4), x+(int)(TILE_WIDTH*0.75f),  y+(int)(TILE_HEIGHT*0.75f));
+        bgCanvas.drawCircle(x+TILE_WIDTH/2, y+TILE_HEIGHT/2, TILE_HEIGHT/4, whiteHighlightPaint);
+        bgCanvas.drawBitmap(ability.getBitmap(), null, imgPos, null);
+        //Log.d("WorldView", "drawing ability="+ability.getName()+" at "+pos);
+      } // for
     }
   }
 

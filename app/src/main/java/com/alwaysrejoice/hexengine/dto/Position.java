@@ -87,4 +87,13 @@ public class Position {
     }
     return neighbors;
   }
+
+  /**
+   * @return The distance (in steps) between this position and pos
+   */
+  public int distanceTo(Position pos) {
+    return (Math.abs(col - pos.col) +
+           Math.abs(col + row - pos.col - pos.row) +
+           Math.abs(row - pos.row)) / 2;
+  }
 }

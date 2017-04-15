@@ -1,5 +1,13 @@
 TODO 
 
-Later : 
+Play 
+ - Select Ability (override)
+ - click to run ability
+ - Mod api for applyDamage etc.
+
+Unit Editor 
+ - Add moveActionCost
+
+Optional Features : 
  - Sync: BG, Units, Abilities, Mods, Effects
 

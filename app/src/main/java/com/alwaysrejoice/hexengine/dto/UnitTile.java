@@ -18,6 +18,7 @@ public class UnitTile implements TileType {
   private List<String> attr = new ArrayList<>();
   private int moveRange;
   private List<String> moveRestrict = new ArrayList<>();
+  private double moveActionCost;
   private int sightRange;
   private List<String> sightRestrict = new ArrayList<>();
   private List<String> abilityIds = new ArrayList<>(); // ability ids
@@ -114,6 +115,14 @@ public class UnitTile implements TileType {
     this.moveRestrict = moveRestrict;
   }
 
+  public double getMoveActionCost() {
+    return moveActionCost;
+  }
+
+  public void setMoveActionCost(double moveActionCost) {
+    this.moveActionCost = moveActionCost;
+  }
+
   public int getSightRange() {
     return sightRange;
   }
@@ -179,6 +188,7 @@ public class UnitTile implements TileType {
         ", attr=" + attr +
         ", moveRange=" + moveRange +
         ", moveRestrict=" + moveRestrict +
+        ", moveActionCost=" + moveActionCost +
         ", sightRange=" + sightRange +
         ", sightRestrict=" + sightRestrict +
         ", abilityIds=" + abilityIds +

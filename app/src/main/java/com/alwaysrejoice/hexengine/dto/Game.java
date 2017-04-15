@@ -171,15 +171,17 @@ public class Game {
     Mod areaDmg = new Mod(Utils.generateUniqueId(), "Damage Area", Mod.TYPE_MOD_LOC, params, "for (Unit target : allUnitsInRange(x,y,range) { applyDamage(self, target, damage); }");
     game.getMods().put(areaDmg.getId(), areaDmg);
 
-    Mod rule = new Mod(Utils.generateUniqueId(), "All", Mod.TYPE_RULE, new ArrayList<ModParam>(), "return true");
-    game.getMods().put(rule.getId(), rule);
+    Mod enemies = new Mod(Utils.generateUniqueId(), "Enemy", Mod.TYPE_RULE, new ArrayList<ModParam>(), "self.team != target.team");
+    game.getMods().put(enemies.getId(), enemies);
 
-    Mod ruleLoc = new Mod(Utils.generateUniqueId(), "Anywhere", Mod.TYPE_RULE_LOC, new ArrayList<ModParam>(), "return true");
-    game.getMods().put(ruleLoc.getId(), ruleLoc);
-
-    Mod self = new Mod(Utils.generateUniqueId(), "Self", Mod.TYPE_RULE, new ArrayList<ModParam>(), "return target == self");
+    Mod self = new Mod(Utils.generateUniqueId(), "Self", Mod.TYPE_RULE, new ArrayList<ModParam>(), "target == self");
     game.getMods().put(self.getId(), self);
 
+    Mod friend = new Mod(Utils.generateUniqueId(), "Friend", Mod.TYPE_RULE, new ArrayList<ModParam>(), "(self.id != target.id) && (self.team == target.team)");
+    game.getMods().put(friend.getId(), friend);
+
+    Mod ruleLoc = new Mod(Utils.generateUniqueId(), "Anywhere", Mod.TYPE_RULE_LOC, new ArrayList<ModParam>(), "true");
+    game.getMods().put(ruleLoc.getId(), ruleLoc);
   }
 
 
