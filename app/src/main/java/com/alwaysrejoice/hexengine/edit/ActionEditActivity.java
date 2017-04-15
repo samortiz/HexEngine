@@ -135,7 +135,7 @@ public class ActionEditActivity extends Activity {
       inputTable.removeViews(1, addedRowCount-1);
     }
     int sp5 = Utils.spToPixel(5);
-    Map<String, ModParamValue> values = action.getValues();
+    Map<String, ModParamValue> values = action.getParamValues();
 
     // Add rows for the params
     for (ModParam param : mod.getParams()) {
@@ -226,7 +226,7 @@ public class ActionEditActivity extends Activity {
     action.setModId(modId);
 
     // Load the selected param values
-    Map<String, ModParamValue> values = action.getValues();
+    Map<String, ModParamValue> values = action.getParamValues();
     for (String var : values.keySet()) {
       ModParamValue paramValue = values.get(var);
       View inputView = inputViews.get(var);

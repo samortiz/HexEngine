@@ -1,13 +1,13 @@
 TODO 
 
 Play 
- - Select Ability (override)
- - click to run ability
- - Mod api for applyDamage etc.
-
-Unit Editor 
- - Add moveActionCost
+ - Script logging
+ - Triggers : start game, end turn, start turn, victory
+ - World storage
 
 Optional Features : 
+ - Animations for abilities? 
  - Sync: BG, Units, Abilities, Mods, Effects
+ - UI view event log (maybe text input - talking)
+ - Inventory / Equipping (maybe with level-up)
 

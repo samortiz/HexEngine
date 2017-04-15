@@ -122,4 +122,19 @@ public class Effect implements TileType, Comparable {
         ", stackable=" + stackable +
         '}';
   }
+
+  /**
+   * @return a duplicate object of this one
+   */
+  public Effect clone() {
+    Effect clone = new Effect();
+    clone.setId(Utils.generateUniqueId());
+    clone.setName(name);
+    clone.setBitmap(bitmap);
+    clone.setDuration(duration);
+    clone.getOnRun().addAll(onRun);
+    clone.getOnEnd().addAll(onEnd);
+    clone.setStackable(stackable);
+    return clone;
+  }
 }

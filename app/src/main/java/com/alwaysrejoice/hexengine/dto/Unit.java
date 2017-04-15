@@ -24,6 +24,7 @@ public class Unit implements TileType {
   private double actionMax;
   private List<String> attr = new ArrayList<>();
   private int moveRange;
+  private double moveActionCost;
   private List<String> moveRestrict = new ArrayList<>();
   private int sightRange;
   private List<String> sightRestrict = new ArrayList<>();
@@ -50,6 +51,7 @@ public class Unit implements TileType {
     this.attr.addAll(unitTile.getAttr());
     this.moveRange = unitTile.getMoveRange();
     this.moveRestrict.addAll(unitTile.getMoveRestrict());
+    this.moveActionCost = unitTile.getMoveActionCost();
     this.sightRange = unitTile.getSightRange();
     this.sightRestrict.addAll(unitTile.getSightRestrict());
     Map<String, AbilityTile> allAbilities = game.getAbilities();
@@ -167,6 +169,14 @@ public class Unit implements TileType {
 
   public void setMoveRange(int moveRange) {
     this.moveRange = moveRange;
+  }
+
+  public double getMoveActionCost() {
+    return moveActionCost;
+  }
+
+  public void setMoveActionCost(double moveActionCost) {
+    this.moveActionCost = moveActionCost;
   }
 
   public List<String> getMoveRestrict() {

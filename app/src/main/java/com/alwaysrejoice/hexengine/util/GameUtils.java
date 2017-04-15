@@ -394,4 +394,16 @@ public class GameUtils {
     return true;
   }
 
+  /**
+   * Finds the first (and only) unit at the selected position. If no unit is there, this will return null
+   */
+  public static Unit getUnitAt(Position pos, World world) {
+    for (Unit unit : world.getUnits()) {
+      if (unit.getPos().equals(pos)) {
+        return unit;
+      }
+    }// for
+    return null;
+  }
+
 }

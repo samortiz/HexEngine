@@ -23,7 +23,8 @@ public class SystemTile implements TileType {
     SAVE ("save"),
     EXIT ("exit"),
     SELECTED ("selected"),
-    MOVE ("move");
+    MOVE_DOT ("greendot"),
+    LOOP ("loop");
     private final String name;
     private NAME(String s) {
       name = s;

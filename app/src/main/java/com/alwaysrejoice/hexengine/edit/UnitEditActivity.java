@@ -146,10 +146,11 @@ public class UnitEditActivity extends Activity {
     unit.setActionMax(Utils.stringToDouble(actionInput.getText().toString().trim()));
 
     // Attr is set in the unit by DialogMultiSelect
-
     EditText moveRangeInput = (EditText) findViewById(R.id.move_range_input);
     unit.setMoveRange(Utils.stringToInt(moveRangeInput.getText().toString().trim()));
     // MoveRestrict is set by the dialog
+    EditText moveActionInput = (EditText) findViewById(R.id.move_action_input);
+    unit.setMoveActionCost(Utils.stringToDouble(moveActionInput.getText().toString().trim()));
 
     EditText sightRangeInput = (EditText) findViewById(R.id.sight_range_input);
     unit.setSightRange(Utils.stringToInt(sightRangeInput.getText().toString().trim()));
@@ -190,6 +191,9 @@ public class UnitEditActivity extends Activity {
 
     TextView moveRestrictText = (TextView) findViewById(R.id.move_restrict);
     moveRestrictText.setText(Utils.toCsv(unit.getMoveRestrict()));
+
+    EditText moveActionInput = (EditText) findViewById(R.id.move_action_input);
+    moveActionInput.setText(Utils.doubleToString(unit.getMoveActionCost()));
 
     EditText sightRangeInput = (EditText) findViewById(R.id.sight_range_input);
     sightRangeInput.setText(Utils.intToString(unit.getSightRange()));

@@ -1,7 +1,5 @@
 package com.alwaysrejoice.hexengine.play;
 
-import android.app.Activity;
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -13,6 +11,7 @@ import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
@@ -21,6 +20,7 @@ import com.alwaysrejoice.hexengine.dto.Ability;
 import com.alwaysrejoice.hexengine.dto.Action;
 import com.alwaysrejoice.hexengine.dto.BgMap;
 import com.alwaysrejoice.hexengine.dto.BgTile;
+import com.alwaysrejoice.hexengine.dto.Effect;
 import com.alwaysrejoice.hexengine.dto.Mod;
 import com.alwaysrejoice.hexengine.dto.Position;
 import com.alwaysrejoice.hexengine.dto.SystemTile;
@@ -35,9 +35,10 @@ import java.util.List;
 import java.util.Map;
 
 import static android.R.attr.centerX;
+import static android.util.Log.d;
 
 public class WorldView extends View {
-  Context context;
+  WorldActivity worldActivity;
 
   // Game drawing variables
   public static final int TILE_WIDTH = 60; // height of one tile on the map
@@ -45,6 +46,8 @@ public class WorldView extends View {
   public static final int HEX_SIZE = 30; // Length of one side of a hexagon
   public static final float SQRT_3 = (float) Math.sqrt(3);
   private World world;
+  private int screenWidth;
+  private int screenHeight;
   private Bitmap backgroundImg;
   private Canvas bgCanvas;
   private int viewSizeX = 200; // size of viewport on the screen
@@ -86,41 +89,68 @@ public class WorldView extends View {
   // Drawing the info area
   public static final int INFO_TOP_PADDING = 10;
   public static final int INFO_LEFT_COL_PADDING = 10;
-  public static final int INFO_IMG_PADDING = 10;
-  public static final int INFO_IMG_MAX_HEIGHT = 100;
+  public static final int INFO_IMG_PADDING = 5;
+  public static final int INFO_IMG_MAX_HEIGHT = 120;
+  public static final int INFO_IMG_MAX_WIDTH = Math.round(((float)INFO_IMG_MAX_HEIGHT * 2.0f) / SQRT_3);
   public static final int FONT_SIZE_SP = 16;
+  public static final int INFO_EFFECT_SIZE = 60;
+  public static final int INFO_EFFECT_PADDING = 10;
   private Rect infoWindow = null;
   private Bitmap infoImg;
   private Canvas infoCanvas;
+  private Bitmap exitButtonImg;
+  private Rect exitButtonRect;
+  private Bitmap saveButtonImg;
+  private Rect saveButtonRect;
+  private Bitmap endTurnButtonImg;
+  private Rect endTurnButtonRect;
 
   // Moving
-  private Unit selectedUnit = null;
-  List<Position> validMoves = null;
-  Bitmap moveImg;
+  private Unit selectedUnit = null; // currently selected unit (showing in info area)
+  private List<Position> validMoves = null; // the green dots
+  private Bitmap moveImg;
 
   // Abilities
-  private Map<Position, Ability> selectedAbilities;
-  ScriptEngine scriptEngine;
-  Paint whiteHighlightPaint = new Paint();
+  private Map<Position, Ability> selectedAbilities; // highlight an ability on the map
+  private Map<Rect, Ability> abilityButtons = new HashMap<>(); // click on an ability in the info area
+  private ScriptEngine scriptEngine;
+  private Paint whiteHighlightPaint = new Paint(); // color of circle behind abilities on the map
 
-  public WorldView(Context context, World world) {
-    super(context);
+
+  public WorldView(WorldActivity worldActivity, World world) {
+    super(worldActivity);
+    this.worldActivity = worldActivity;
     this.world = world;
-    this.context = context;
-    mapScaleDetector = new ScaleGestureDetector(context, new MapScaleListener());
-    Log.d("WorldView", "Setting up world");
-    DisplayMetrics displayMetrics = new DisplayMetrics();
-    ((Activity) getContext()).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+    mapScaleDetector = new ScaleGestureDetector(worldActivity, new MapScaleListener());
+    d("WorldView", "Setting up world");
 
-    SystemTile.init(context.getAssets());
-    moveImg = SystemTile.getTile(SystemTile.NAME.MOVE).getBitmap();
+    // Get the screen height and width (without status bar and buttons)
+    Display display = worldActivity.getWindowManager().getDefaultDisplay();
+    DisplayMetrics displayMetrics = new DisplayMetrics();
+    display.getMetrics(displayMetrics);
+    screenWidth = displayMetrics.widthPixels;
+    screenHeight = displayMetrics.heightPixels;
+    int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+    if (resourceId > 0) {
+      int statusBarHeight = getResources().getDimensionPixelSize(resourceId);
+      screenHeight -= statusBarHeight;
+    }
+
+    // Load the system assets
+    SystemTile.init(worldActivity.getAssets());
+    // Green dot for moving
+    moveImg = SystemTile.getTile(SystemTile.NAME.MOVE_DOT).getBitmap();
+    // Buttons at the bottom of the info area
+    exitButtonImg = SystemTile.getTile(SystemTile.NAME.EXIT).getBitmap();
+    saveButtonImg = SystemTile.getTile(SystemTile.NAME.SAVE).getBitmap();
+    endTurnButtonImg = SystemTile.getTile(SystemTile.NAME.LOOP).getBitmap();
 
     // Make a background map
     backgroundSizeY = GameUtils.getBackgroundSize(world.getGameInfo().getSize());
     backgroundSizeX = backgroundSizeY; // make a square background map
     bgCenterX = backgroundSizeX / 2;
     bgCenterY = backgroundSizeY / 2;
-    Log.d("init", "Generating background bitmap width="+backgroundSizeX+" height="+backgroundSizeY);
+    d("init", "Generating background bitmap width="+backgroundSizeX+" height="+backgroundSizeY);
     backgroundImg = Bitmap.createBitmap(backgroundSizeX,backgroundSizeY, Bitmap.Config.ARGB_8888);
     bgCanvas = new Canvas(backgroundImg);
 
@@ -128,7 +158,7 @@ public class WorldView extends View {
 
     // Setup the ViewPort
     // Full size of the screen (square)
-    viewSizeX = Math.min(displayMetrics.widthPixels, displayMetrics.heightPixels);
+    viewSizeX = Math.min(screenWidth, screenHeight);
     viewSizeY = viewSizeX;
     Log.i("init", "edit viewSizeX="+viewSizeX+" viewSizeY="+viewSizeY);
     uiWindow = new Rect(0, 0, viewSizeX, viewSizeY);
@@ -141,23 +171,35 @@ public class WorldView extends View {
     mapY = (backgroundSizeY / 2) - Math.round(viewSizeY * mapScaleFactor / 2);
 
     // Setup the info area
-    int infoHeight = displayMetrics.heightPixels - viewSizeY;
-    int infoWidth = displayMetrics.widthPixels;
+    int infoHeight = screenHeight - viewSizeY;
+    int infoWidth = screenWidth;
     int infoX = 0;
     int infoY = viewSizeY;
     infoWindow = new Rect(infoX, infoY, infoX+infoWidth, infoY+infoHeight);
     infoImg = Bitmap.createBitmap(infoWidth, infoHeight, Bitmap.Config.ARGB_8888);
     infoCanvas = new Canvas(infoImg);
 
+    d("WorldView", "height="+screenHeight+" infoHeight="+infoHeight+" INFO_IMG_MAX_HEIGHT="+INFO_IMG_MAX_HEIGHT);
+
+    // Position the buttons on the infoCanvas
+    int buttonX = INFO_LEFT_COL_PADDING;
+    int buttonY = infoHeight - INFO_IMG_MAX_HEIGHT;
+    exitButtonRect = new Rect(buttonX, buttonY, buttonX+INFO_IMG_MAX_WIDTH, buttonY+INFO_IMG_MAX_HEIGHT);
+    buttonX += INFO_IMG_MAX_WIDTH + INFO_IMG_PADDING;
+    saveButtonRect = new Rect(buttonX, buttonY, buttonX+INFO_IMG_MAX_WIDTH, buttonY+INFO_IMG_MAX_HEIGHT);
+    buttonX += INFO_IMG_MAX_WIDTH + INFO_IMG_PADDING;
+    endTurnButtonRect = new Rect(buttonX, buttonY, buttonX+INFO_IMG_MAX_WIDTH, buttonY+INFO_IMG_MAX_HEIGHT);
+
     // Select the first Player unit
     for (Unit unit : world.getUnits()) {
       if ("Player".equals(unit.getTeam())) {
-        drawSelectedUnitInfo(unit);
+        this.selectedUnit = unit;
+        drawSelectedUnitInfo();
         break;
       }
     } // for
 
-    whiteHighlightPaint.setColor(Color.parseColor("#90ffffff")); // a little transparent
+    whiteHighlightPaint.setColor(Color.parseColor("#90FFFFFF")); // 90/FF transparent
     whiteHighlightPaint.setStyle(Paint.Style.FILL);
     // Setup the scripting engine (will be shutdown when the activity is destroyed)
     scriptEngine = new ScriptEngine(world);
@@ -246,7 +288,7 @@ public class WorldView extends View {
     // we start a new gesture on action_down, or on the second finger going up, which ends the
     // two finger gesture ands starts a single finger gesture.
     if (gestureStartPointerId == -1) {
-      Log.d("touch", "start pointer "+pointerId);
+      d("touch", "start pointer "+pointerId);
       gestureStartPointerId = pointerId;
       gestureStartX = newX;
       gestureStartY = newY;
@@ -254,7 +296,7 @@ public class WorldView extends View {
     }
     // First finger down (start gesture)
     if (action == MotionEvent.ACTION_DOWN) {
-      Log.d("event", "ACTION_DOWN pointerId="+pointerId);
+      d("event", "ACTION_DOWN pointerId="+pointerId);
       clickPointerId = pointerId;
       clickX = newX;
       clickY = newY;
@@ -292,19 +334,19 @@ public class WorldView extends View {
       }
 
     } else if (action == MotionEvent.ACTION_POINTER_DOWN) {
-      Log.d("event", "ACTION_POINTER_DOWN pointerId="+pointerId);
+      d("event", "ACTION_POINTER_DOWN pointerId="+pointerId);
       // putting a second finger down kills the click
       clickPointerId = -1;
 
     } else if (action == MotionEvent.ACTION_POINTER_UP) {
-      Log.d("event", "ACTION_POINTER_UP pointerId="+pointerId);
+      d("event", "ACTION_POINTER_UP pointerId="+pointerId);
       // A finger went up, probably ending a two figure gesture (zooming)
       endGesture();
       handledEvent = true;
 
     } else if (action == MotionEvent.ACTION_UP) {
       // Last finger went up
-      Log.d("event", "ACTION_UP pointerId="+pointerId);
+      d("event", "ACTION_UP pointerId="+pointerId);
       endGesture();
       clickListener(newX, newY, pointerId);
       handledEvent = true;
@@ -337,15 +379,19 @@ public class WorldView extends View {
       float dX = clickX - x;
       float dY = clickY - y;
       if (Math.sqrt(dX * dX + dY * dY) <= MAX_CLICK_DISTANCE) {
-        Log.d("WorldView", "click dX=" + dX + " dY=" + dY + " pointerId=" + pointerId);
-        if ((x < viewSizeX) && (y < viewSizeY)) {
-          int bgX = mapX + Math.round(x * mapScaleFactor) - bgCenterX;
-          int bgY = mapY + Math.round(y * mapScaleFactor) - bgCenterY;
-          // Find the axial row, col coordinates from the screen x,y
-          int col = Math.round(bgX * (2f / 3f) / HEX_SIZE);
-          int row = Math.round((-bgX / 3f + (float) Math.sqrt(3f) / 3f * bgY) / HEX_SIZE);
-          selectLocation(new Position(row, col));
-        } //else Log.d("WorldView", "no click dX="+dX+" dY="+dY+" pointerId="+pointerId);
+        d("WorldView", "click dX=" + dX + " dY=" + dY + " pointerId=" + pointerId);
+        // Check for and handle button clicks in the info area
+        if (!handleButtonClicks(x, y)) {
+          if ((x < viewSizeX) && (y < viewSizeY)) {
+            // It was not a button click, so treat it as a unit/bg select
+            int bgX = mapX+Math.round(x * mapScaleFactor)-bgCenterX;
+            int bgY = mapY+Math.round(y * mapScaleFactor)-bgCenterY;
+            // Find the axial row, col coordinates from the screen x,y
+            int col = Math.round(bgX * (2f / 3f) / HEX_SIZE);
+            int row = Math.round((-bgX / 3f+(float) Math.sqrt(3f) / 3f * bgY) / HEX_SIZE);
+            selectLocation(new Position(row, col));
+          } // not a button click outside the viewport
+        } // not a button click
       } //else Log.d("WorldView", "not a click");
     }
   }
@@ -373,25 +419,77 @@ public class WorldView extends View {
   }
 
   /**
+   * Handles and reports a button being clicked in the info area
+   *  - System buttons (exit, save, end turn)
+   *  - Ability buttons
+   * @return true if a button click was detected and handled
+   */
+  private boolean handleButtonClicks(float floatX, float floatY) {
+    int x = (int) floatX;
+    // These Rect are in the infoWindow, so convert from screen to infoWindow coordinates
+    int y = ((int) floatY) - viewSizeY;
+
+    d("WorldView", "floatX="+floatX+" floatY="+floatY+" y="+y+" exitRect="+exitButtonRect);
+    if (exitButtonRect.contains(x,y)) {
+      d("WorldView", "Exiting Game");
+      worldActivity.exit();
+      return true;
+    } else if (saveButtonRect.contains(x,y)) {
+      GameUtils.saveWorld(world);
+      return true;
+    } else if (endTurnButtonRect.contains(x,y)) {
+      d("WorldView", "End Turn");
+      endTurn();
+      // TODO AI would go here
+      startTurn();
+      return true;
+    }
+    for (Rect rect : abilityButtons.keySet()) {
+      if (rect.contains(x,y)) {
+        drawBackground(); // in case there are other selected things already drawn
+        setupSingleAbility(abilityButtons.get(rect));
+      }
+    }
+
+    // No button handled the click
+    return false;
+  }
+
+  /**
    * Selects the unit at the specific col, row
    */
   private void selectLocation(Position pos) {
+    if ((selectedAbilities != null) && (selectedUnit != null)) {
+      for (Position abilityPos : selectedAbilities.keySet()) {
+        if (abilityPos.equals(pos)) {
+          // The click was on a highlighted ability
+          Ability ability = selectedAbilities.get(abilityPos);
+          Unit targetUnit = GameUtils.getUnitAt(pos, world);
+          applyAbility(ability, targetUnit);
+          clearSelections();
+          return;
+        }
+      } // for
+    }
     for (Unit unit : world.getUnits()) {
       if (pos.equals(unit.getPos())) {
+        // The click was selecting a unit
         drawBackground(); // in case there are other selected things already drawn
         this.selectedUnit = unit;
-        drawSelectedUnitInfo(unit);
-        setupUnitMove(unit);
+        drawSelectedUnitInfo();
+        if (selectedUnit.getAction() >= selectedUnit.getMoveActionCost()) {
+          setupUnitMove(unit);
+        }
         setupSelectedUnitAbilities();
         return; // We handled the click
       }
     } // for
-    // Clicked on a validMove
     if (validMoves != null) {
       for (Position movePos : validMoves) {
         if (pos.equals(movePos)) {
+          // Clicked on a validMove
           moveSelectedUnit(pos);
-          drawBackground(); // Show the unit at the new location
+          clearSelections();
           return; // we handled the click
         }
       } // for
@@ -399,6 +497,7 @@ public class WorldView extends View {
     // If no unit was found at that location
     for (BgMap bgMap : world.getBgMaps()) {
       if (pos.equals(bgMap.getPos())) {
+        // Selected a background tile
         drawBackground(); // in case there are other selected things already drawn
         this.selectedUnit = null;
         drawSelectedBackgroundInfo(world.getBgTiles().get(bgMap.getBgTileId()));
@@ -408,10 +507,24 @@ public class WorldView extends View {
   }
 
   /**
+   * Clears the move and ability variables
+   * and redraws the screen.
+   * NOTE : this leaves the selected unit, as that will remain selected in the info area
+   */
+  private void clearSelections() {
+    this.selectedAbilities = null;
+    this.validMoves = null;
+    drawBackground(); // Show the unit at the new location
+    if (selectedUnit != null) {
+      drawSelectedUnitInfo();
+    }
+  }
+
+  /**
    * Draws the info area at the bottom for a selected background tile
    */
   private void drawSelectedBackgroundInfo(BgTile bgTile) {
-    Log.d("WorldView", "drawing bg "+bgTile);
+    d("WorldView", "drawing bg "+bgTile);
     infoCanvas.drawRGB(240, 240, 200);
 
     // Draw border
@@ -427,48 +540,73 @@ public class WorldView extends View {
     int imgWidth = Math.round(((float)imgHeight * 2.0f) / SQRT_3);
     String desc = bgTile.getName()+" ("+bgTile.getType()+")";
     drawLeftColImgAndText(bgTile.getBitmap(), imgWidth, imgHeight, desc, rowY);
+    drawBottomButtons();
   }
 
   /**
    * Draws the selected unit info in the info area at the bottom of the screen
    */
-  private void drawSelectedUnitInfo(Unit unit) {
-    Log.d("WorldView", "drawing unit "+unit);
+  private void drawSelectedUnitInfo() {
+    if (selectedUnit == null) {
+      d("WorldView", "Warning, drawSelectedUnitInfo called with no selectedUnit");
+      return;
+    }
+    d("WorldView", "drawing unit "+selectedUnit);
+    abilityButtons.clear(); // will be recalculated in this method
+    // Clear the background
     infoCanvas.drawRGB(240, 240, 200);
-
-    // Draw border
-    Paint paint = new Paint();
-    paint.setStrokeWidth(5);
-    paint.setColor(Color.GREEN);
-    paint.setStyle(Paint.Style.STROKE);
-    infoCanvas.drawRect(infoWindow.left, infoWindow.top, infoWindow.right, infoWindow.bottom, paint);
-
     int centerX = infoWindow.width() / 2;
     int rowY = INFO_TOP_PADDING;
+    int fontHeight = (int)getFontHeightPx();
+    // Draw the left panel
     // Number of images showing up in the left panel
-    int imgCount = 1 + unit.getAbilities().size() + unit.getEffects().size();
-    int imgHeight = Math.min((infoWindow.height() / imgCount), INFO_IMG_MAX_HEIGHT);
-    int imgWidth = Math.round(((float)imgHeight * 2.0f) / SQRT_3);
-
-    Log.d("WorldView", "Drawing imgHeight="+imgHeight+" imgWidth="+imgWidth);
-
-    drawLeftColImgAndText(unit.getBitmap(), imgWidth, imgHeight, unit.getName(), rowY);
-
-    for (Ability ability : unit.getAbilities()) {
-      rowY += imgHeight + INFO_IMG_PADDING;
-      drawLeftColImgAndText(ability.getBitmap(), imgWidth, imgHeight, ability.getName(), rowY);
+    int imgCount = selectedUnit.getAbilities().size();
+    // Calculate the image height, we will make the images smaller if we have too many abilities and effects
+    // INFO_IMG_MAX_HEIGHT : 1 for unit image, 1 for system buttons
+    int spaceAvailable = infoWindow.height() -INFO_TOP_PADDING -INFO_IMG_MAX_HEIGHT*2 ;
+    if (selectedUnit.getEffects().size() > 0) {
+      spaceAvailable += -INFO_EFFECT_SIZE -fontHeight -INFO_EFFECT_PADDING;
     }
-
+    // Draw the selected unit name
+    drawLeftColImgAndText(selectedUnit.getBitmap(), INFO_IMG_MAX_WIDTH, INFO_IMG_MAX_HEIGHT, selectedUnit.getName(), rowY);
+    // Draw the unit effects
+    int effectX = INFO_LEFT_COL_PADDING + 10;
+    rowY += INFO_IMG_MAX_HEIGHT;
+    for (Effect effect : selectedUnit.getEffects()) {
+      infoCanvas.drawBitmap(effect.getBitmap(), null, new Rect(effectX, rowY, effectX+INFO_EFFECT_SIZE, rowY+INFO_EFFECT_SIZE), null);
+      drawInfoText(""+effect.getDuration(), effectX+15, rowY+fontHeight+INFO_EFFECT_PADDING, INFO_EFFECT_SIZE+INFO_EFFECT_PADDING);
+      effectX += INFO_EFFECT_SIZE + INFO_EFFECT_PADDING;
+    }
+    if (selectedUnit.getEffects().size() > 0) {
+      rowY += INFO_EFFECT_SIZE + fontHeight;
+    }
+    // Draw all the unit abilities
+    int imgHeight = Math.min(((spaceAvailable/imgCount)-INFO_IMG_PADDING), INFO_IMG_MAX_HEIGHT);
+    if (imgHeight < fontHeight) {
+      Log.e("WorldView", "Too many abilities to fit on the screen!");
+      // TODO : Maybe an alternate layout?
+    }
+    int imgWidth = Math.round(((float)imgHeight * 2.0f) / SQRT_3);
+    d("WorldView", "Drawing imgHeight="+imgHeight+" imgCount="+imgCount+" infoHeight="+infoWindow.height()+" spaceAvailable="+spaceAvailable);
+    for (Ability ability : selectedUnit.getAbilities()) {
+      drawLeftColImgAndText(ability.getBitmap(), imgWidth, imgHeight, ability.getName(), rowY);
+      // Setup the button for this ability
+      abilityButtons.put(new Rect(0, rowY, centerX, rowY+imgHeight), ability);
+      rowY += imgHeight + INFO_IMG_PADDING;
+    }
+    // Draw the right column
     rowY = INFO_TOP_PADDING;
     StringBuffer infoText = new StringBuffer();
-    infoText.append("Team: "+unit.getTeam()+"\n");
-    infoText.append("HP: "+ Utils.decimalFormat.format(unit.getHp())+" / "+Utils.decimalFormat.format(unit.getHpMax())+"\n");
-    infoText.append("Action: "+ Utils.decimalFormat.format(unit.getAction())+" / "+Utils.decimalFormat.format(unit.getActionMax())+"\n");
-    infoText.append("Attr: "+Utils.toCsv(unit.getAttr())+"\n");
-    infoText.append("Move: "+unit.getMoveRange()+getRestrict(unit.getMoveRestrict())+"\n");
-    infoText.append("Sight: "+unit.getSightRange()+getRestrict(unit.getSightRestrict())+"\n");
-    infoText.append("Defence: "+GameUtils.damagesToString(unit.getDefence())+"\n");
+    infoText.append("Team: "+selectedUnit.getTeam()+"\n");
+    infoText.append("HP: "+ Utils.decimalFormat.format(selectedUnit.getHp())+" / "+Utils.decimalFormat.format(selectedUnit.getHpMax())+"\n");
+    infoText.append("Action: "+ Utils.decimalFormat.format(selectedUnit.getAction())+" / "+Utils.decimalFormat.format(selectedUnit.getActionMax())+"\n");
+    infoText.append("Attr: "+Utils.toCsv(selectedUnit.getAttr())+"\n");
+    infoText.append("Move: "+selectedUnit.getMoveRange()+getRestrict(selectedUnit.getMoveRestrict())+"\n");
+    infoText.append("Sight: "+selectedUnit.getSightRange()+getRestrict(selectedUnit.getSightRestrict())+"\n");
+    infoText.append("Defence: "+GameUtils.damagesToString(selectedUnit.getDefence())+"\n");
     drawInfoText(infoText.toString(), centerX, rowY, centerX);
+
+    drawBottomButtons();
   }
 
   /**
@@ -507,6 +645,10 @@ public class WorldView extends View {
     return layout.getHeight();
   }
 
+  private float getFontHeightPx() {
+    return FONT_SIZE_SP * getResources().getDisplayMetrics().density;
+  }
+
   /**
    * Setup a layout for drawing text on a canvas
    * @param maxWidth  max allowed width
@@ -514,11 +656,17 @@ public class WorldView extends View {
   private StaticLayout getLayout(String text, int maxWidth) {
     TextPaint textPaint = new TextPaint();
     textPaint.setAntiAlias(true);
-    textPaint.setTextSize(FONT_SIZE_SP * getResources().getDisplayMetrics().density);
+    textPaint.setTextSize(getFontHeightPx());
     textPaint.setColor(Color.BLACK);
     int textWidth = (int) textPaint.measureText(text);
     StaticLayout layout = new StaticLayout(text, textPaint, textWidth, Layout.Alignment.ALIGN_NORMAL, 1.0f, 0, false);
     return layout;
+  }
+
+  private void drawBottomButtons() {
+    infoCanvas.drawBitmap(exitButtonImg, null, exitButtonRect, null);
+    infoCanvas.drawBitmap(saveButtonImg, null, saveButtonRect, null);
+    infoCanvas.drawBitmap(endTurnButtonImg, null, endTurnButtonRect, null);
   }
 
   /**
@@ -535,7 +683,7 @@ public class WorldView extends View {
    * Sets up the unit for moving (showing where the unit can move to)
    */
   private void setupUnitMove(Unit unit) {
-    Log.d("WorldView", "Setting up moves for "+unit.getName()+" at "+ unit.getPos());
+    d("WorldView", "Setting up moves for "+unit.getName()+" at "+ unit.getPos());
     validMoves = GameUtils.validMovePositions(unit.getPos(), unit.getMoveRange(), unit.getMoveRestrict(), world);
     for (Position pos : validMoves) {
       //Log.d("WorldView", "Can move to "+pos);
@@ -552,6 +700,9 @@ public class WorldView extends View {
     if (selectedUnit == null) {
       return;
     }
+    if (selectedUnit.getAction() >= selectedUnit.getMoveActionCost()) {
+      selectedUnit.setAction(selectedUnit.getAction() - selectedUnit.getMoveActionCost());
+    }
     selectedUnit.setPos(pos);
     // Clear valid moves, need to click again for a second move
     validMoves = null;
@@ -561,41 +712,59 @@ public class WorldView extends View {
    * loads and draws all the target ability locations for the unit
    */
   public void setupSelectedUnitAbilities() {
-    if (selectedUnit != null) {
-      selectedAbilities = new HashMap<>();
-      for (Ability ability : selectedUnit.getAbilities()) {
-        Log.d("WorldView", "setting up " + selectedUnit.getName() + " ability " + ability.getName());
-        int range = ability.getRange();
-        Action applies = ability.getApplies();
-        if (applies == null) {
-          Log.d("WorldView", "Applies is null");
-          continue;
-        }
-        Mod mod = world.getMods().get(applies.getModId());
-        if (mod == null) {
-          Log.d("WorldView", "mod is null. modId="+applies.getModId()+" mods="+world.getMods());
-          continue;
-        }
-        if (Mod.TYPE_RULE.equals(mod.getType())) {
-          for (Unit target : world.getUnits()) {
-            Log.d("WorldView", "checking "+ability.getName()+" range:"+ability.getRange()+" against "+target.getName()+" at "+target.getPos()+" distance="+target.getPos().distanceTo(selectedUnit.getPos()));
-            if (!selectedAbilities.containsKey(target.getPos()) &&
-                (target.getPos().distanceTo(selectedUnit.getPos()) <= range)) {
-              // Run the applies JS rule
-              if (scriptEngine.runRule(applies, selectedUnit, target)) {
-                selectedAbilities.put(target.getPos(), ability);
-              }
-            }
-          } // for unit
-        } else {
-          Log.d("WorldView", "Not handled MOD_TYPE="+mod.getType());
-        }
-      } // for Ability
-
-      Log.d("WorldView", "selectedAbilities="+selectedAbilities);
-      drawSelectedUnitAbilities();
+    if (selectedUnit == null) {
+      return;
     }
+    selectedAbilities = new HashMap<>();
+    for (Ability ability : selectedUnit.getAbilities()) {
+      addAbility(ability);
+    }
+    d("WorldView", "selectedAbilities="+selectedAbilities);
+    drawSelectedUnitAbilities();
   }
+
+  private void setupSingleAbility(Ability ability) {
+    if (selectedUnit == null) {
+      return;
+    }
+    selectedAbilities = new HashMap<>();
+    addAbility(ability);
+    drawSelectedUnitAbilities();
+  }
+
+
+  private void addAbility(Ability ability) {
+    d("WorldView", "setting up " + selectedUnit.getName() + " ability " + ability.getName());
+    int range = ability.getRange();
+    Action applies = ability.getApplies();
+    if (applies == null) {
+      d("WorldView", "Applies is null");
+      return;
+    }
+    Mod mod = world.getMods().get(applies.getModId());
+    if (mod == null) {
+      d("WorldView", "mod is null. modId="+applies.getModId()+" mods="+world.getMods());
+      return;
+    }
+    if (Mod.TYPE_RULE.equals(mod.getType())) {
+      for (Unit target : world.getUnits()) {
+        //Log.d("WorldView", "checking "+ability.getName()+" range:"+ability.getRange()+" against "+target.getName()+" at "+target.getPos()+" distance="+target.getPos().distanceTo(selectedUnit.getPos()));
+        if (!selectedAbilities.containsKey(target.getPos()) && // unit is not already covered with another ability
+            (target.getPos().distanceTo(selectedUnit.getPos()) <= range) && // Within range for the ability
+            (ability.getActionCost() <= selectedUnit.getAction())) { // unit has enough action to perform the ability
+          // Run the applies JS rule
+          if (scriptEngine.runRule(applies, selectedUnit, target)) {
+            selectedAbilities.put(target.getPos(), ability);
+          }
+        }
+      } // for unit
+    } else if(Mod.TYPE_RULE_LOC.equals(mod.getType())) {
+      // TODO : lookup all the applicable locations (not necessarily where a unit is)
+    } else {
+      d("WorldView", "Error in Ability:"+ability.getId()+" name="+ability.getName()+" Can't handle applies with MOD_TYPE="+mod.getType());
+    }
+  } // for Ability
+
 
   public ScriptEngine getScripEngine() {
     return this.scriptEngine;
@@ -603,7 +772,7 @@ public class WorldView extends View {
 
 
   public void drawSelectedUnitAbilities() {
-    Log.d("WorldView", "Setting up selectedAbilities "+selectedAbilities);
+    d("WorldView", "Setting up selectedAbilities "+selectedAbilities);
     if (selectedAbilities != null) {
       for (Position pos : selectedAbilities.keySet()) {
         Ability ability = selectedAbilities.get(pos);
@@ -614,6 +783,92 @@ public class WorldView extends View {
         bgCanvas.drawBitmap(ability.getBitmap(), null, imgPos, null);
         //Log.d("WorldView", "drawing ability="+ability.getName()+" at "+pos);
       } // for
+    }
+  }
+
+  /**
+   * Applies the ability (runs the script)
+   * self = selectedUnit
+   * target = targetUnit
+   */
+  public void applyAbility(Ability ability, Unit target) {
+    if (selectedUnit == null) {
+      // Cannot apply ability without a self
+      return;
+    }
+    // Action cost
+    selectedUnit.setAction(selectedUnit.getAction() - ability.getActionCost());
+    // Execute the onStart
+    scriptEngine.runActions(ability.getOnStart(), selectedUnit, target);
+    // Add effect
+    Effect effect = ability.getEffect();
+    if (effect != null) {
+      // non-stackable effects can only be applied once
+      if (effect.isStackable() || !target.getEffects().contains(effect)) {
+        target.getEffects().add(effect.clone());
+      }
+    }
+    deathCheck(target);
+  }
+
+  /**
+   * Called when a new turn begins
+   */
+  public void startTurn() {
+    // Process all the effects
+    // TODO : should only be for the player (the AI start turn would process effects for computer)
+    for (Unit unit : world.getUnits()) {
+      for (int i= unit.getEffects().size()-1; i>=0; i--) {
+        Effect effect = unit.getEffects().get(i);
+        scriptEngine.runActions(effect.getOnRun(), unit, unit);
+        effect.setDuration(effect.getDuration() - 1);
+        if (effect.getDuration() <= 0) {
+          unit.getEffects().remove(i);
+        }
+      } // for effect
+    } // for unit
+    deathCheck();
+
+    // Refresh the UI with all the changes
+    validMoves = null;
+    selectedAbilities = null;
+    drawBackground();
+    drawSelectedUnitInfo();
+  }
+
+  /**
+   * Called when ending the turn
+   */
+  public void endTurn() {
+    d("WorldView", "Ending turn");
+    // Reset all the action points
+    for (Unit unit : world.getUnits()) {
+      unit.setAction(unit.getActionMax());
+    }
+   }
+
+  /**
+   * Checks all units to see if any are dead and need to be cleaned up
+   */
+  public void deathCheck() {
+    List<Unit> units = world.getUnits();
+    for (int i=units.size(); i<=0; i--) {
+      Unit unit = units.get(i);
+      if (unit.getHp() <= 0) {
+        units.remove(i);
+        Log.d("WorldView", unit.getName()+" has died!");
+      }
+    } // for
+  }
+
+  /**
+  * Checks this particular unit to see if it has died.
+  * If it's dead it will be removed from the game
+  */
+  public void deathCheck(Unit unit) {
+    if (unit.getHp() <= 0) {
+      world.getUnits().remove(unit);
+      d("WorldView", unit.getName()+" has died!");
     }
   }
 

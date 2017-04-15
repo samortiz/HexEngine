@@ -7,7 +7,7 @@ public class Action {
 
   private String id;
   private String modId;
-  private Map<String, ModParamValue> values = new HashMap<>(); // keyed on var
+  private Map<String, ModParamValue> paramValues = new HashMap<>(); // keyed on var
 
   public Action() {}
 
@@ -31,12 +31,12 @@ public class Action {
     this.modId = modId;
   }
 
-  public Map<String, ModParamValue> getValues() {
-    return values;
+  public Map<String, ModParamValue> getParamValues() {
+    return paramValues;
   }
 
-  public void setValues(Map<String, ModParamValue> values) {
-    this.values = values;
+  public void setParamValues(Map<String, ModParamValue> paramValues) {
+    this.paramValues = paramValues;
   }
 
   @Override
@@ -44,7 +44,7 @@ public class Action {
     return "Action{" +
         "id='" + id + '\'' +
         ", modId='" + modId + '\'' +
-        ", values=" + values +
+        ", paramValues=" +paramValues+
         '}';
   }
 }

@@ -162,13 +162,19 @@ public class Game {
     // Default Mods
     List<ModParam> params = new ArrayList<>();
     params.add(new ModParam("damage", ModParam.TYPE.Damage));
-    Mod dmg = new Mod(Utils.generateUniqueId(), "Damage", Mod.TYPE_MOD, params, "applyDamage(self, target, damage);");
+    Mod dmg = new Mod(Utils.generateUniqueId(), "Damage", Mod.TYPE_MOD, params, "tools.applyDamage(self, target, damage);");
     game.getMods().put(dmg.getId(), dmg);
+
+    params = new ArrayList<>();
+    params.add(new ModParam("amount", ModParam.TYPE.Damage));
+    Mod heal= new Mod(Utils.generateUniqueId(), "Heal", Mod.TYPE_MOD, params, "tools.heal(target, damage);");
+    game.getMods().put(heal.getId(), heal);
 
     params = new ArrayList<>();
     params.add(new ModParam("damage", ModParam.TYPE.Damage));
     params.add(new ModParam("range", ModParam.TYPE.Integer));
-    Mod areaDmg = new Mod(Utils.generateUniqueId(), "Damage Area", Mod.TYPE_MOD_LOC, params, "for (Unit target : allUnitsInRange(x,y,range) { applyDamage(self, target, damage); }");
+    Mod areaDmg = new Mod(Utils.generateUniqueId(), "Damage Area", Mod.TYPE_MOD_LOC, params,
+          "for (Unit target : allUnitsInRange(x,y,range) { applyDamage(self, target, damage); }");
     game.getMods().put(areaDmg.getId(), areaDmg);
 
     Mod enemies = new Mod(Utils.generateUniqueId(), "Enemy", Mod.TYPE_RULE, new ArrayList<ModParam>(), "self.team != target.team");

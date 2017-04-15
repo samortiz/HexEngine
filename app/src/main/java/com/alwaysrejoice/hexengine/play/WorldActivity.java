@@ -1,6 +1,7 @@
 package com.alwaysrejoice.hexengine.play;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -51,5 +52,12 @@ public class WorldActivity extends Activity implements View.OnTouchListener {
     worldView.getScripEngine().onDestroy();
     super.onDestroy();
   }
+
+  public void exit() {
+    Intent myIntent = new Intent(WorldActivity.this, WorldListActivity.class);
+    startActivity(myIntent);
+  }
+
+
 
 }
