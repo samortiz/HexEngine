@@ -16,6 +16,7 @@ import android.view.Display;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
+import com.alwaysrejoice.hexengine.dto.AI;
 import com.alwaysrejoice.hexengine.dto.Ability;
 import com.alwaysrejoice.hexengine.dto.Action;
 import com.alwaysrejoice.hexengine.dto.BgMap;
@@ -24,11 +25,13 @@ import com.alwaysrejoice.hexengine.dto.Effect;
 import com.alwaysrejoice.hexengine.dto.Mod;
 import com.alwaysrejoice.hexengine.dto.Position;
 import com.alwaysrejoice.hexengine.dto.SystemTile;
+import com.alwaysrejoice.hexengine.dto.Team;
 import com.alwaysrejoice.hexengine.dto.Unit;
 import com.alwaysrejoice.hexengine.dto.World;
 import com.alwaysrejoice.hexengine.util.GameUtils;
 import com.alwaysrejoice.hexengine.util.ScriptEngine;
 import com.alwaysrejoice.hexengine.util.Utils;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -118,6 +121,9 @@ public class WorldView extends View {
   private ScriptEngine scriptEngine;
   private Paint whiteHighlightPaint = new Paint(); // color of circle behind abilities on the map
 
+  // AI
+  List<String> myTeamIds; // contains all the teamIds that are human controlled (usually one)
+
 
   public WorldView(WorldActivity worldActivity, World world) {
     super(worldActivity);
@@ -205,9 +211,19 @@ public class WorldView extends View {
     buttonX += INFO_IMG_MAX_WIDTH + INFO_IMG_PADDING;
     endTurnButtonRect = new Rect(buttonX, buttonY, buttonX+INFO_IMG_MAX_WIDTH, buttonY+INFO_IMG_MAX_HEIGHT);
 
+    // Setup a list of all the teams that are human controlled
+    // This is indicateds by having an AI with no data in it
+    myTeamIds = new ArrayList<>();
+    for (Team team : world.getTeams()) {
+      AI ai = GameUtils.getAiById(team.getAiId());
+      if ((ai != null) && (ai.getScript() != null) && (ai.getScript().length() == 0)) {
+        myTeamIds.add(team.getId());
+      }
+    } // for
+
     // Select the first Player unit
     for (Unit unit : world.getUnits()) {
-      if ("Player".equals(unit.getTeam())) {
+      if (myTeamIds.contains(unit.getTeamId())) {
         this.selectedUnit = unit;
         drawSelectedUnitInfo();
         break;
@@ -618,7 +634,7 @@ public class WorldView extends View {
     // Draw the right column
     rowY = INFO_TOP_PADDING;
     StringBuffer infoText = new StringBuffer();
-    infoText.append("Team: "+selectedUnit.getTeam()+"\n");
+    infoText.append("Team: "+GameUtils.getTeamNameFromId(selectedUnit.getTeamId())+"\n");
     infoText.append("HP: "+ Utils.decimalFormat.format(selectedUnit.getHp())+" / "+Utils.decimalFormat.format(selectedUnit.getHpMax())+"\n");
     infoText.append("Action: "+ Utils.decimalFormat.format(selectedUnit.getAction())+" / "+Utils.decimalFormat.format(selectedUnit.getActionMax())+"\n");
     infoText.append("Attr: "+Utils.toCsv(selectedUnit.getAttr())+"\n");

@@ -12,7 +12,7 @@ public class UnitTile implements TileType {
   private String id;
   private String name;
   private Bitmap bitmap;
-  private String team;
+  private String teamId;
   private double hpMax;
   private double actionMax;
   private List<String> attr = new ArrayList<>();
@@ -67,12 +67,12 @@ public class UnitTile implements TileType {
     this.bitmap = bitmap;
   }
 
-  public String getTeam() {
-    return team;
+  public String getTeamId() {
+    return teamId;
   }
 
-  public void setTeam(String team) {
-    this.team = team;
+  public void setTeamId(String teamId) {
+    this.teamId = teamId;
   }
 
   public double getHpMax() {
@@ -182,7 +182,7 @@ public class UnitTile implements TileType {
         "id='" + id + '\'' +
         ", name='" + name + '\'' +
         ", bitmap=" + bitmap +
-        ", team='" + team + '\'' +
+        ", teamId='" + teamId + '\'' +
         ", hpMax=" + hpMax +
         ", actionMax=" + actionMax +
         ", attr=" + attr +

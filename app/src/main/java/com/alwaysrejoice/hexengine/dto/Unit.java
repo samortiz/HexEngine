@@ -17,7 +17,7 @@ public class Unit implements TileType {
   private String unitTileId;
   private String name;
   private Bitmap bitmap;
-  private String team;
+  private String teamId;
   private double hp;
   private double hpMax;
   private double action;
@@ -43,7 +43,7 @@ public class Unit implements TileType {
     this.unitTileId = unitTile.getId();
     this.name = unitTile.getName();
     this.bitmap = unitTile.getBitmap();
-    this.team = unitTile.getTeam();
+    this.teamId = unitTile.getTeamId();
     this.hp = unitTile.getHpMax();
     this.hpMax = unitTile.getHpMax();
     this.action = unitTile.getActionMax();
@@ -115,12 +115,12 @@ public class Unit implements TileType {
     this.bitmap = bitmap;
   }
 
-  public String getTeam() {
-    return team;
+  public String getTeamId() {
+    return teamId;
   }
 
-  public void setTeam(String team) {
-    this.team = team;
+  public void setTeamId(String teamId) {
+    this.teamId = teamId;
   }
 
   public double getHp() {
@@ -242,7 +242,7 @@ public class Unit implements TileType {
         ", unitTileId='" + unitTileId + '\'' +
         ", name='" + name + '\'' +
         ", bitmap=" + bitmap +
-        ", team='" + team + '\'' +
+        ", teamId='" + teamId + '\'' +
         ", hp=" + hp +
         ", hpMax=" + hpMax +
         ", action=" + action +

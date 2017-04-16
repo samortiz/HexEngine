@@ -2,7 +2,7 @@ package com.alwaysrejoice.hexengine.util;
 
 import android.graphics.Bitmap;
 import android.util.Log;
-
+import com.alwaysrejoice.hexengine.dto.AI;
 import com.alwaysrejoice.hexengine.dto.AbilityTile;
 import com.alwaysrejoice.hexengine.dto.Action;
 import com.alwaysrejoice.hexengine.dto.BgMap;
@@ -13,17 +13,17 @@ import com.alwaysrejoice.hexengine.dto.EffectTile;
 import com.alwaysrejoice.hexengine.dto.Game;
 import com.alwaysrejoice.hexengine.dto.Mod;
 import com.alwaysrejoice.hexengine.dto.Position;
+import com.alwaysrejoice.hexengine.dto.Team;
 import com.alwaysrejoice.hexengine.dto.TileType;
 import com.alwaysrejoice.hexengine.dto.Unit;
 import com.alwaysrejoice.hexengine.dto.UnitTile;
 import com.alwaysrejoice.hexengine.dto.World;
 import com.alwaysrejoice.hexengine.edit.EditMapView;
+import static com.alwaysrejoice.hexengine.edit.EditMapView.TILE_HEIGHT;
+import static com.alwaysrejoice.hexengine.edit.EditMapView.TILE_WIDTH;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-
-import org.apache.commons.io.IOUtils;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -31,9 +31,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import static com.alwaysrejoice.hexengine.edit.EditMapView.TILE_HEIGHT;
-import static com.alwaysrejoice.hexengine.edit.EditMapView.TILE_WIDTH;
+import org.apache.commons.io.IOUtils;
 
 public class GameUtils {
   // Static singleton instances for the current game/world in progress
@@ -263,6 +261,77 @@ public class GameUtils {
     return null;
   }
 
+  public static Team getTeamById(String teamId) {
+    if (teamId == null) {
+      return null;
+    }
+    for (Team t : game.getTeams()) {
+      if (teamId.equals(t.getId())) {
+        return t;
+      }
+    } // for
+    return null;
+  }
+
+  public static String getTeamIdFromName(String teamName) {
+    if (teamName == null) {
+      return null;
+    }
+    for (Team t : game.getTeams()) {
+      if (teamName.equals(t.getName())) {
+        return t.getId();
+      }
+    } // for
+    return null;
+  }
+
+  public static String getTeamNameFromId(String teamId) {
+    if (teamId == null) {
+      return null;
+    }
+    for (Team t : game.getTeams()) {
+      if (teamId.equals(t.getId())) {
+        return t.getName();
+      }
+    } // for
+    return null;
+  }
+
+  public static AI getAiById(String aiId) {
+    if (aiId == null) {
+      return null;
+    }
+    for (AI ai : game.getAis()) {
+      if (aiId.equals(ai.getId())) {
+        return ai;
+      }
+    } // for
+    return null;
+  }
+
+  public static String getAiIdFromName(String aiName) {
+    if (aiName == null) {
+      return null;
+    }
+    for (AI ai : game.getAis()) {
+      if (aiName.equals(ai.getName())) {
+        return ai.getId();
+      }
+    } // for
+    return null;
+  }
+
+  public static String getAiNameFromId(String aiId) {
+    if (aiId == null) {
+      return null;
+    }
+    for (AI ai : game.getAis()) {
+      if (aiId.equals(ai.getId())) {
+        return ai.getName();
+      }
+    } // for
+    return null;
+  }
 
   public static String actionsToCSV(List<Action> actions) {
     if (actions == null) {

@@ -72,6 +72,18 @@ public class SettingsActivity extends Activity {
     Log.d("settings", "goto Clear");
   }
 
+  public void gotoTeamList(View view) {
+    Intent myIntent = new Intent(SettingsActivity.this, TeamListActivity.class);
+    startActivity(myIntent);
+    Log.d("settings", "goto Team List");
+  }
+
+  public void gotoAiList(View view) {
+    Intent myIntent = new Intent(SettingsActivity.this, AiListActivity.class);
+    startActivity(myIntent);
+    Log.d("settings", "goto AI list");
+  }
+
   public void gotoEditMap(View view) {
     Intent myIntent = new Intent(SettingsActivity.this, EditMapActivity.class);
     startActivity(myIntent);

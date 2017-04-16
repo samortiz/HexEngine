@@ -108,10 +108,6 @@
         android:screenOrientation="portrait">
     </activity>
     <activity
-        android:name=".edit.ListTeamActivity"
-        android:screenOrientation="portrait">
-    </activity>
-    <activity
         android:name=".edit.ListBgTypeActivity"
         android:screenOrientation="portrait">
     </activity>
@@ -142,6 +138,22 @@
     </activity>
     <activity
         android:name=".edit.TriggersActivity"
+        android:screenOrientation="portrait">
+    </activity>
+    <activity
+        android:name=".edit.TeamListActivity"
+        android:screenOrientation="portrait">
+    </activity>
+    <activity
+        android:name=".edit.TeamEditActivity"
+        android:screenOrientation="portrait">
+    </activity>
+    <activity
+        android:name=".edit.AiListActivity"
+        android:screenOrientation="portrait">
+    </activity>
+    <activity
+        android:name=".edit.AiEditActivity"
         android:screenOrientation="portrait">
     </activity>
     <activity

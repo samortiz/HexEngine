@@ -21,9 +21,10 @@ public class Game {
   private Map<String, EffectTile> effects = new HashMap(); // keyed on id
   private Map<String, AbilityTile> abilities = new HashMap(); // keyed on id
   private Triggers triggers = new Triggers();
+  private List<Team> teams = new ArrayList<>();
+  private List<AI> ais = new ArrayList<>();
 
   // Lists of Strings
-  private List<String> teams = new ArrayList<>();
   private List<String> bgTypes = new ArrayList<>();
   private List<String> damageTypes = new ArrayList<>();
   private List<String> attr = new ArrayList<>();
@@ -108,12 +109,20 @@ public class Game {
     this.triggers = triggers;
   }
 
-  public List<String> getTeams() {
+  public List<Team> getTeams() {
     return teams;
   }
 
-  public void setTeams(List<String> teams) {
+  public void setTeams(List<Team> teams) {
     this.teams = teams;
+  }
+
+  public List<AI> getAis() {
+    return ais;
+  }
+
+  public void setAis(List<AI> ais) {
+    this.ais = ais;
   }
 
   public List<String> getBgTypes() {
@@ -154,6 +163,7 @@ public class Game {
         ", abilities="+abilities+
         ", triggers="+triggers+
         ", teams="+teams+
+        ", ais="+ais+
         ", bgTypes="+bgTypes+
         ", damageTypes="+damageTypes+
         ", attr="+attr+
@@ -164,10 +174,19 @@ public class Game {
    * Creates the basic minimum data required for a game to work
    */
   public static void setupNewGame(Game game) {
-    game.setTeams(Utils.makeList("Player", "Computer"));
     game.setAttr(Utils.makeList("Living", "Flies"));
     game.setDamageTypes(Utils.makeList(new String[]{"Slash", "Pierce", "Bludgeon", "Poison", "Fire"}));
     game.setBgTypes(Utils.makeList(new String[]{"Grass", "Water", "Forest", "Mountain"}));
+
+    // Setup default AIs
+    AI humanAI = new AI(Utils.generateUniqueId(), "Human", "");
+    game.getAis().add(humanAI);
+    AI aggressiveAI = new AI(Utils.generateUniqueId(), "Aggressive", "");
+    game.getAis().add(aggressiveAI);
+
+    // Setup default teams
+    game.getTeams().add(new Team(Utils.generateUniqueId(), "Player", humanAI.getId()));
+    game.getTeams().add(new Team(Utils.generateUniqueId(), "Enemy", aggressiveAI.getId()));
 
     // Default Mods
     List<ModParam> params = new ArrayList<>();
@@ -187,6 +206,7 @@ public class Game {
           "for (Unit target : allUnitsInRange(x,y,range) { applyDamage(self, target, damage); }");
     game.getMods().put(areaDmg.getId(), areaDmg);
 
+    // Rules
     Mod enemies = new Mod(Utils.generateUniqueId(), "Enemy", Mod.TYPE_RULE, new ArrayList<ModParam>(), "self.team != target.team");
     game.getMods().put(enemies.getId(), enemies);
 
@@ -195,6 +215,9 @@ public class Game {
 
     Mod friend = new Mod(Utils.generateUniqueId(), "Friend", Mod.TYPE_RULE, new ArrayList<ModParam>(), "(self.id != target.id) && (self.team == target.team)");
     game.getMods().put(friend.getId(), friend);
+
+    Mod ruleAnyone = new Mod(Utils.generateUniqueId(), "Anyone", Mod.TYPE_RULE, new ArrayList<ModParam>(), "true");
+    game.getMods().put(ruleAnyone.getId(), ruleAnyone);
 
     Mod ruleLoc = new Mod(Utils.generateUniqueId(), "Anywhere", Mod.TYPE_RULE_LOC, new ArrayList<ModParam>(), "true");
     game.getMods().put(ruleLoc.getId(), ruleLoc);

@@ -18,6 +18,8 @@ public class World {
   private Map<String, BgTile> bgTiles = new HashMap(); // keyed on id
   private List<Unit> units = new ArrayList();
   private Map<String, Mod> mods = new HashMap(); // keyed on id
+  private List<Team> teams = new ArrayList<>();
+  private List<AI> ais =  new ArrayList<>();
   private Map<String, Object> storage = new HashMap(); // script object storage
   private Triggers triggers = new Triggers();
   private boolean victory = false; // set to true to end the game
@@ -43,6 +45,8 @@ public class World {
       this.units.add(new Unit(unitMap, game));
     }
     this.mods.putAll(game.getMods());
+    this.teams.addAll(game.getTeams());
+    this.ais.addAll(game.getAis());
     this.triggers = game.getTriggers();
   }
 
@@ -114,6 +118,22 @@ public class World {
     return storage;
   }
 
+  public List<Team> getTeams() {
+    return teams;
+  }
+
+  public void setTeams(List<Team> teams) {
+    this.teams = teams;
+  }
+
+  public List<AI> getAis() {
+    return ais;
+  }
+
+  public void setAis(List<AI> ais) {
+    this.ais = ais;
+  }
+
   public void setStorage(Map<String, Object> storage) {
     this.storage = storage;
   }
@@ -153,6 +173,8 @@ public class World {
         ", bgTiles="+bgTiles+
         ", units="+units+
         ", mods="+mods+
+        ", teams="+teams+
+        ", ais="+ais+
         ", storage="+storage+
         ", triggers="+triggers+
         ", victory="+victory+

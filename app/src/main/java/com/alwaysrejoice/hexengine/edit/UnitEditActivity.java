@@ -10,9 +10,9 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
-
 import com.alwaysrejoice.hexengine.R;
 import com.alwaysrejoice.hexengine.dto.Game;
+import com.alwaysrejoice.hexengine.dto.Team;
 import com.alwaysrejoice.hexengine.dto.TileType;
 import com.alwaysrejoice.hexengine.dto.UnitTile;
 import com.alwaysrejoice.hexengine.util.DialogMultiSelect;
@@ -20,7 +20,6 @@ import com.alwaysrejoice.hexengine.util.DialogMultiSelectListener;
 import com.alwaysrejoice.hexengine.util.DialogMultiSelectTileType;
 import com.alwaysrejoice.hexengine.util.GameUtils;
 import com.alwaysrejoice.hexengine.util.Utils;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -66,8 +65,11 @@ public class UnitEditActivity extends Activity {
       unit = new UnitTile(Utils.generateUniqueId());
     }
 
-    Spinner teamSpinner = (Spinner) findViewById(R.id.team_spinner);
-    Utils.setupSpinner(teamSpinner, game.getTeams());
+    List<String> teamNames = new ArrayList<>();
+    for (Team t : game.getTeams()) {
+      teamNames.add(t.getName());
+    }
+    Utils.setupSpinner((Spinner) findViewById(R.id.team_spinner), teamNames);
 
     attrDialog = new DialogMultiSelect(this, "Attributes", game.getAttr(), unit.getAttr());
     moveRestrictDialog = new DialogMultiSelect(this, "Move Restrictions", game.getBgTypes(), unit.getMoveRestrict());
@@ -136,8 +138,8 @@ public class UnitEditActivity extends Activity {
   private void loadUnitFromUi() {
     EditText nameInput = (EditText) findViewById(R.id.unit_name);
     unit.setName(nameInput.getText().toString().trim());
-
-    unit.setTeam(Utils.getSpinnerValue((Spinner)findViewById(R.id.team_spinner)));
+    String teamName = Utils.getSpinnerValue((Spinner)findViewById(R.id.team_spinner));
+    unit.setTeamId(GameUtils.getTeamIdFromName(teamName));
 
     EditText hpInput = (EditText) findViewById(R.id.hp_input);
     unit.setHpMax(Utils.stringToDouble(hpInput.getText().toString().trim()));
@@ -175,7 +177,7 @@ public class UnitEditActivity extends Activity {
     EditText nameInput = (EditText) findViewById(R.id.unit_name);
     nameInput.setText(unit.getName());
 
-    Utils.setSpinnerValue((Spinner) findViewById(R.id.team_spinner), unit.getTeam());
+    Utils.setSpinnerValue((Spinner) findViewById(R.id.team_spinner), GameUtils.getTeamNameFromId(unit.getTeamId()));
 
     EditText hpInput = (EditText) findViewById(R.id.hp_input);
     hpInput.setText(Utils.doubleToString(unit.getHpMax()));
