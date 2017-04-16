@@ -12,12 +12,11 @@ import android.widget.ListView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
-
 import com.alwaysrejoice.hexengine.R;
 import com.alwaysrejoice.hexengine.dto.TileType;
 import com.alwaysrejoice.hexengine.util.FileUtils;
 import com.alwaysrejoice.hexengine.util.GameUtils;
-
+import com.alwaysrejoice.hexengine.util.Utils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -132,7 +131,7 @@ public class ImagePickerActivity extends Activity {
           }
           if (myIntent != null) {
             Log.d("imagePicker", "returning tile="+tile);
-            myIntent.putExtra("IMAGE_PICKER_TILE", GameUtils.toJson(tile));
+            myIntent.putExtra("IMAGE_PICKER_TILE", Utils.toJson(tile));
             startActivity(myIntent);
           } else {
             Log.e("imagePicker", "unknown returnLoc="+returnLoc);

@@ -28,9 +28,9 @@ import com.alwaysrejoice.hexengine.dto.SystemTile;
 import com.alwaysrejoice.hexengine.dto.Team;
 import com.alwaysrejoice.hexengine.dto.Unit;
 import com.alwaysrejoice.hexengine.dto.World;
-import com.alwaysrejoice.hexengine.util.GameUtils;
 import com.alwaysrejoice.hexengine.util.ScriptEngine;
 import com.alwaysrejoice.hexengine.util.Utils;
+import com.alwaysrejoice.hexengine.util.WorldUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -167,7 +167,7 @@ public class WorldView extends View {
     endTurnButtonImg = SystemTile.getTile(SystemTile.NAME.LOOP).getBitmap();
 
     // Make a background map
-    backgroundSizeY = GameUtils.getBackgroundSize(world.getGameInfo().getSize());
+    backgroundSizeY = world.getGameInfo().getSize() * TILE_HEIGHT;
     backgroundSizeX = backgroundSizeY; // make a square background map
     bgCenterX = backgroundSizeX / 2;
     bgCenterY = backgroundSizeY / 2;
@@ -215,7 +215,7 @@ public class WorldView extends View {
     // This is indicateds by having an AI with no data in it
     myTeamIds = new ArrayList<>();
     for (Team team : world.getTeams()) {
-      AI ai = GameUtils.getAiById(team.getAiId());
+      AI ai = WorldUtils.getAiById(team.getAiId());
       if ((ai != null) && (ai.getScript() != null) && (ai.getScript().length() == 0)) {
         myTeamIds.add(team.getId());
       }
@@ -472,7 +472,7 @@ public class WorldView extends View {
       worldActivity.exit();
       return true;
     } else if (saveButtonRect.contains(x,y)) {
-      GameUtils.saveWorld(world);
+      WorldUtils.saveWorld(world);
       return true;
     } else if (endTurnButtonRect.contains(x,y)) {
       Log.d("WorldView", "End Turn");
@@ -501,7 +501,7 @@ public class WorldView extends View {
         if (abilityPos.equals(pos)) {
           // The click was on a highlighted ability
           Ability ability = selectedAbilities.get(abilityPos);
-          Unit targetUnit = GameUtils.getUnitAt(pos, world);
+          Unit targetUnit = WorldUtils.getUnitAt(pos, world);
           applyAbility(ability, targetUnit);
           clearSelections();
           return;
@@ -634,13 +634,13 @@ public class WorldView extends View {
     // Draw the right column
     rowY = INFO_TOP_PADDING;
     StringBuffer infoText = new StringBuffer();
-    infoText.append("Team: "+GameUtils.getTeamNameFromId(selectedUnit.getTeamId())+"\n");
+    infoText.append("Team: "+WorldUtils.getTeamNameFromId(selectedUnit.getTeamId())+"\n");
     infoText.append("HP: "+ Utils.decimalFormat.format(selectedUnit.getHp())+" / "+Utils.decimalFormat.format(selectedUnit.getHpMax())+"\n");
     infoText.append("Action: "+ Utils.decimalFormat.format(selectedUnit.getAction())+" / "+Utils.decimalFormat.format(selectedUnit.getActionMax())+"\n");
     infoText.append("Attr: "+Utils.toCsv(selectedUnit.getAttr())+"\n");
     infoText.append("Move: "+selectedUnit.getMoveRange()+getRestrict(selectedUnit.getMoveRestrict())+"\n");
     infoText.append("Sight: "+selectedUnit.getSightRange()+getRestrict(selectedUnit.getSightRestrict())+"\n");
-    infoText.append("Defence: "+GameUtils.damagesToString(selectedUnit.getDefence())+"\n");
+    infoText.append("Defence: "+WorldUtils.damagesToString(selectedUnit.getDefence())+"\n");
     drawInfoText(infoText.toString(), centerX, rowY, centerX);
 
     drawBottomButtons();
@@ -717,7 +717,7 @@ public class WorldView extends View {
    */
   private void setupUnitMove(Unit unit) {
     Log.d("WorldView", "Setting up moves for "+unit.getName()+" at "+ unit.getPos());
-    validMoves = GameUtils.validMovePositions(unit.getPos(), unit.getMoveRange(), unit.getMoveRestrict(), world);
+    validMoves = WorldUtils.validMovePositions(unit.getPos(), unit.getMoveRange(), unit.getMoveRestrict(), world);
     for (Position pos : validMoves) {
       //Log.Log.d("WorldView", "Can move to "+pos);
       int x = bgCenterX + Math.round(HEX_SIZE * 1.5f  * pos.getCol()) - (TILE_WIDTH / 2);
@@ -859,9 +859,11 @@ public class WorldView extends View {
         effect.setDuration(effect.getDuration() - 1);
         if (effect.getDuration() <= 0) {
           unit.getEffects().remove(i);
+          scriptEngine.runActions(effect.getOnEnd(), unit, unit);
         }
       } // for effect
     } // for unit
+    Log.d("WorldView", "Starting turn");
     deathCheck();
     scriptEngine.runActions(world.getTriggers().getStartTurn(), null, null);
 
@@ -888,9 +890,11 @@ public class WorldView extends View {
    * Checks all units to see if any are dead and need to be cleaned up
    */
   public void deathCheck() {
+    Log.d("WorldView", "starting deathCheck");
     List<Unit> units = world.getUnits();
-    for (int i=units.size(); i<=0; i--) {
+    for (int i=units.size()-1; i>=0; i--) {
       Unit unit = units.get(i);
+      Log.d("WorldView", "deathCheck : "+unit.getName()+" "+unit.getHp()+" / "+unit.getHpMax());
       if (unit.getHp() <= 0) {
         units.remove(i);
         Log.d("WorldView", unit.getName()+" has died!");

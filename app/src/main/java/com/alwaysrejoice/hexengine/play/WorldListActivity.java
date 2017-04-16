@@ -10,7 +10,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Spinner;
-
 import com.alwaysrejoice.hexengine.MainActivity;
 import com.alwaysrejoice.hexengine.R;
 import com.alwaysrejoice.hexengine.dto.Game;
@@ -19,7 +18,7 @@ import com.alwaysrejoice.hexengine.util.FileUtils;
 import com.alwaysrejoice.hexengine.util.GameUtils;
 import com.alwaysrejoice.hexengine.util.StringListAdapter;
 import com.alwaysrejoice.hexengine.util.Utils;
-
+import com.alwaysrejoice.hexengine.util.WorldUtils;
 import java.io.File;
 import java.util.ArrayList;
 
@@ -113,7 +112,7 @@ public class WorldListActivity extends Activity implements AdapterView.OnItemCli
     Log.d("worldList", "creating world from game="+gameName);
     Game game = GameUtils.getGame(gameName);
     World world = new World(game);
-    GameUtils.saveWorld(world);
+    WorldUtils.saveWorld(world);
     worldNames.add(world.getName());
     adapter.notifyDataSetChanged();
   }

@@ -86,7 +86,7 @@ public class BgEditActivity extends Activity {
     loadTileFromUi();
     Intent myIntent = new Intent(BgEditActivity.this, ImagePickerActivity.class);
     myIntent.putExtra(ImagePickerActivity.EXTRA_RETURN, ImagePickerActivity.RETURN_BG);
-    myIntent.putExtra(ImagePickerActivity.EXTRA_TILE, GameUtils.toJson(tile));
+    myIntent.putExtra(ImagePickerActivity.EXTRA_TILE, Utils.toJson(tile));
     startActivity(myIntent);
   }
 

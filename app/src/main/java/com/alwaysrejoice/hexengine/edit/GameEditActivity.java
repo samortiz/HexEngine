@@ -86,7 +86,7 @@ public class GameEditActivity extends Activity {
 
     // If we are changing the game size to a smaller one
     if (size < game.getGameInfo().getSize()) {
-      int backgroundSize = GameUtils.getBackgroundSize(size);
+      int backgroundSize = size * EditMapView.TILE_HEIGHT;
       // Remove any tiles that won't fit into the new game size
       List<BgMap> bgMaps = game.getBgMaps();
       for (int i=bgMaps.size()-1; i>=0; i--) {

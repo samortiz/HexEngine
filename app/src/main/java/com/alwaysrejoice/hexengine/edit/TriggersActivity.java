@@ -6,12 +6,11 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
-
 import com.alwaysrejoice.hexengine.R;
 import com.alwaysrejoice.hexengine.dto.Action;
 import com.alwaysrejoice.hexengine.dto.Triggers;
 import com.alwaysrejoice.hexengine.util.GameUtils;
-
+import com.alwaysrejoice.hexengine.util.Utils;
 import java.util.List;
 
 public class TriggersActivity extends Activity {
@@ -63,7 +62,7 @@ public class TriggersActivity extends Activity {
     Intent myIntent = new Intent(TriggersActivity.this, ActionListActivity.class);
     myIntent.putExtra(ActionListActivity.RETURN_LOC, ActionListActivity.RETURN_LOC_TRIGGER_START_WORLD);
     myIntent.putExtra(ActionListActivity.CALLING_OBJ, "");
-    myIntent.putExtra(ActionListActivity.ACTION_LIST, GameUtils.toJson(triggers.getStartWorld()));
+    myIntent.putExtra(ActionListActivity.ACTION_LIST, Utils.toJson(triggers.getStartWorld()));
     startActivity(myIntent);
   }
 
@@ -74,7 +73,7 @@ public class TriggersActivity extends Activity {
     Intent myIntent = new Intent(TriggersActivity.this, ActionListActivity.class);
     myIntent.putExtra(ActionListActivity.RETURN_LOC, ActionListActivity.RETURN_LOC_TRIGGER_START_TURN);
     myIntent.putExtra(ActionListActivity.CALLING_OBJ, "");
-    myIntent.putExtra(ActionListActivity.ACTION_LIST, GameUtils.toJson(triggers.getStartTurn()));
+    myIntent.putExtra(ActionListActivity.ACTION_LIST, Utils.toJson(triggers.getStartTurn()));
     startActivity(myIntent);
   }
 
@@ -85,7 +84,7 @@ public class TriggersActivity extends Activity {
     Intent myIntent = new Intent(TriggersActivity.this, ActionListActivity.class);
     myIntent.putExtra(ActionListActivity.RETURN_LOC, ActionListActivity.RETURN_LOC_TRIGGER_END_TURN);
     myIntent.putExtra(ActionListActivity.CALLING_OBJ, "");
-    myIntent.putExtra(ActionListActivity.ACTION_LIST, GameUtils.toJson(triggers.getEndTurn()));
+    myIntent.putExtra(ActionListActivity.ACTION_LIST, Utils.toJson(triggers.getEndTurn()));
     startActivity(myIntent);
   }
 
@@ -96,7 +95,7 @@ public class TriggersActivity extends Activity {
     Intent myIntent = new Intent(TriggersActivity.this, ActionListActivity.class);
     myIntent.putExtra(ActionListActivity.RETURN_LOC, ActionListActivity.RETURN_LOC_TRIGGER_ABILITY_USED);
     myIntent.putExtra(ActionListActivity.CALLING_OBJ, "");
-    myIntent.putExtra(ActionListActivity.ACTION_LIST, GameUtils.toJson(triggers.getAbilityUsed()));
+    myIntent.putExtra(ActionListActivity.ACTION_LIST, Utils.toJson(triggers.getAbilityUsed()));
     startActivity(myIntent);
   }
 

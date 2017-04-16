@@ -7,12 +7,11 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
-
 import com.alwaysrejoice.hexengine.R;
 import com.alwaysrejoice.hexengine.dto.Action;
 import com.alwaysrejoice.hexengine.dto.Game;
 import com.alwaysrejoice.hexengine.util.GameUtils;
-
+import com.alwaysrejoice.hexengine.util.Utils;
 import java.util.ArrayList;
 
 /**
@@ -80,7 +79,7 @@ public class ActionListActivity extends Activity implements AdapterView.OnItemCl
     // These will be passed back to maintain the state of this class
     myIntent.putExtra(RETURN_LOC, returnLoc);
     myIntent.putExtra(CALLING_OBJ, callingObjJson);
-    myIntent.putExtra(ACTION_LIST, GameUtils.toJson(actions));
+    myIntent.putExtra(ACTION_LIST, Utils.toJson(actions));
     startActivity(myIntent);
   }
 
@@ -106,12 +105,12 @@ public class ActionListActivity extends Activity implements AdapterView.OnItemCl
         RETURN_LOC_EFFECT_ONEND.equals(returnLoc)) {
       myIntent = new Intent(ActionListActivity.this, EffectEditActivity.class);
       myIntent.putExtra(CALLING_OBJ, callingObjJson);
-      myIntent.putExtra(ACTION_LIST, GameUtils.toJson(actions));
+      myIntent.putExtra(ACTION_LIST, Utils.toJson(actions));
       myIntent.putExtra(RETURN_LOC, returnLoc);
     } else if (RETURN_LOC_ABILITY.equals(returnLoc)) {
       myIntent = new Intent(ActionListActivity.this, AbilityEditActivity.class);
       myIntent.putExtra(CALLING_OBJ, callingObjJson);
-      myIntent.putExtra(ACTION_LIST, GameUtils.toJson(actions));
+      myIntent.putExtra(ACTION_LIST, Utils.toJson(actions));
       myIntent.putExtra(RETURN_LOC, returnLoc);
     } else if (RETURN_LOC_TRIGGER_START_WORLD.equals(returnLoc) ||
         RETURN_LOC_TRIGGER_START_TURN.equals(returnLoc) ||
@@ -119,7 +118,7 @@ public class ActionListActivity extends Activity implements AdapterView.OnItemCl
         RETURN_LOC_TRIGGER_ABILITY_USED.equals(returnLoc)) {
       myIntent = new Intent(ActionListActivity.this, TriggersActivity.class);
       myIntent.putExtra(CALLING_OBJ, "");
-      myIntent.putExtra(ACTION_LIST, GameUtils.toJson(actions));
+      myIntent.putExtra(ACTION_LIST, Utils.toJson(actions));
       myIntent.putExtra(RETURN_LOC, returnLoc);
     } else {
       throw new RuntimeException("Error in ActionListActivity.goBack() Unknown returnLoc="+returnLoc);
@@ -137,7 +136,7 @@ public class ActionListActivity extends Activity implements AdapterView.OnItemCl
     // Maintain the state of this object
     myIntent.putExtra(RETURN_LOC, returnLoc);
     myIntent.putExtra(CALLING_OBJ, callingObjJson);
-    myIntent.putExtra(ACTION_LIST, GameUtils.toJson(actions));
+    myIntent.putExtra(ACTION_LIST, Utils.toJson(actions));
     startActivity(myIntent);
   }
 

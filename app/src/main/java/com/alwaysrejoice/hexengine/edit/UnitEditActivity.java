@@ -127,7 +127,7 @@ public class UnitEditActivity extends Activity {
     loadUnitFromUi();
     Intent myIntent = new Intent(UnitEditActivity.this, ImagePickerActivity.class);
     myIntent.putExtra(ImagePickerActivity.EXTRA_RETURN, ImagePickerActivity.RETURN_UNIT);
-    myIntent.putExtra(ImagePickerActivity.EXTRA_TILE, GameUtils.toJson(unit));
+    myIntent.putExtra(ImagePickerActivity.EXTRA_TILE, Utils.toJson(unit));
     startActivity(myIntent);
   }
 

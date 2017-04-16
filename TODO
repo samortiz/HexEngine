@@ -1,12 +1,21 @@
 TODO 
 
+Bug 
+ - max width not correct in info right col
+ - Map Editor menu tiles stretched vertically
+ 
+
 Play 
  - Script logging
  - Run AI 
  - Player can only control his own teams
  - AI tools
+ - Scrolling text area in info right col
+ - Bounds checking on unit movement
 
 Optional Features : 
+ - Back story screen
+ - More info (popup) on ability in info area
  - Animations for abilities? 
  - Sync: BG, Units, Abilities, Mods, Effects
  - UI view event log (maybe text input - talking)

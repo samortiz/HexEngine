@@ -113,7 +113,7 @@ public class AbilityEditActivity extends Activity {
     loadAbilityFromUi();
     Intent myIntent = new Intent(AbilityEditActivity.this, ImagePickerActivity.class);
     myIntent.putExtra(ImagePickerActivity.EXTRA_RETURN, ImagePickerActivity.RETURN_ABILITY);
-    myIntent.putExtra(ImagePickerActivity.EXTRA_TILE, GameUtils.toJson(abilityTile));
+    myIntent.putExtra(ImagePickerActivity.EXTRA_TILE, Utils.toJson(abilityTile));
     startActivity(myIntent);
   }
 
@@ -219,7 +219,7 @@ public class AbilityEditActivity extends Activity {
     myIntent.putExtra(ActionEditActivity.SELECTED_ACTION_INDEX, Integer.toString(actions.size() -1));
     myIntent.putExtra(ActionListActivity.RETURN_LOC, ActionListActivity.RETURN_LOC_ABILITY_APPLIES);
     myIntent.putExtra(ActionListActivity.CALLING_OBJ, abilityTile.getId());
-    myIntent.putExtra(ActionListActivity.ACTION_LIST, GameUtils.toJson(actions));
+    myIntent.putExtra(ActionListActivity.ACTION_LIST, Utils.toJson(actions));
     startActivity(myIntent);
   }
 
@@ -228,7 +228,7 @@ public class AbilityEditActivity extends Activity {
     Intent myIntent = new Intent(AbilityEditActivity.this, ActionListActivity.class);
     myIntent.putExtra(ActionListActivity.RETURN_LOC, ActionListActivity.RETURN_LOC_ABILITY);
     myIntent.putExtra(ActionListActivity.CALLING_OBJ, abilityTile.getId());
-    myIntent.putExtra(ActionListActivity.ACTION_LIST, GameUtils.toJson(abilityTile.getOnStart()));
+    myIntent.putExtra(ActionListActivity.ACTION_LIST, Utils.toJson(abilityTile.getOnStart()));
     startActivity(myIntent);
   }
 

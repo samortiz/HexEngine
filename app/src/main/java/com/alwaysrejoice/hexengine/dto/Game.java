@@ -206,14 +206,29 @@ public class Game {
           "for (Unit target : allUnitsInRange(x,y,range) { applyDamage(self, target, damage); }");
     game.getMods().put(areaDmg.getId(), areaDmg);
 
+    Mod entangle = new Mod(Utils.generateUniqueId(), "Entangle", Mod.TYPE_MOD, params,
+        "if (target.storage.get('origActionMax') == null) {" +
+        "  target.storage.put('origActionMax', target.actionMax); "+
+        "}" +
+        "target.actionMax = 0;" +
+        "target.action = 0;");
+    game.getMods().put(entangle.getId(), entangle);
+
+    Mod entangleRelease = new Mod(Utils.generateUniqueId(), "Entangle Release", Mod.TYPE_MOD, params,
+        "if (target.storage.get('origActionMax') != null) {" +
+        "  target.actionMax = target.storage.get('origActionMax');" +
+        "  target.action = target.actionMax;" +
+        "}");
+    game.getMods().put(entangleRelease.getId(), entangleRelease);
+
     // Rules
-    Mod enemies = new Mod(Utils.generateUniqueId(), "Enemy", Mod.TYPE_RULE, new ArrayList<ModParam>(), "self.team != target.team");
+    Mod enemies = new Mod(Utils.generateUniqueId(), "Enemy", Mod.TYPE_RULE, new ArrayList<ModParam>(), "self.teamId != target.teamId");
     game.getMods().put(enemies.getId(), enemies);
 
-    Mod self = new Mod(Utils.generateUniqueId(), "Self", Mod.TYPE_RULE, new ArrayList<ModParam>(), "target == self");
+    Mod self = new Mod(Utils.generateUniqueId(), "Self", Mod.TYPE_RULE, new ArrayList<ModParam>(), "target.id == self.id");
     game.getMods().put(self.getId(), self);
 
-    Mod friend = new Mod(Utils.generateUniqueId(), "Friend", Mod.TYPE_RULE, new ArrayList<ModParam>(), "(self.id != target.id) && (self.team == target.team)");
+    Mod friend = new Mod(Utils.generateUniqueId(), "Friend", Mod.TYPE_RULE, new ArrayList<ModParam>(), "(self.id != target.id) && (self.teamId == target.teamId)");
     game.getMods().put(friend.getId(), friend);
 
     Mod ruleAnyone = new Mod(Utils.generateUniqueId(), "Anyone", Mod.TYPE_RULE, new ArrayList<ModParam>(), "true");

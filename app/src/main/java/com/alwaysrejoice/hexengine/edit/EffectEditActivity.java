@@ -113,7 +113,7 @@ public class EffectEditActivity extends Activity {
     if (!hasError) {
       Intent myIntent = new Intent(EffectEditActivity.this, ImagePickerActivity.class);
       myIntent.putExtra(ImagePickerActivity.EXTRA_RETURN, ImagePickerActivity.RETURN_EFFECT);
-      myIntent.putExtra(ImagePickerActivity.EXTRA_TILE, GameUtils.toJson(effectTile));
+      myIntent.putExtra(ImagePickerActivity.EXTRA_TILE, Utils.toJson(effectTile));
       startActivity(myIntent);
     }
   }
@@ -126,8 +126,8 @@ public class EffectEditActivity extends Activity {
     if (!hasError) {
       Intent myIntent = new Intent(EffectEditActivity.this, ActionListActivity.class);
       myIntent.putExtra(ActionListActivity.RETURN_LOC, ActionListActivity.RETURN_LOC_EFFECT_ONRUN);
-      myIntent.putExtra(ActionListActivity.CALLING_OBJ, GameUtils.toJson(effectTile));
-      myIntent.putExtra(ActionListActivity.ACTION_LIST, GameUtils.toJson(effectTile.getOnRun()));
+      myIntent.putExtra(ActionListActivity.CALLING_OBJ, Utils.toJson(effectTile));
+      myIntent.putExtra(ActionListActivity.ACTION_LIST, Utils.toJson(effectTile.getOnRun()));
       startActivity(myIntent);
     }
   }
@@ -140,8 +140,8 @@ public class EffectEditActivity extends Activity {
     if (!hasError) {
       Intent myIntent = new Intent(EffectEditActivity.this, ActionListActivity.class);
       myIntent.putExtra(ActionListActivity.RETURN_LOC, ActionListActivity.RETURN_LOC_EFFECT_ONEND);
-      myIntent.putExtra(ActionListActivity.CALLING_OBJ, GameUtils.toJson(effectTile));
-      myIntent.putExtra(ActionListActivity.ACTION_LIST, GameUtils.toJson(effectTile.getOnEnd()));
+      myIntent.putExtra(ActionListActivity.CALLING_OBJ, Utils.toJson(effectTile));
+      myIntent.putExtra(ActionListActivity.ACTION_LIST, Utils.toJson(effectTile.getOnEnd()));
       startActivity(myIntent);
     }
   }

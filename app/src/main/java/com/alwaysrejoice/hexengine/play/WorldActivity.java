@@ -6,9 +6,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-
 import com.alwaysrejoice.hexengine.dto.World;
-import com.alwaysrejoice.hexengine.util.GameUtils;
+import com.alwaysrejoice.hexengine.util.WorldUtils;
 
 public class WorldActivity extends Activity implements View.OnTouchListener {
   public static final String SELECTED_WORLD_NAME = "SELECTED_WORLD_NAME";
@@ -24,7 +23,7 @@ public class WorldActivity extends Activity implements View.OnTouchListener {
     if (worldName == null) {
       throw new IllegalArgumentException("You must specify a world by setting SELECTED_WORLD_NAME");
     }
-    World world = GameUtils.loadWorld(worldName);
+    World world = WorldUtils.loadWorld(worldName);
 
     // Show the world
     worldView = new WorldView(this, world);
@@ -42,7 +41,7 @@ public class WorldActivity extends Activity implements View.OnTouchListener {
   @Override
   public void onBackPressed() {
     Log.d("WorldActivity", "Back pressed");
-    GameUtils.saveWorld();
+    WorldUtils.saveWorld();
     // default behavior
     super.onBackPressed();
   }

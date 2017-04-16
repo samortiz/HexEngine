@@ -1,6 +1,7 @@
 package com.alwaysrejoice.hexengine.util;
 
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
@@ -11,7 +12,9 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
-
+import com.alwaysrejoice.hexengine.dto.BitmapGsonAdapter;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import java.nio.ByteBuffer;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -26,9 +29,20 @@ import java.util.Random;
 public class Utils {
   public static final Random random = new Random();
 
+  // Custom GSON serialize/deserializer
+  // This will allow my DTO to store/load Bitmaps as Base64
+  public static final Gson gson = new GsonBuilder().registerTypeHierarchyAdapter(Bitmap.class, new BitmapGsonAdapter()).create();
+
   public static final DecimalFormat decimalFormat = new DecimalFormat("0", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
   {
     decimalFormat.setMaximumFractionDigits(10);
+  }
+
+  /**
+   * Converts an object to JSON
+   */
+  public static String toJson(Object obj) {
+    return Utils.gson.toJson(obj);
   }
 
   /**

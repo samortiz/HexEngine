@@ -17,7 +17,6 @@ import android.widget.Spinner;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
-
 import com.alwaysrejoice.hexengine.R;
 import com.alwaysrejoice.hexengine.dto.Action;
 import com.alwaysrejoice.hexengine.dto.Damage;
@@ -27,17 +26,13 @@ import com.alwaysrejoice.hexengine.dto.ModParam;
 import com.alwaysrejoice.hexengine.dto.ModParamValue;
 import com.alwaysrejoice.hexengine.util.GameUtils;
 import com.alwaysrejoice.hexengine.util.Utils;
-
+import static com.alwaysrejoice.hexengine.util.Utils.doubleToString;
+import static com.alwaysrejoice.hexengine.util.Utils.intToString;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static com.alwaysrejoice.hexengine.edit.ActionListActivity.RETURN_LOC_EFFECT_ONEND;
-import static com.alwaysrejoice.hexengine.edit.ActionListActivity.RETURN_LOC_EFFECT_ONRUN;
-import static com.alwaysrejoice.hexengine.util.Utils.doubleToString;
-import static com.alwaysrejoice.hexengine.util.Utils.intToString;
 
 public class ActionEditActivity extends Activity {
   // in - the currently selected action index (in actionList)
@@ -93,8 +88,9 @@ public class ActionEditActivity extends Activity {
           // Filter for triggers
           modDisplayStrs.add(mod.getDisplayString());
         }
-      } else if (RETURN_LOC_EFFECT_ONRUN.equals(returnLoc) ||
-                 RETURN_LOC_EFFECT_ONEND.equals(returnLoc)) {
+      } else if (ActionListActivity.RETURN_LOC_EFFECT_ONRUN.equals(returnLoc) ||
+                 ActionListActivity.RETURN_LOC_EFFECT_ONEND.equals(returnLoc) ||
+                 ActionListActivity.RETURN_LOC_ABILITY.equals(returnLoc) ) {
         // filter for mods
         if (Mod.TYPE_MOD.equals(modType) || Mod.TYPE_MOD_LOC.equals(modType)) {
           modDisplayStrs.add(mod.getDisplayString());
@@ -286,14 +282,14 @@ public class ActionEditActivity extends Activity {
       Intent myIntent = new Intent(ActionEditActivity.this, AbilityEditActivity.class);
       myIntent.putExtra(ActionListActivity.RETURN_LOC, returnLoc);
       myIntent.putExtra(ActionListActivity.CALLING_OBJ, callingObj);
-      myIntent.putExtra(ActionListActivity.ACTION_LIST, GameUtils.toJson(actionList));
+      myIntent.putExtra(ActionListActivity.ACTION_LIST, Utils.toJson(actionList));
       startActivity(myIntent);
     } else {
       // Go to the action list (with all the required data to restore it's state passed)
       Intent myIntent = new Intent(ActionEditActivity.this, ActionListActivity.class);
       myIntent.putExtra(ActionListActivity.RETURN_LOC, returnLoc);
       myIntent.putExtra(ActionListActivity.CALLING_OBJ, callingObj);
-      myIntent.putExtra(ActionListActivity.ACTION_LIST, GameUtils.toJson(actionList));
+      myIntent.putExtra(ActionListActivity.ACTION_LIST, Utils.toJson(actionList));
       startActivity(myIntent);
     }
   }

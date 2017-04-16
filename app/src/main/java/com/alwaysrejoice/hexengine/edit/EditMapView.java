@@ -78,7 +78,7 @@ public class EditMapView extends View {
     Log.d("init", "loaded game with size="+game.getGameInfo().getSize());
 
     // Make a background map
-    backgroundSizeY = GameUtils.getBackgroundSize(game.getGameInfo().getSize());
+    backgroundSizeY = game.getGameInfo().getSize() * TILE_HEIGHT;
     backgroundSizeX = backgroundSizeY; // make a square background image
     bgCenterX = backgroundSizeX / 2;
     bgCenterY = backgroundSizeY / 2;
