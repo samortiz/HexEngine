@@ -26,6 +26,10 @@ public class ActionListActivity extends Activity implements AdapterView.OnItemCl
   public static final String RETURN_LOC_EFFECT_ONEND = "RETURN_LOC_EFFECT_ONEND";
   public static final String RETURN_LOC_ABILITY = "RETURN_LOC_ABILITY";
   public static final String RETURN_LOC_ABILITY_APPLIES = "RETURN_LOC_ABILITY_APPLIES";
+  public static final String RETURN_LOC_TRIGGER_START_WORLD = "RETURN_LOC_TRIGGER_START_WORLD";
+  public static final String RETURN_LOC_TRIGGER_START_TURN = "RETURN_LOC_TRIGGER_START_TURN";
+  public static final String RETURN_LOC_TRIGGER_END_TURN = "RETURN_LOC_TRIGGER_END_TURN";
+  public static final String RETURN_LOC_TRIGGER_ABILITY_USED = "RETURN_LOC_TRIGGER_ABILITY_USED";
 
   // IN+OUT calling class object (will be passed back to caller as is)
   public static final String CALLING_OBJ = "ACTION_CALLING_OBJ";
@@ -105,10 +109,18 @@ public class ActionListActivity extends Activity implements AdapterView.OnItemCl
       myIntent.putExtra(ACTION_LIST, GameUtils.toJson(actions));
       myIntent.putExtra(RETURN_LOC, returnLoc);
     } else if (RETURN_LOC_ABILITY.equals(returnLoc)) {
-        myIntent = new Intent(ActionListActivity.this, AbilityEditActivity.class);
-        myIntent.putExtra(CALLING_OBJ, callingObjJson);
-        myIntent.putExtra(ACTION_LIST, GameUtils.toJson(actions));
-        myIntent.putExtra(RETURN_LOC, returnLoc);
+      myIntent = new Intent(ActionListActivity.this, AbilityEditActivity.class);
+      myIntent.putExtra(CALLING_OBJ, callingObjJson);
+      myIntent.putExtra(ACTION_LIST, GameUtils.toJson(actions));
+      myIntent.putExtra(RETURN_LOC, returnLoc);
+    } else if (RETURN_LOC_TRIGGER_START_WORLD.equals(returnLoc) ||
+        RETURN_LOC_TRIGGER_START_TURN.equals(returnLoc) ||
+        RETURN_LOC_TRIGGER_END_TURN.equals(returnLoc) ||
+        RETURN_LOC_TRIGGER_ABILITY_USED.equals(returnLoc)) {
+      myIntent = new Intent(ActionListActivity.this, TriggersActivity.class);
+      myIntent.putExtra(CALLING_OBJ, "");
+      myIntent.putExtra(ACTION_LIST, GameUtils.toJson(actions));
+      myIntent.putExtra(RETURN_LOC, returnLoc);
     } else {
       throw new RuntimeException("Error in ActionListActivity.goBack() Unknown returnLoc="+returnLoc);
     }

@@ -9,6 +9,8 @@ public class Mod implements Comparable {
   public static final String TYPE_RULE="rule";
   public static final String TYPE_MOD_LOC="modloc";
   public static final String TYPE_RULE_LOC="ruleloc";
+  public static final String TYPE_TRIGGER="trigger";
+  public static final String[] MOD_TYPES = {Mod.TYPE_MOD, Mod.TYPE_MOD_LOC, Mod.TYPE_RULE, Mod.TYPE_RULE_LOC, Mod.TYPE_TRIGGER};
 
   private String id;
   private String name;
@@ -94,6 +96,7 @@ public class Mod implements Comparable {
     if (TYPE_MOD_LOC.equals(type)) return "(Mod location)";
     if (TYPE_RULE.equals(type)) return "(Rule unit)";
     if (TYPE_RULE_LOC.equals(type)) return "(Rule location)";
+    if (TYPE_TRIGGER.equals(type)) return "(Trigger)";
     return "Unknown type:"+type;
   }
 

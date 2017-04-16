@@ -141,6 +141,10 @@
         android:screenOrientation="portrait">
     </activity>
     <activity
+        android:name=".edit.TriggersActivity"
+        android:screenOrientation="portrait">
+    </activity>
+    <activity
         android:name=".play.WorldActivity"
         android:screenOrientation="portrait">
     </activity>

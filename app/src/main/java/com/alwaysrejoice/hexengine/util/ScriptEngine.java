@@ -43,6 +43,9 @@ public class ScriptEngine {
    * Executes a list of actions
    */
   public void runActions(List<Action> actions, Unit self, Unit target) {
+    if (actions == null) {
+      return;
+    }
     for (Action action : actions) {
       executeScript(action, self, target);
     }
@@ -79,28 +82,30 @@ public class ScriptEngine {
 
     // Add the parameters to the JS context
     Map<String, ModParamValue> paramValues = action.getParamValues();
-    for (ModParam param : mod.getParams()) {
-      ModParamValue paramValue = paramValues.get(param.getVar());
-      if (paramValue == null) {
-        Log.d("ScriptEngine", "Warning: mod="+mod.getName()+" param "+param.getVar()+" is null");
-        continue;
-      }
-      Object value = null;
-      if (param.getType() == ModParam.TYPE.String) {
-        value = paramValue.getValueString();
-      } else if (param.getType() == ModParam.TYPE.Number) {
-        value = new Double(paramValue.getValueDouble());
-      } else if (param.getType() == ModParam.TYPE.Integer) {
-        value = new Integer(paramValue.getValueInt());
-      } else if (param.getType() == ModParam.TYPE.Boolean) {
-        value = new Boolean(paramValue.getValueBoolean());
-      } else if (param.getType() == ModParam.TYPE.Damage) {
-        value = paramValue.getValueDamage();
-      }
-      if (value != null) {
-        ScriptableObject.putProperty(scope, param.getVar(), Context.javaToJS(value, scope));
-        Log.d("ScriptEngine", "Adding param "+param.getVar()+" to context with value="+value);
-      }
+    if (mod.getParams() != null) {
+      for (ModParam param : mod.getParams()) {
+        ModParamValue paramValue = paramValues.get(param.getVar());
+        if (paramValue == null) {
+          Log.d("ScriptEngine", "Warning: mod="+mod.getName()+" param "+param.getVar()+" is null");
+          continue;
+        }
+        Object value = null;
+        if (param.getType() == ModParam.TYPE.String) {
+          value = paramValue.getValueString();
+        } else if (param.getType() == ModParam.TYPE.Number) {
+          value = new Double(paramValue.getValueDouble());
+        } else if (param.getType() == ModParam.TYPE.Integer) {
+          value = new Integer(paramValue.getValueInt());
+        } else if (param.getType() == ModParam.TYPE.Boolean) {
+          value = new Boolean(paramValue.getValueBoolean());
+        } else if (param.getType() == ModParam.TYPE.Damage) {
+          value = paramValue.getValueDamage();
+        }
+        if (value != null) {
+          ScriptableObject.putProperty(scope, param.getVar(), Context.javaToJS(value, scope));
+          Log.d("ScriptEngine", "Adding param "+param.getVar()+" to context with value="+value);
+        }
+      } // for
     }
 
     try {

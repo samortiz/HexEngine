@@ -20,6 +20,7 @@ public class Game {
   private Map<String, Mod> mods = new HashMap(); // keyed on id
   private Map<String, EffectTile> effects = new HashMap(); // keyed on id
   private Map<String, AbilityTile> abilities = new HashMap(); // keyed on id
+  private Triggers triggers = new Triggers();
 
   // Lists of Strings
   private List<String> teams = new ArrayList<>();
@@ -99,6 +100,14 @@ public class Game {
     this.abilities = abilities;
   }
 
+  public Triggers getTriggers() {
+    return triggers;
+  }
+
+  public void setTriggers(Triggers triggers) {
+    this.triggers = triggers;
+  }
+
   public List<String> getTeams() {
     return teams;
   }
@@ -133,20 +142,21 @@ public class Game {
 
   @Override
   public String toString() {
-    return "Game{" +
-        "gameInfo=" + gameInfo +
-        ", bgMaps=" + bgMaps +
-        ", bgTiles=" + bgTiles +
-        ", unitMaps=" + unitMaps +
-        ", unitTiles=" + unitTiles +
-        ", tileGroups=" + tileGroups +
-        ", mods=" + mods +
-        ", effects=" + effects +
-        ", abilities=" + abilities +
-        ", teams=" + teams +
-        ", bgTypes=" + bgTypes +
-        ", damageTypes=" + damageTypes +
-        ", attr=" + attr +
+    return "Game{"+
+        "gameInfo="+gameInfo+
+        ", bgMaps="+bgMaps+
+        ", bgTiles="+bgTiles+
+        ", unitMaps="+unitMaps+
+        ", unitTiles="+unitTiles+
+        ", tileGroups="+tileGroups+
+        ", mods="+mods+
+        ", effects="+effects+
+        ", abilities="+abilities+
+        ", triggers="+triggers+
+        ", teams="+teams+
+        ", bgTypes="+bgTypes+
+        ", damageTypes="+damageTypes+
+        ", attr="+attr+
         '}';
   }
 
@@ -189,6 +199,5 @@ public class Game {
     Mod ruleLoc = new Mod(Utils.generateUniqueId(), "Anywhere", Mod.TYPE_RULE_LOC, new ArrayList<ModParam>(), "true");
     game.getMods().put(ruleLoc.getId(), ruleLoc);
   }
-
 
 }

@@ -48,6 +48,12 @@ public class SettingsActivity extends Activity {
     Log.d("settings", "goto EffectTile List");
   }
 
+  public void gotoTriggers(View view) {
+    Intent myIntent = new Intent(SettingsActivity.this, TriggersActivity.class);
+    startActivity(myIntent);
+    Log.d("settings", "goto Triggers");
+  }
+
   public void gotoListEditor(View view) {
     Intent myIntent = new Intent(SettingsActivity.this, ListEditorActivity.class);
     startActivity(myIntent);

@@ -34,6 +34,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.alwaysrejoice.hexengine.edit.ActionListActivity.RETURN_LOC_EFFECT_ONEND;
+import static com.alwaysrejoice.hexengine.edit.ActionListActivity.RETURN_LOC_EFFECT_ONRUN;
 import static com.alwaysrejoice.hexengine.util.Utils.doubleToString;
 import static com.alwaysrejoice.hexengine.util.Utils.intToString;
 
@@ -83,11 +85,22 @@ public class ActionEditActivity extends Activity {
         if (Mod.TYPE_RULE.equals(modType) || Mod.TYPE_RULE_LOC.equals(modType)) {
           modDisplayStrs.add(mod.getDisplayString());
         }
-      } else {
-        // If it's onStart, onRun, onEnd we filter for mods
+      } else if (ActionListActivity.RETURN_LOC_TRIGGER_START_WORLD.equals(returnLoc) ||
+                 ActionListActivity.RETURN_LOC_TRIGGER_START_TURN.equals(returnLoc) ||
+                 ActionListActivity.RETURN_LOC_TRIGGER_END_TURN.equals(returnLoc) ||
+                 ActionListActivity.RETURN_LOC_TRIGGER_ABILITY_USED.equals(returnLoc)) {
+        if (Mod.TYPE_TRIGGER.equals(modType)) {
+          // Filter for triggers
+          modDisplayStrs.add(mod.getDisplayString());
+        }
+      } else if (RETURN_LOC_EFFECT_ONRUN.equals(returnLoc) ||
+                 RETURN_LOC_EFFECT_ONEND.equals(returnLoc)) {
+        // filter for mods
         if (Mod.TYPE_MOD.equals(modType) || Mod.TYPE_MOD_LOC.equals(modType)) {
           modDisplayStrs.add(mod.getDisplayString());
         }
+      } else {
+        Log.e("ActionEditActivity", "Error! Unknown returnLoc="+returnLoc);
       }
     }
     Collections.sort(modDisplayStrs, String.CASE_INSENSITIVE_ORDER);

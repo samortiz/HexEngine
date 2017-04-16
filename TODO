@@ -2,8 +2,8 @@ TODO
 
 Play 
  - Script logging
- - Triggers : start game, end turn, start turn, victory
- - World storage
+ - Teams
+ - AI 
 
 Optional Features : 
  - Animations for abilities? 
