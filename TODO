@@ -3,15 +3,17 @@ TODO
 Bug 
  - max width not correct in info right col
  - Map Editor menu tiles stretched vertically
- 
+ - Show a toast when no human controllable teams (world exits)
 
 Play 
- - Script logging
- - Run AI 
- - Player can only control his own teams
- - AI tools
+ - AI tools - some done, need to make some sample AI
+ - Need to call abilities within the script... script in a script
  - Scrolling text area in info right col
  - Bounds checking on unit movement
+
+Map Views(Both)
+ - zooming out to max view causes warp...
+
 
 Optional Features : 
  - Back story screen

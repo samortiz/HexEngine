@@ -21,11 +21,9 @@ public class ScriptEngine {
   private World world;
   private Context context; // Rhino context
   private Scriptable scope;
-  private ScriptTools tools;
 
-  public ScriptEngine(World world) {
+  public ScriptEngine(World world, ScriptTools tools) {
     this.world = world;
-    this.tools = new ScriptTools(world);
     context = Context.enter();
     context.setOptimizationLevel(-1);
     scope = context.initStandardObjects();
@@ -117,12 +115,16 @@ public class ScriptEngine {
     return retVal;
   }
 
-
   /**
-   * @return tools available to the JS scripts
+   * Executes an AI script for the specified teamId
    */
-  public ScriptTools getTools() {
-    return this.tools;
+  public void executeAiScript(String script, String teamId) {
+    ScriptableObject.putProperty(scope, "teamId", Context.javaToJS(teamId, scope));
+    try {
+      context.evaluateString(scope, script, "jsScript", 1, null);
+    } catch (Exception e) {
+      Log.e("ScriptEngine", "Error running script '"+script+"'", e);
+    }
   }
 
 }

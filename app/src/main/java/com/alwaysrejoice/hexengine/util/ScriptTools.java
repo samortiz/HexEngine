@@ -1,20 +1,23 @@
 package com.alwaysrejoice.hexengine.util;
 
 import android.util.Log;
-
 import com.alwaysrejoice.hexengine.dto.Damage;
+import com.alwaysrejoice.hexengine.dto.Position;
 import com.alwaysrejoice.hexengine.dto.Unit;
 import com.alwaysrejoice.hexengine.dto.World;
-
+import com.alwaysrejoice.hexengine.play.AiTools;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 public class ScriptTools {
   private Random random = new Random();
   private World world;
+  private AiTools aiTools;
 
-  public ScriptTools(World world) {
+  public ScriptTools(World world, AiTools aiTools) {
     this.world = world;
+    this.aiTools = aiTools;
   }
 
   /**
@@ -81,5 +84,63 @@ public class ScriptTools {
     }
     Log.d("ScriptTools", unit.getName()+" healed "+amount+" HP.");
   }
+
+  /**
+   * Logs to the standard output
+   * TODO : This could be stored and made user-accessible for debugging scripts
+   */
+  public void log(String str) {
+    Log.d("Script", str);
+  }
+
+  /**
+   * @return All the units on the team
+   */
+  public List<Unit> getTeamUnits(String teamId) {
+    return aiTools.getTeamUnits(teamId);
+  }
+
+
+  /**
+   * Finds a list of units not on your team within the visible range of self (taking terrain into account)
+   */
+  public List<Unit> getVisibleOthers(Unit unit) {
+    String teamId = unit.getTeamId();
+    List<Unit> others = new ArrayList<>();
+    List<Position> teamView = aiTools.getTeamView(teamId);
+    for (Unit other : world.getUnits()) {
+      if (other.getTeamId().equals(unit.getTeamId())) {
+        // It's a friend
+        continue;
+      }
+      // Someone on the team can see this unit
+      if (teamView.contains(other.getPos())) {
+        others.add(other);
+      }
+     } // for other
+    return others;
+  }
+
+  /**
+   * @return the unit in the list that is closest to origin
+   */
+  public Unit getClosest(Unit origin, List<Unit> units) {
+    int minDistance = -1;
+    Unit closestUnit = null;
+    for (Unit unit : units) {
+      int distance = origin.getPos().distanceTo(unit.getPos());
+      if ((distance < minDistance) || (minDistance == -1)) {
+        minDistance = distance;
+        closestUnit = unit;
+      }
+    }
+    return closestUnit;
+  }
+
+  public void attack(Unit self, Unit target) {
+    // TODO : the AI has to run an ability.. which is a script...
+
+  }
+
 
 }

@@ -29,9 +29,9 @@ import com.alwaysrejoice.hexengine.dto.Team;
 import com.alwaysrejoice.hexengine.dto.Unit;
 import com.alwaysrejoice.hexengine.dto.World;
 import com.alwaysrejoice.hexengine.util.ScriptEngine;
+import com.alwaysrejoice.hexengine.util.ScriptTools;
 import com.alwaysrejoice.hexengine.util.Utils;
 import com.alwaysrejoice.hexengine.util.WorldUtils;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -118,11 +118,13 @@ public class WorldView extends View {
   // Abilities
   private Map<Position, Ability> selectedAbilities; // highlight an ability on the map
   private Map<Rect, Ability> abilityButtons = new HashMap<>(); // click on an ability in the info area
-  private ScriptEngine scriptEngine;
   private Paint whiteHighlightPaint = new Paint(); // color of circle behind abilities on the map
 
   // AI
-  List<String> myTeamIds; // contains all the teamIds that are human controlled (usually one)
+  String myTeamId = null; // contains the teamId that is human controlled
+  private ScriptEngine scriptEngine;
+  ScriptTools scriptTools;
+  AiTools aiTools;
 
 
   public WorldView(WorldActivity worldActivity, World world) {
@@ -211,27 +213,34 @@ public class WorldView extends View {
     buttonX += INFO_IMG_MAX_WIDTH + INFO_IMG_PADDING;
     endTurnButtonRect = new Rect(buttonX, buttonY, buttonX+INFO_IMG_MAX_WIDTH, buttonY+INFO_IMG_MAX_HEIGHT);
 
-    // Setup a list of all the teams that are human controlled
-    // This is indicateds by having an AI with no data in it
-    myTeamIds = new ArrayList<>();
+    // Find the team that is human controlled
+    // This is the first AI with no data in it
     for (Team team : world.getTeams()) {
       AI ai = WorldUtils.getAiById(team.getAiId());
       if ((ai != null) && (ai.getScript() != null) && (ai.getScript().length() == 0)) {
-        myTeamIds.add(team.getId());
+        myTeamId = team.getId();
       }
     } // for
+    if (myTeamId == null) {
+      Log.e("WorldView", "Error! No human controllable team");
+      // TODO show a toast to the user?
+      worldActivity.exit();
+    }
 
     // Select the first Player unit
     for (Unit unit : world.getUnits()) {
-      if (myTeamIds.contains(unit.getTeamId())) {
+      if (myTeamId.equals(unit.getTeamId())) {
         this.selectedUnit = unit;
         drawSelectedUnitInfo();
         break;
       }
     } // for
 
-    // Setup the scripting engine (will be shutdown when the activity is destroyed)
-    scriptEngine = new ScriptEngine(world);
+    // Setup all the AI tools
+    aiTools = new AiTools(world);
+    scriptTools = new ScriptTools(world, aiTools);
+    // Setup the scripting engine (entire world will use the same engine)
+    scriptEngine = new ScriptEngine(world, scriptTools);
     if (world.getTurnCounter() == 0) {
       scriptEngine.runActions(world.getTriggers().getStartWorld(), null, null);
     }
@@ -469,6 +478,7 @@ public class WorldView extends View {
     Log.d("WorldView", "floatX="+floatX+" floatY="+floatY+" y="+y+" exitRect="+exitButtonRect);
     if (exitButtonRect.contains(x,y)) {
       Log.d("WorldView", "Exiting Game");
+      WorldUtils.saveWorld(world);
       worldActivity.exit();
       return true;
     } else if (saveButtonRect.contains(x,y)) {
@@ -501,7 +511,7 @@ public class WorldView extends View {
         if (abilityPos.equals(pos)) {
           // The click was on a highlighted ability
           Ability ability = selectedAbilities.get(abilityPos);
-          Unit targetUnit = WorldUtils.getUnitAt(pos, world);
+          Unit targetUnit = WorldUtils.getUnitAt(pos);
           applyAbility(ability, targetUnit);
           clearSelections();
           return;
@@ -509,7 +519,8 @@ public class WorldView extends View {
       } // for
     }
     for (Unit unit : world.getUnits()) {
-      if (pos.equals(unit.getPos())) {
+      // The unit is at this location, and the unit is on my team (human controllable)
+      if (pos.equals(unit.getPos()) && myTeamId.equals(unit.getTeamId())) {
         // The click was selecting a unit
         drawBackground(); // in case there are other selected things already drawn
         this.selectedUnit = unit;
@@ -717,7 +728,7 @@ public class WorldView extends View {
    */
   private void setupUnitMove(Unit unit) {
     Log.d("WorldView", "Setting up moves for "+unit.getName()+" at "+ unit.getPos());
-    validMoves = WorldUtils.validMovePositions(unit.getPos(), unit.getMoveRange(), unit.getMoveRestrict(), world);
+    validMoves = WorldUtils.validPositions(unit.getPos(), unit.getMoveRange(), unit.getMoveRestrict());
     for (Position pos : validMoves) {
       //Log.Log.d("WorldView", "Can move to "+pos);
       int x = bgCenterX + Math.round(HEX_SIZE * 1.5f  * pos.getCol()) - (TILE_WIDTH / 2);
@@ -852,21 +863,15 @@ public class WorldView extends View {
   public void startTurn() {
     // Process all the effects
     // TODO : should only be for the player (the AI start turn would process effects for computer)
-    for (Unit unit : world.getUnits()) {
-      for (int i= unit.getEffects().size()-1; i>=0; i--) {
-        Effect effect = unit.getEffects().get(i);
-        scriptEngine.runActions(effect.getOnRun(), unit, unit);
-        effect.setDuration(effect.getDuration() - 1);
-        if (effect.getDuration() <= 0) {
-          unit.getEffects().remove(i);
-          scriptEngine.runActions(effect.getOnEnd(), unit, unit);
-        }
-      } // for effect
-    } // for unit
+    runEffects(myTeamId);
     Log.d("WorldView", "Starting turn");
     deathCheck();
     scriptEngine.runActions(world.getTriggers().getStartTurn(), null, null);
 
+    // Reset all the action points
+    for (Unit unit : world.getUnits()) {
+      unit.setAction(unit.getActionMax());
+    }
     // Refresh the UI with all the changes
     validMoves = null;
     selectedAbilities = null;
@@ -878,23 +883,17 @@ public class WorldView extends View {
    * Called when ending the turn
    */
   public void endTurn() {
-    Log.d("WorldView", "Ending turn");
-    // Reset all the action points
-    for (Unit unit : world.getUnits()) {
-      unit.setAction(unit.getActionMax());
-    }
     scriptEngine.runActions(world.getTriggers().getEndTurn(), null, null);
+    runAllAis();
   }
 
   /**
    * Checks all units to see if any are dead and need to be cleaned up
    */
   public void deathCheck() {
-    Log.d("WorldView", "starting deathCheck");
     List<Unit> units = world.getUnits();
     for (int i=units.size()-1; i>=0; i--) {
       Unit unit = units.get(i);
-      Log.d("WorldView", "deathCheck : "+unit.getName()+" "+unit.getHp()+" / "+unit.getHpMax());
       if (unit.getHp() <= 0) {
         units.remove(i);
         Log.d("WorldView", unit.getName()+" has died!");
@@ -931,6 +930,45 @@ public class WorldView extends View {
     layout.draw(canvas);
     canvas.restore();
     this.endGameTextDrawn = true;
+  }
+
+
+  /**
+   * Runs all the effects for the specified team
+   */
+  public void runEffects(String teamId) {
+    for (Unit unit : world.getUnits()) {
+      // Check that this unit is on the team for which we are processing effects (start of the turn)
+      if (teamId.equals(unit.getTeamId())) {
+        for (int i = unit.getEffects().size()-1; i >= 0; i--) {
+          Effect effect = unit.getEffects().get(i);
+          scriptEngine.runActions(effect.getOnRun(), unit, unit);
+          effect.setDuration(effect.getDuration()-1);
+          if (effect.getDuration() <= 0) {
+            unit.getEffects().remove(i);
+            scriptEngine.runActions(effect.getOnEnd(), unit, unit);
+          }
+        } // for effect
+      }
+    } // for unit
+  }
+
+  /**
+   * Executes all the AI actions
+   */
+  public void runAllAis() {
+    for (Team team : world.getTeams()) {
+      // The teams in myTeamIds will be handled by the human
+      if (!myTeamId.equals(team.getId())) {
+        Log.d("WorldView", "Starting AI turn for team="+team.getName()+" id="+team.getId()+" myTeamId="+myTeamId);
+        // Process all the effects (start of AI turn)
+        runEffects(team.getId());
+        AI ai = WorldUtils.getAiById(team.getAiId());
+        // Run the AI
+        scriptEngine.executeAiScript(ai.getScript(), team.getId());
+        Log.d("WorldView", "Ending AI turn team="+team.getName());
+      }
+    }
   }
 
 }

@@ -134,9 +134,9 @@ public class WorldUtils {
 
   /**
    * Lookup all the valid positions given the restrictions
-   * @return a list of all the valid posisions
+   * @return a list of all the valid positions
    */
-  public static List<Position> validMovePositions(Position origin, int range, List<String> restrict, World world) {
+  public static List<Position> validPositions(Position origin, int range, List<String> restrict) {
     List<Position> validPositions = new ArrayList<>();
     // nStepsAway[n] contains all the positions that are n steps away from origin
     List<List<Position>> fringes = new ArrayList<>(range);
@@ -150,7 +150,7 @@ public class WorldUtils {
       // Go through all the previous step's fringe
       for (Position pos : fringes.get(n-1)) {
         for (Position neighbor : pos.getNeighbors()) {
-          if (!validPositions.contains(neighbor) && isValidMovePosition(neighbor, restrict, world)) {
+          if (!validPositions.contains(neighbor) && isValidPosition(neighbor, restrict, true)) {
             validPositions.add(neighbor);
             fringe.add(neighbor);
           }
@@ -165,8 +165,9 @@ public class WorldUtils {
    * Looks up the bgTile at the specified position and returns true if the tile
    * is a valid position given the terrain type restrictions
    * @return true if the position is valid, false if not or if there was an error
+   * @param onlyUnoccupied Add a check to ensure the tile is not occupied by a unit
    */
-  public static boolean isValidMovePosition(Position pos, List<String> restrict, World world) {
+  public static boolean isValidPosition(Position pos, List<String> restrict, boolean onlyUnoccupied) {
     String bgTileId = null;
     for (BgMap bgMap : world.getBgMaps()) {
       if ((bgMap.getRow() == pos.getRow()) && (bgMap.getCol() == pos.getCol())) {
@@ -185,19 +186,21 @@ public class WorldUtils {
     if (restrict.contains(bgTile.getType())) {
       return false;
     }
-    // Already a unit at that location - you can't move there
-    for (Unit unit : world.getUnits()) {
-      if (pos.equals(unit.getPos())) {
-        return false;
-      }
-    } // for
+    if (onlyUnoccupied) {
+      // Already a unit at that location - you can't move there
+      for (Unit unit : world.getUnits()) {
+        if (pos.equals(unit.getPos())) {
+          return false;
+        }
+      } // for
+    }
     return true;
   }
 
   /**
    * Finds the first (and only) unit at the selected position. If no unit is there, this will return null
    */
-  public static Unit getUnitAt(Position pos, World world) {
+  public static Unit getUnitAt(Position pos) {
     for (Unit unit : world.getUnits()) {
       if (unit.getPos().equals(pos)) {
         return unit;
@@ -205,5 +208,7 @@ public class WorldUtils {
     }// for
     return null;
   }
+
+
 
 }
