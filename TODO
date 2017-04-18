@@ -4,10 +4,17 @@ Bug
  - max width not correct in info right col
  - Map Editor menu tiles stretched vertically
  - Show a toast when no human controllable teams (world exits)
+ - Ensure visibilty for all squares 1 step away, even if in mountain/forest
+ - Web effect not releasing or showing icon
+ - Script end conditions
+ - Trigger editor allow setting none
+
+Refactor 
+ - bgMap and unit should be a Map keyed on position, this would be much faster than iterating the list
+   it would mean you can't have two units on the same position... I don't think you would ever need 
+   two backgrounds on the same position though. 
 
 Play 
- - AI tools - some done, need to make some sample AI
- - Need to call abilities within the script... script in a script
  - Scrolling text area in info right col
  - Bounds checking on unit movement
 

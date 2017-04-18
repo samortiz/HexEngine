@@ -42,21 +42,33 @@ public class WorldActivity extends Activity implements View.OnTouchListener {
   public void onBackPressed() {
     Log.d("WorldActivity", "Back pressed");
     WorldUtils.saveWorld();
+    shutDownScriptEngine();
     // default behavior
     super.onBackPressed();
   }
 
   @Override
   public void onDestroy() {
-    worldView.getScripEngine().onDestroy();
+    shutDownScriptEngine();
     super.onDestroy();
   }
 
   public void exit() {
+    shutDownScriptEngine();
     Intent myIntent = new Intent(WorldActivity.this, WorldListActivity.class);
     startActivity(myIntent);
   }
 
-
+  /**
+   * Terminates the Rhino context, freeing resources
+   * This is also important as otherwise re-entry will cause multiple contexts to be create and stored (leaking RAM)
+   */
+  public void shutDownScriptEngine() {
+    try {
+      worldView.getScripEngine().onDestroy();
+    } catch (Exception e) {
+      Log.d("WorldActivity", "Error shutting down script engine. Probably trying to shut it down twice when the activity is destroyed");
+    }
+  }
 
 }

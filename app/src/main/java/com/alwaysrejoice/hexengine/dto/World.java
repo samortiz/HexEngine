@@ -10,20 +10,21 @@ import java.util.Map;
 
 public class World {
 
-  private String id;
-  private String name;
-  private int turnCounter = 0;
-  private GameInfo gameInfo =  new GameInfo();
-  private List<BgMap> bgMaps = new ArrayList();
-  private Map<String, BgTile> bgTiles = new HashMap(); // keyed on id
-  private List<Unit> units = new ArrayList();
-  private Map<String, Mod> mods = new HashMap(); // keyed on id
-  private List<Team> teams = new ArrayList<>();
-  private List<AI> ais =  new ArrayList<>();
-  private Map<String, Object> storage = new HashMap(); // script object storage
-  private Triggers triggers = new Triggers();
-  private boolean victory = false; // set to true to end the game
-  private boolean defeat = false; // set to true to end the game
+  public String id;
+  public String name;
+  public int turnCounter = 0;
+  public GameInfo gameInfo =  new GameInfo();
+  public List<BgMap> bgMaps = new ArrayList();
+  public Map<String, BgTile> bgTiles = new HashMap(); // keyed on id
+  public List<Unit> units = new ArrayList();
+  public Map<String, Mod> mods = new HashMap(); // keyed on id
+  public List<Team> teams = new ArrayList<>();
+  public List<AI> ais =  new ArrayList<>();
+  public Map<String, Object> storage = new HashMap(); // script object storage
+  public Triggers triggers = new Triggers();
+  public boolean victory = false; // set to true to end the game
+  public boolean defeat = false; // set to true to end the game
+  public String myTeamId = null; // Set at runtime when loading WorldView This is calculated
 
   public World() {
   }
@@ -162,6 +163,14 @@ public class World {
     this.defeat = defeat;
   }
 
+  public String getMyTeamId() {
+    return myTeamId;
+  }
+
+  public void setMyTeamId(String myTeamId) {
+    this.myTeamId = myTeamId;
+  }
+
   @Override
   public String toString() {
     return "World{"+
@@ -179,6 +188,7 @@ public class World {
         ", triggers="+triggers+
         ", victory="+victory+
         ", defeat="+defeat+
+        ", myTeamId='"+myTeamId+'\''+
         '}';
   }
 }

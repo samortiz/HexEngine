@@ -19,11 +19,14 @@ import java.util.Map;
 public class ScriptEngine {
 
   private World world;
+  public ScriptTools tools;
   private Context context; // Rhino context
   private Scriptable scope;
 
-  public ScriptEngine(World world, ScriptTools tools) {
-    this.world = world;
+  public ScriptEngine() {
+    this.world = WorldUtils.getWorld();
+    this.tools = new ScriptTools(this);
+
     context = Context.enter();
     context.setOptimizationLevel(-1);
     scope = context.initStandardObjects();
@@ -127,4 +130,7 @@ public class ScriptEngine {
     }
   }
 
+  public ScriptTools getTools() {
+    return tools;
+  }
 }

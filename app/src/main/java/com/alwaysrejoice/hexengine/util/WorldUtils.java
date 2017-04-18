@@ -2,18 +2,14 @@ package com.alwaysrejoice.hexengine.util;
 
 import android.util.Log;
 import com.alwaysrejoice.hexengine.dto.AI;
-import com.alwaysrejoice.hexengine.dto.BgMap;
-import com.alwaysrejoice.hexengine.dto.BgTile;
 import com.alwaysrejoice.hexengine.dto.Damage;
-import com.alwaysrejoice.hexengine.dto.Position;
+import com.alwaysrejoice.hexengine.dto.Effect;
 import com.alwaysrejoice.hexengine.dto.Team;
-import com.alwaysrejoice.hexengine.dto.Unit;
 import com.alwaysrejoice.hexengine.dto.World;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.io.IOUtils;
 
@@ -133,82 +129,19 @@ public class WorldUtils {
   }
 
   /**
-   * Lookup all the valid positions given the restrictions
-   * @return a list of all the valid positions
+   * Looks up an effect in a list of effects by name (NOT by id)
+   * @return true if the effect is in the list
    */
-  public static List<Position> validPositions(Position origin, int range, List<String> restrict) {
-    List<Position> validPositions = new ArrayList<>();
-    // nStepsAway[n] contains all the positions that are n steps away from origin
-    List<List<Position>> fringes = new ArrayList<>(range);
-    List<Position> root = new ArrayList<>();
-    root.add(origin);
-    fringes.add(root); // index 0
-
-    for (int n=1; n<=range; n++) {
-      List<Position> fringe = new ArrayList<>();
-      fringes.add(fringe); // index n
-      // Go through all the previous step's fringe
-      for (Position pos : fringes.get(n-1)) {
-        for (Position neighbor : pos.getNeighbors()) {
-          if (!validPositions.contains(neighbor) && isValidPosition(neighbor, restrict, true)) {
-            validPositions.add(neighbor);
-            fringe.add(neighbor);
-          }
-        }  // for neighbor
-      } // for pos
-    } // for n
-    return validPositions;
-  }
-
-
-  /**
-   * Looks up the bgTile at the specified position and returns true if the tile
-   * is a valid position given the terrain type restrictions
-   * @return true if the position is valid, false if not or if there was an error
-   * @param onlyUnoccupied Add a check to ensure the tile is not occupied by a unit
-   */
-  public static boolean isValidPosition(Position pos, List<String> restrict, boolean onlyUnoccupied) {
-    String bgTileId = null;
-    for (BgMap bgMap : world.getBgMaps()) {
-      if ((bgMap.getRow() == pos.getRow()) && (bgMap.getCol() == pos.getCol())) {
-        bgTileId = bgMap.getBgTileId();
+  public static boolean effectFound(List<Effect> effects, Effect effect) {
+    if (effect == null) {
+      return false;
+    }
+    for (Effect eff : effects) {
+      if (effect.getName().equals(eff.getName())) {
+        return true;
       }
-    } // for
-    if (bgTileId == null) {
-      return false;
     }
-    BgTile bgTile = world.getBgTiles().get(bgTileId);
-    if (bgTile == null) {
-      Log.d("GameUtils", "Error! Unable to find bgTileId="+bgTileId+" in the list of tiles. The game file is corrupt.");
-      return false;
-    }
-    // You are not allowed to move to that kind of terrain
-    if (restrict.contains(bgTile.getType())) {
-      return false;
-    }
-    if (onlyUnoccupied) {
-      // Already a unit at that location - you can't move there
-      for (Unit unit : world.getUnits()) {
-        if (pos.equals(unit.getPos())) {
-          return false;
-        }
-      } // for
-    }
-    return true;
+    return false;
   }
-
-  /**
-   * Finds the first (and only) unit at the selected position. If no unit is there, this will return null
-   */
-  public static Unit getUnitAt(Position pos) {
-    for (Unit unit : world.getUnits()) {
-      if (unit.getPos().equals(pos)) {
-        return unit;
-      }
-    }// for
-    return null;
-  }
-
-
 
 }

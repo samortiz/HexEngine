@@ -203,7 +203,7 @@ public class Game {
     params.add(new ModParam("damage", ModParam.TYPE.Damage));
     params.add(new ModParam("range", ModParam.TYPE.Integer));
     Mod areaDmg = new Mod(Utils.generateUniqueId(), "Damage Area", Mod.TYPE_MOD_LOC, params,
-          "for (Unit target : allUnitsInRange(x,y,range) { applyDamage(self, target, damage); }");
+          "log('TODO: area damage')");
     game.getMods().put(areaDmg.getId(), areaDmg);
 
     Mod entangle = new Mod(Utils.generateUniqueId(), "Entangle", Mod.TYPE_MOD, params,
@@ -236,6 +236,17 @@ public class Game {
 
     Mod ruleLoc = new Mod(Utils.generateUniqueId(), "Anywhere", Mod.TYPE_RULE_LOC, new ArrayList<ModParam>(), "true");
     game.getMods().put(ruleLoc.getId(), ruleLoc);
+
+    // Triggers
+    Mod allEnemiesDefeated = new Mod(Utils.generateUniqueId(), "All Enemies Defeated", Mod.TYPE_TRIGGER, new ArrayList<ModParam>(),
+         "if (tools.getAllOthers(teamId).size() == 0) {" +
+             " world.victory = true;" +
+             "} else if (tools.getTeamUnits(teamId) == 0) {" +
+             " world.defeat = true;" +
+             "}");
+    game.getMods().put(allEnemiesDefeated.getId(), allEnemiesDefeated);
+
+
   }
 
 }

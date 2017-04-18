@@ -1,7 +1,12 @@
 package com.alwaysrejoice.hexengine.dto;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 
 public class Position {
   public static final Position[] DIRECTIONS = {
@@ -159,6 +164,58 @@ public class Position {
       line.add(toPosition(cubeLerp(this, pos, (1.0f/distance * i))));
     }
     return line;
+  }
+
+  /**
+   * Calculate the shortest path to the target avoiding obstacles in allPosRestricted
+   * @param validPositions a list of all the possible valid positions, this will bound the search
+   * @return a list of points from this to pos
+   */
+  public List<Position> pathTo(Position pos, Map<Position, BgTile> validPositions, boolean includeEndpoints) {
+    Queue<Position> frontier = new LinkedList<>();
+    frontier.add(this);
+    HashMap<Position, Position> cameFrom = new HashMap<>(); // key cameFrom val
+    cameFrom.put(this, this); // start
+
+    while (frontier.size() > 0) {
+      Position current = frontier.remove();
+      if (current.equals(pos)) {
+        // we found the position we are looking for
+        //Log.d("Position", "Found pos:"+pos);
+        break;
+      }
+      for (Position next: current.getNeighbors()) {
+        if (((validPositions.get(next) != null) && (cameFrom.get(next) == null)) || (next.equals(pos))) {
+          //Log.d("Position", "cameFrom["+next+"]="+current+" frontier.size="+frontier.size()+" cameFrom.size="+cameFrom.size());
+          frontier.add(next);
+          cameFrom.put(next, current);
+        }
+      } // for next
+    } // while
+
+    // Construct the path
+    Position current = pos;
+    List<Position> path = new ArrayList<>();
+    path.add(pos);
+    while (current != null) {
+      current = cameFrom.get(current);
+      if (current != null) {
+        if (path.contains(current)) {
+          // The first node points to itself (last one in the chain)
+          break;
+        }
+        path.add(current);
+      }
+    }
+    Collections.reverse(path);
+    if ((path.size() > 0) && !includeEndpoints) {
+      path.remove(0); // remove the first (source)
+      if (path.size() > 0) {
+        path.remove(path.size()-1); // remove the last (target)
+      }
+    }
+    //Log.d("Position", this+" to "+pos+" path="+path);
+    return path;
   }
 
 

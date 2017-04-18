@@ -1,0 +1,24 @@
+Aggressive AI : 
+---------------
+tools.log("running aggressive");
+var units = tools.getTeamUnits(teamId);
+for (var i=0; i<units.size(); i++) {
+  var self = units.get(i);
+  if (!tools.attackNearestEnemy(self)) {
+    tools.moveTowardNearestEnemy(self);
+  } 
+}
+
+
+================================================
+EndGame Trigger:
+---------------
+
+if (tools.getAllOthers(world.getMyTeamId()).size() == 0) {
+  tools.log('Victory');
+  world.setVictory(true);
+} else if (tools.getTeamUnits(world.getMyTeamId()).size() == 0) {
+  tools.log('Defeat');
+  world.setDefeat(true);
+}
+

@@ -29,7 +29,6 @@ import com.alwaysrejoice.hexengine.dto.Team;
 import com.alwaysrejoice.hexengine.dto.Unit;
 import com.alwaysrejoice.hexengine.dto.World;
 import com.alwaysrejoice.hexengine.util.ScriptEngine;
-import com.alwaysrejoice.hexengine.util.ScriptTools;
 import com.alwaysrejoice.hexengine.util.Utils;
 import com.alwaysrejoice.hexengine.util.WorldUtils;
 import java.util.HashMap;
@@ -121,10 +120,7 @@ public class WorldView extends View {
   private Paint whiteHighlightPaint = new Paint(); // color of circle behind abilities on the map
 
   // AI
-  String myTeamId = null; // contains the teamId that is human controlled
   private ScriptEngine scriptEngine;
-  ScriptTools scriptTools;
-  AiTools aiTools;
 
 
   public WorldView(WorldActivity worldActivity, World world) {
@@ -218,10 +214,10 @@ public class WorldView extends View {
     for (Team team : world.getTeams()) {
       AI ai = WorldUtils.getAiById(team.getAiId());
       if ((ai != null) && (ai.getScript() != null) && (ai.getScript().length() == 0)) {
-        myTeamId = team.getId();
+        world.setMyTeamId(team.getId());
       }
     } // for
-    if (myTeamId == null) {
+    if (world.getMyTeamId() == null) {
       Log.e("WorldView", "Error! No human controllable team");
       // TODO show a toast to the user?
       worldActivity.exit();
@@ -229,7 +225,7 @@ public class WorldView extends View {
 
     // Select the first Player unit
     for (Unit unit : world.getUnits()) {
-      if (myTeamId.equals(unit.getTeamId())) {
+      if (world.getMyTeamId().equals(unit.getTeamId())) {
         this.selectedUnit = unit;
         drawSelectedUnitInfo();
         break;
@@ -237,10 +233,8 @@ public class WorldView extends View {
     } // for
 
     // Setup all the AI tools
-    aiTools = new AiTools(world);
-    scriptTools = new ScriptTools(world, aiTools);
     // Setup the scripting engine (entire world will use the same engine)
-    scriptEngine = new ScriptEngine(world, scriptTools);
+    scriptEngine = new ScriptEngine();
     if (world.getTurnCounter() == 0) {
       scriptEngine.runActions(world.getTriggers().getStartWorld(), null, null);
     }
@@ -421,7 +415,6 @@ public class WorldView extends View {
       float dX = clickX - x;
       float dY = clickY - y;
       if (Math.sqrt(dX * dX + dY * dY) <= MAX_CLICK_DISTANCE) {
-        Log.d("WorldView", "click dX=" + dX + " dY=" + dY + " pointerId=" + pointerId);
         // Check for endGame
         if (endGameTextDrawn) {
           worldActivity.exit();
@@ -487,7 +480,7 @@ public class WorldView extends View {
     } else if (endTurnButtonRect.contains(x,y)) {
       Log.d("WorldView", "End Turn");
       endTurn();
-      // TODO AI would go here
+      runAllAis();
       startTurn();
       return true;
     }
@@ -506,13 +499,14 @@ public class WorldView extends View {
    * Selects the unit at the specific col, row
    */
   private void selectLocation(Position pos) {
+    Log.d("WorldView", "Click on "+pos);
     if ((selectedAbilities != null) && (selectedUnit != null)) {
       for (Position abilityPos : selectedAbilities.keySet()) {
         if (abilityPos.equals(pos)) {
           // The click was on a highlighted ability
           Ability ability = selectedAbilities.get(abilityPos);
-          Unit targetUnit = WorldUtils.getUnitAt(pos);
-          applyAbility(ability, targetUnit);
+          Unit targetUnit = scriptEngine.getTools().getUnitAt(pos);
+          scriptEngine.getTools().applyAbility(ability, selectedUnit, targetUnit);
           clearSelections();
           return;
         }
@@ -520,15 +514,17 @@ public class WorldView extends View {
     }
     for (Unit unit : world.getUnits()) {
       // The unit is at this location, and the unit is on my team (human controllable)
-      if (pos.equals(unit.getPos()) && myTeamId.equals(unit.getTeamId())) {
+      if (pos.equals(unit.getPos())) {
         // The click was selecting a unit
         drawBackground(); // in case there are other selected things already drawn
         this.selectedUnit = unit;
         drawSelectedUnitInfo();
-        if (selectedUnit.getAction() >= selectedUnit.getMoveActionCost()) {
-          setupUnitMove(unit);
+        if (world.getMyTeamId().equals(unit.getTeamId())) {
+          if (selectedUnit.getAction() >= selectedUnit.getMoveActionCost()) {
+            setupUnitMove(unit);
+          }
+          setupSelectedUnitAbilities();
         }
-        setupSelectedUnitAbilities();
         return; // We handled the click
       }
     } // for
@@ -536,7 +532,8 @@ public class WorldView extends View {
       for (Position movePos : validMoves) {
         if (pos.equals(movePos)) {
           // Clicked on a validMove
-          moveSelectedUnit(pos);
+          scriptEngine.getTools().moveTo(selectedUnit, pos);
+          validMoves = null;
           clearSelections();
           return; // we handled the click
         }
@@ -638,8 +635,11 @@ public class WorldView extends View {
     Log.d("WorldView", "Drawing imgHeight="+imgHeight+" imgCount="+imgCount+" infoHeight="+infoWindow.height()+" spaceAvailable="+spaceAvailable);
     for (Ability ability : selectedUnit.getAbilities()) {
       drawLeftColImgAndText(ability.getBitmap(), imgWidth, imgHeight, ability.getName(), rowY, centerX);
-      // Setup the button for this ability
-      abilityButtons.put(new Rect(0, rowY, centerX, rowY+imgHeight), ability);
+      // Don't allow clicking on abilities for units on other teams
+      if (world.getMyTeamId().equals(selectedUnit.getTeamId())) {
+        // Setup the button for this ability
+        abilityButtons.put(new Rect(0, rowY, centerX, rowY+imgHeight), ability);
+      }
       rowY += imgHeight + INFO_IMG_PADDING;
     }
     // Draw the right column
@@ -728,29 +728,14 @@ public class WorldView extends View {
    */
   private void setupUnitMove(Unit unit) {
     Log.d("WorldView", "Setting up moves for "+unit.getName()+" at "+ unit.getPos());
-    validMoves = WorldUtils.validPositions(unit.getPos(), unit.getMoveRange(), unit.getMoveRestrict());
+    validMoves = scriptEngine.getTools().validMovePositions(unit.getPos(), unit.getMoveRange(), unit.getMoveRestrict());
+    Log.d("WorldView", "Moves="+validMoves);
     for (Position pos : validMoves) {
       //Log.Log.d("WorldView", "Can move to "+pos);
       int x = bgCenterX + Math.round(HEX_SIZE * 1.5f  * pos.getCol()) - (TILE_WIDTH / 2);
       int y = bgCenterY + Math.round(HEX_SIZE * SQRT_3 * (pos.getRow() + (pos.getCol() / 2f))) - (TILE_HEIGHT/2);
       bgCanvas.drawBitmap(moveImg, x, y, null);
     }
-  }
-
-  /**
-   * Moves the unit to the specified location
-   */
-  public void moveSelectedUnit(Position pos) {
-    if (selectedUnit == null) {
-      return;
-    }
-    if (selectedUnit.getAction() >= selectedUnit.getMoveActionCost()) {
-      selectedUnit.setAction(selectedUnit.getAction() - selectedUnit.getMoveActionCost());
-    }
-    selectedUnit.setPos(pos);
-    // Clear valid moves, need to click again for a second move
-    validMoves = null;
-    scriptEngine.runActions(world.getTriggers().getAbilityUsed(), null, null);
   }
 
   /**
@@ -832,40 +817,13 @@ public class WorldView extends View {
   }
 
   /**
-   * Applies the ability (runs the script)
-   * self = selectedUnit
-   * target = targetUnit
-   */
-  public void applyAbility(Ability ability, Unit target) {
-    if (selectedUnit == null) {
-      // Cannot apply ability without a self
-      return;
-    }
-    // Action cost
-    selectedUnit.setAction(selectedUnit.getAction() - ability.getActionCost());
-    // Execute the onStart
-    scriptEngine.runActions(ability.getOnStart(), selectedUnit, target);
-    // Add effect
-    Effect effect = ability.getEffect();
-    if (effect != null) {
-      // non-stackable effects can only be applied once
-      if (effect.isStackable() || !target.getEffects().contains(effect)) {
-        target.getEffects().add(effect.clone());
-      }
-    }
-    deathCheck(target);
-    scriptEngine.runActions(world.getTriggers().getAbilityUsed(), selectedUnit, target);
-  }
-
-  /**
    * Called when a new turn begins
    */
   public void startTurn() {
     // Process all the effects
-    // TODO : should only be for the player (the AI start turn would process effects for computer)
-    runEffects(myTeamId);
+    runEffects(world.getMyTeamId());
     Log.d("WorldView", "Starting turn");
-    deathCheck();
+    scriptEngine.getTools().deathCheck();
     scriptEngine.runActions(world.getTriggers().getStartTurn(), null, null);
 
     // Reset all the action points
@@ -884,33 +842,8 @@ public class WorldView extends View {
    */
   public void endTurn() {
     scriptEngine.runActions(world.getTriggers().getEndTurn(), null, null);
-    runAllAis();
   }
 
-  /**
-   * Checks all units to see if any are dead and need to be cleaned up
-   */
-  public void deathCheck() {
-    List<Unit> units = world.getUnits();
-    for (int i=units.size()-1; i>=0; i--) {
-      Unit unit = units.get(i);
-      if (unit.getHp() <= 0) {
-        units.remove(i);
-        Log.d("WorldView", unit.getName()+" has died!");
-      }
-    } // for
-  }
-
-  /**
-  * Checks this particular unit to see if it has died.
-  * If it's dead it will be removed from the game
-  */
-  public void deathCheck(Unit unit) {
-    if (unit.getHp() <= 0) {
-      world.getUnits().remove(unit);
-      Log.d("WorldView", unit.getName()+" has died!");
-    }
-  }
 
   public void drawVictory(Canvas canvas) {
     if (world.isVictory()) {
@@ -959,8 +892,8 @@ public class WorldView extends View {
   public void runAllAis() {
     for (Team team : world.getTeams()) {
       // The teams in myTeamIds will be handled by the human
-      if (!myTeamId.equals(team.getId())) {
-        Log.d("WorldView", "Starting AI turn for team="+team.getName()+" id="+team.getId()+" myTeamId="+myTeamId);
+      if (!world.getMyTeamId().equals(team.getId())) {
+        Log.d("WorldView", "Starting AI turn for team="+team.getName()+" id="+team.getId()+" myTeamId="+world.getMyTeamId());
         // Process all the effects (start of AI turn)
         runEffects(team.getId());
         AI ai = WorldUtils.getAiById(team.getAiId());
