@@ -104,7 +104,7 @@ public class ScriptEngine {
         }
         if (value != null) {
           ScriptableObject.putProperty(scope, param.getVar(), Context.javaToJS(value, scope));
-          Log.d("ScriptEngine", "Adding param "+param.getVar()+" to context with value="+value);
+          //Log.d("ScriptEngine", "Adding param "+param.getVar()+" to context with value="+value);
         }
       } // for
     }
@@ -114,7 +114,7 @@ public class ScriptEngine {
     } catch (Exception e) {
       Log.e("ScriptEngine", "Error in script '"+script+"'", e);
     }
-    Log.d("ScriptEngine", "script='"+script+"' retVal="+retVal+"\n self="+self+"\n target="+target);
+    //Log.d("ScriptEngine", "script='"+script+"' retVal="+retVal+"\n self="+self+"\n target="+target);
     return retVal;
   }
 

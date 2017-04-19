@@ -4,11 +4,10 @@ tools.log("running aggressive");
 var units = tools.getTeamUnits(teamId);
 for (var i=0; i<units.size(); i++) {
   var self = units.get(i);
-  if (!tools.attackNearestEnemy(self)) {
-    tools.moveTowardNearestEnemy(self);
-  } 
+  if (!tools.attackNearestOther(self)) {
+    tools.moveTowardNearestOther(self, false);
+  }
 }
-
 
 ================================================
 EndGame Trigger:

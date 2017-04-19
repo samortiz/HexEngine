@@ -102,22 +102,21 @@ public class ScriptTools {
   }
 
   /**
-   * Finds a list of units not on your team within the visible range of self (taking terrain into account)
+   * Finds a list of units not on your team within the visible range of the team (taking terrain into account)
    */
-  public List<Unit> getVisibleOthers(Unit unit) {
-    if (unit == null) {
+  public List<Unit> getVisibleOthers(Unit self) {
+    if (self == null) {
       return null;
     }
-    String teamId = unit.getTeamId();
+    String teamId = self.getTeamId();
     List<Unit> others = new ArrayList<>();
-    List<Position> teamView = getTeamView(teamId);
     for (Unit other : world.getUnits()) {
-      if (other.getTeamId().equals(unit.getTeamId())) {
+      if (other.getTeamId().equals(self.getTeamId())) {
         // It's a friend
         continue;
       }
       // Someone on the team can see this unit
-      if (teamView.contains(other.getPos())) {
+      if (teamCanSee(teamId, other)) {
         others.add(other);
       }
      } // for other
@@ -157,15 +156,8 @@ public class ScriptTools {
   }
 
   /**
-   * Finds the closest visible unit not on the same team
-   * // Null if none
-   */
-  public Unit getClosestVisibleEnemy(Unit self) {
-    return getClosest(self, getVisibleOthers(self));
-  }
-
-  /**
    * @return all the positions visible to any unit on the team
+   * NOTE : This is a very expensive operation!
    */
   public List<Position> getTeamView(String teamId) {
     List<Position> teamView = new ArrayList<>();
@@ -331,11 +323,36 @@ public class ScriptTools {
     return !blocked;
   }
 
+  /**
+   * @return true if self has an unblocked view (within viewRange) of other
+   */
+  public boolean canSee(Unit self, Unit other) {
+    return hasLineOfSight(self.getPos(), other.getPos(), self.getSightRange(), self.getSightRestrict());
+  }
+
+  /**
+   * @return true if any player on the team can see other
+   */
+  public boolean teamCanSee(String teamId, Unit other) {
+    if ((teamId == null) || (other == null)) {
+      return false;
+    }
+    // For every unit on the team
+    for (Unit unit : world.getUnits()) {
+      if (teamId.equals(unit.getTeamId())) {
+        if (canSee(unit, other)) {
+          return true;
+        }
+      }
+    } // for unit
+    return false;
+  }
 
   /**
    * Returns a list of positions that are visible to the unit
    * This works on a line of sight basis using the unit's sightRange
    * and is blocked by the units sightRestrict
+   * NOTE : This is very expensive!
    */
   public List<Position> getVisiblePositions(Unit unit) {
     List<Position> visible = new ArrayList<>();
@@ -496,16 +513,24 @@ public class ScriptTools {
   }
 
   /**
-   * Attacks the nearest enemy.
-   * @return true if an enemy was attacked
-   *         false if no enemy was attacked (not in range, not enough action points, ability didn't apply)
+   * @return nearest other to self within sight of the team
    */
-  public boolean attackNearestEnemy(Unit self) {
-    List<Unit> visibleEnemies = getVisibleOthers(self);
-    for (Unit target : visibleEnemies) {
-      Ability ability = usableAbility(self, target);
+  public Unit nearestOther(Unit self) {
+    List<Unit> others = getVisibleOthers(self);
+    return getClosest(self, others);
+  }
+
+  /**
+   * Attacks the nearest other.
+   * @return true if an other was attacked
+   *         false if no other was attacked (not in range, not enough action points, ability didn't apply)
+   */
+  public boolean attackNearestOther(Unit self) {
+    List<Unit> others= getVisibleOthers(self);
+    for (Unit other: others) {
+      Ability ability = usableAbility(self, other);
       if (ability != null) {
-        applyAbility(ability, self, target);
+        applyAbility(ability, self, other);
         return true;
       }
     } // for
@@ -513,27 +538,80 @@ public class ScriptTools {
   }
 
   /**
-   * Moves towards the nearest visible enemy
+   * @return the longest range ability self has
    */
-  public boolean moveTowardNearestEnemy(Unit self) {
-    Unit enemy = getClosestVisibleEnemy(self);
-    if (enemy == null) {
-      return false;
+  public int maxAbilityRange(Unit self) {
+    if (self == null) {
+      return 0;
     }
+    int maxRange = 0;
+    for (Ability ability : self.getAbilities()) {
+      if (ability.getRange() > maxRange) {
+        maxRange = ability.getRange();
+      }
+    }
+    return maxRange;
+  }
+
+  /**
+   * Moves self toward other
+   * @param self
+   * @param other
+   * @return
+   */
+  public boolean moveToward(Unit self, Unit other, boolean stopWhenInRange) {
     Map<Position, BgTile> validPositions = unrestrictedPositions(self.getMoveRestrict(), true);
-    Log.d("ScriptTools", "validPositions = "+validPositions);
-    List<Position> path = self.getPos().pathTo(enemy.getPos(), validPositions, false);
+    //Log.d("ScriptTools", "validPositions = "+validPositions);
+    List<Position> path = self.getPos().pathTo(other.getPos(), validPositions, false);
     if (path.size() == 0) {
       return false;
     }
     Position newPos = null;
-    // Enemy is near enough to get next to
+    // Stop when close enough to attack with longest range attack
+    if (stopWhenInRange) {
+      int abilityPathIndex = path.size() - maxAbilityRange(self);
+      int maxMovePathIndex = self.getMoveRange() - 1; // 0 based step counts
+      int pathIndex = Math.min(abilityPathIndex, maxMovePathIndex);
+      if (pathIndex < 0) {
+        // We are closer than we need to be, no need to move
+        return false;
+      }
+      if (pathIndex > path.size()-1) {
+        // even if we have more movement ability, one step away is as close as we can get (without incorporation)
+        pathIndex = path.size() -1;
+      }
+      newPos = path.get(pathIndex);
+    } else {
+
+    }
+
+    // Other is near enough to get next to
     if (path.size() <= self.getMoveRange()) {
       newPos = path.get(path.size()-1);
     } else { // path.size > moveRange
-      newPos = path.get(self.getMoveRange());
+      // move as close as we need to in order to use an ability
+      int pathIndex = stopWhenInRange ? (path.size() - maxAbilityRange(self)) : self.getMoveRange();
+      // Check to make sure we aren't moving more than we are able to
+      pathIndex = Math.min(pathIndex, self.getMoveRange());
+      if (pathIndex < 0) {
+        // This means the unit is already close enough to use an ability, no need to move closer
+        return false;
+      }
+      newPos = path.get(pathIndex);
     }
     return moveTo(self, newPos);
+  }
+
+  /**
+   * Moves towards the nearest visible other
+   * @param stopWhenInRange stops the move short when within attack range of any ability
+   */
+  public boolean moveTowardNearestOther(Unit self, boolean stopWhenInRange) {
+    Unit other = nearestOther(self);
+    if (other == null) {
+      return false;
+    }
+    return moveToward(self, other, stopWhenInRange);
   }
 
 }
