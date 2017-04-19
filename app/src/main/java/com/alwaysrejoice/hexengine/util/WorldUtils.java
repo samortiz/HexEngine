@@ -129,19 +129,19 @@ public class WorldUtils {
   }
 
   /**
-   * Looks up an effect in a list of effects by name (NOT by id)
-   * @return true if the effect is in the list
+   * Looks up an effect in a list of effects by tileId, since the same effect can have multiple instances
+   * @return the matching effect, or null if no matching effect was found
    */
-  public static boolean effectFound(List<Effect> effects, Effect effect) {
+  public static Effect getEffectFromList(Effect effect, List<Effect> effects) {
     if (effect == null) {
-      return false;
+      return null;
     }
     for (Effect eff : effects) {
-      if (effect.getName().equals(eff.getName())) {
-        return true;
+      if (effect.getEffectTileId().equals(eff.getEffectTileId())) {
+        return eff;
       }
     }
-    return false;
+    return null;
   }
 
 }

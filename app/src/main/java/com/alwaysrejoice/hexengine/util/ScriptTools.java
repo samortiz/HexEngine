@@ -73,7 +73,7 @@ public class ScriptTools {
       }
       double rollAmt = random.nextInt(Math.abs(dmg.getSize()))+1; // nextInt is 0 to (n-1)
       if (dmg.getSize() < 0) {
-        rollAmt = -rollAmt; // negative defence!
+        rollAmt = -rollAmt; // negative size!
       }
       total += rollAmt;
     }
@@ -84,13 +84,13 @@ public class ScriptTools {
   /**
    * Heals HP by the amount of a damage (damage type is not used)
    */
-  public void heal(Unit unit, Damage dmg) {
-    double amount = roll(dmg);
-    unit.setHp(unit.getHp() + amount);
-    if (unit.getHp() > unit.getHpMax()) {
-      unit.setHp(unit.getHpMax());
+  public void heal(Unit self, Unit target, Damage amount) {
+    double hp = roll(amount);
+    target.setHp(target.getHp() + hp);
+    if (target.getHp() > target.getHpMax()) {
+      target.setHp(target.getHpMax());
     }
-    Log.d("ScriptTools", unit.getName()+" healed "+amount+" HP.");
+    Log.d("ScriptTools", target.getName()+" was healed "+hp+" HP.");
   }
 
   /**
@@ -424,9 +424,20 @@ public class ScriptTools {
     // Add effect
     Effect effect = ability.getEffect();
     if (effect != null) {
-      // non-stackable effects can only be applied once
-      if (effect.isStackable() || WorldUtils.effectFound(target.getEffects(), effect)) {
+      if (effect.isStackable()) {
         target.getEffects().add(effect.clone());
+      } else {
+        // non-stackable effects can only be applied once
+        Effect targetEffect = WorldUtils.getEffectFromList(effect, target.getEffects());
+        if (targetEffect != null) {
+          Log.d("ScriptTools", "Setting duration for effect="+effect.getName()+" from "+targetEffect.getDuration()+" to "+effect.getDuration());
+          // effect already exists on target, just update the duration
+          targetEffect.setDuration(effect.getDuration());
+        } else {
+          Log.d("ScriptTools", "targetEffect tileId="+effect.getEffectTileId()+" not found on "+target.getName()+" effects="+target.getEffects());
+          // non-stackable, but the target does not already have the effect
+          target.getEffects().add(effect.clone());
+        }
       }
     }
     Log.d("ScriptTools", self.getName()+" did "+ability.getName()+" to "+target.getName());
@@ -494,6 +505,8 @@ public class ScriptTools {
 
   /**
    * Moves the unit to the specified location
+   * @return true if the  move was successful
+   * NOTE: This does not do validation that the unit can move to that location (moveRestrict) maybe it should?
    */
   public boolean moveTo(Unit self, Position pos) {
     if ((self == null) || (pos == null)) {
@@ -612,6 +625,18 @@ public class ScriptTools {
       return false;
     }
     return moveToward(self, other, stopWhenInRange);
+  }
+
+  /**
+   * Moves to a random location
+   * @return true if self moved, false if self cannot move
+   */
+  public boolean moveRandomly(Unit self) {
+    List<Position> validMoves = validMovePositions(self.getPos(), self.getMoveRange(), self.getMoveRestrict());
+    if (validMoves.size() == 0) {
+      return false;
+    }
+    return moveTo(self, validMoves.get(random.nextInt(validMoves.size())));
   }
 
 }

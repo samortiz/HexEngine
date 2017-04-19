@@ -9,14 +9,14 @@ import java.util.List;
 
 public class Effect implements TileType, Comparable {
 
-  private String id;
-  private String effectTileId;
-  private String name;
-  private Bitmap bitmap;
-  private int duration = 0;
-  private List<Action> onRun = new ArrayList<>();
-  private List<Action> onEnd = new ArrayList<>();
-  private boolean stackable = false;
+  public String id;
+  public String effectTileId;
+  public String name;
+  public Bitmap bitmap;
+  public int duration = 0;
+  public List<Action> onRun = new ArrayList<>();
+  public List<Action> onEnd = new ArrayList<>();
+  public boolean stackable = true;
 
   public Effect() {}
 
@@ -129,6 +129,7 @@ public class Effect implements TileType, Comparable {
   public Effect clone() {
     Effect clone = new Effect();
     clone.setId(Utils.generateUniqueId());
+    clone.setEffectTileId(effectTileId);
     clone.setName(name);
     clone.setBitmap(bitmap);
     clone.setDuration(duration);

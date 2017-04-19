@@ -196,7 +196,7 @@ public class Game {
 
     params = new ArrayList<>();
     params.add(new ModParam("amount", ModParam.TYPE.Damage));
-    Mod heal= new Mod(Utils.generateUniqueId(), "Heal", Mod.TYPE_MOD, params, "tools.heal(target, damage);");
+    Mod heal= new Mod(Utils.generateUniqueId(), "Heal", Mod.TYPE_MOD, params, "tools.heal(self, target, amount);");
     game.getMods().put(heal.getId(), heal);
 
     params = new ArrayList<>();
@@ -230,6 +230,9 @@ public class Game {
 
     Mod friend = new Mod(Utils.generateUniqueId(), "Friend", Mod.TYPE_RULE, new ArrayList<ModParam>(), "(self.id != target.id) && (self.teamId == target.teamId)");
     game.getMods().put(friend.getId(), friend);
+
+    Mod myTeam = new Mod(Utils.generateUniqueId(), "My Team", Mod.TYPE_RULE, new ArrayList<ModParam>(), "target.teamId == self.teamId");
+    game.getMods().put(myTeam.getId(), myTeam);
 
     Mod ruleAnyone = new Mod(Utils.generateUniqueId(), "Anyone", Mod.TYPE_RULE, new ArrayList<ModParam>(), "true");
     game.getMods().put(ruleAnyone.getId(), ruleAnyone);

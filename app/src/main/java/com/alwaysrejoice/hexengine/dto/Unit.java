@@ -12,26 +12,26 @@ import java.util.Map;
 
 public class Unit implements TileType {
 
-  private String id;
-  private Position pos;
-  private String unitTileId;
-  private String name;
-  private Bitmap bitmap;
-  private String teamId;
-  private double hp;
-  private double hpMax;
-  private double action;
-  private double actionMax;
-  private List<String> attr = new ArrayList<>();
-  private int moveRange;
-  private double moveActionCost;
-  private List<String> moveRestrict = new ArrayList<>();
-  private int sightRange;
-  private List<String> sightRestrict = new ArrayList<>();
-  private List<Ability> abilities = new ArrayList<>();
-  private List<Damage> defence = new ArrayList<>();
-  private List<Effect> effects = new ArrayList<>();
-  private Map<String, String> storage = new HashMap<>();
+  public String id;
+  public Position pos;
+  public String unitTileId;
+  public String name;
+  public Bitmap bitmap;
+  public String teamId;
+  public double hp;
+  public double hpMax;
+  public double action;
+  public double actionMax;
+  public List<String> attr = new ArrayList<>();
+  public int moveRange;
+  public double moveActionCost;
+  public List<String> moveRestrict = new ArrayList<>();
+  public int sightRange;
+  public List<String> sightRestrict = new ArrayList<>();
+  public List<Ability> abilities = new ArrayList<>();
+  public List<Damage> defence = new ArrayList<>();
+  public List<Effect> effects = new ArrayList<>();
+  public Map<String, String> storage = new HashMap<>();
 
   public Unit() {
   }
