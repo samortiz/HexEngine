@@ -148,7 +148,7 @@ public class FileUtils {
    * This is only run the first time, but we need to check it every time just in case.
    */
   public static void initDisk(AssetManager assetManager) {
-    deleteExtFiles(); // DEBUG
+    //deleteExtFiles(); // DEBUG
     initDir(assetManager, "images/background", IMAGE_BACKGROUND_DIR);
     initDir(assetManager, "images/units", IMAGE_UNITS_DIR);
     initDir(assetManager, "images/effects", IMAGE_EFFECTS_DIR);

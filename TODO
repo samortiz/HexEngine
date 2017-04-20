@@ -1,32 +1,30 @@
 TODO 
 
-Bug 
- - max width not correct in info right col
+Edit  
  - Map Editor menu tiles stretched vertically
- - Show a toast when no human controllable teams (world exits)
- - Ensure visibilty for all squares 1 step away, even if in mountain/forest
- - Web effect not releasing or showing icon
- - Script end conditions
  - Trigger editor allow setting none
 
-Refactor 
+Play 
+ - max width not correct in info right col
+ - Scrolling text area in info right col, shorten info text
+ - Bounds checking on unit movement
+ - Show a toast when no human controllable teams (world exits)
+ - add death check to getAllMyUnits, or AI may not get notified of the death of their units
  - bgMap and unit should be a Map keyed on position, this would be much faster than iterating the list
    it would mean you can't have two units on the same position... I don't think you would ever need 
    two backgrounds on the same position though. 
+ - deselect dead units
+ - Popup info for unit including ability and current effects info, shorten main info 
+ - Move AI processing to a separte thread with a progress bar
+ - Back story screen
 
-Play 
- - Scrolling text area in info right col
- - Bounds checking on unit movement
 
 Map Views(Both)
  - zooming out to max view causes warp...
 
-
 Optional Features : 
- - Back story screen
- - More info (popup) on ability in info area
+ - Add more ability icons so there is some variety
  - Animations for abilities? 
- - Sync: BG, Units, Abilities, Mods, Effects
+ - File Sync: BG, Units, Abilities, Mods, Effects, AI, Triggers (Definitely Mods, AI, Triggers need a sync)
  - UI view event log (maybe text input - talking)
- - Inventory / Equipping (maybe with level-up)
 
